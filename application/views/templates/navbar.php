@@ -73,5 +73,5 @@ if (!empty($id)):  ?>
     </div>
 <?php endif; ?>
 <div  id="logo-pubsweet">
- <img src="<?php echo base_url('public/img/lex3.png/');?>"  alt=""/>
+<!-- <img src="--><?php //echo base_url();?><!--"  alt=""/>-->
 </div>

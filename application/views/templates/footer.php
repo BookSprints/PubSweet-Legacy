@@ -240,7 +240,7 @@
 <!--<script type="text/javascript" src="--><?php //echo base_url(); ?><!--public/js/pubsweet.js"></script>-->
 <script type="text/javascript" src="<?php echo base_url(); ?>public/js/pubsweet.min.js"></script>
 
-<script type="text/javascript" src="http://213.108.105.1/socket.io/socket.io.js" async
+<script type="text/javascript" src="http://213.108.105.1/socket.io/socket.io.js" async onload="broadcast.init()"></script>
 <!--<script type="text/javascript" src="http://pubsweet.local:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>-->
 <script src="<?php echo base_url(); ?>public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
 </body>
