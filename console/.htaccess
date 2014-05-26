@@ -1,0 +1,21 @@
+AddDefaultCharset UTF-8
+DirectoryIndex index.php
+#AuthUserFile /var/www/taskmanager/.htpasswd
+#AuthUserFile /srv/www/htdocs/taskmanager/.htpasswd
+#AuthGroupFile /dev/null
+#AuthName EnterPassword
+#AuthType Basic
+
+#require user plos
+#Options -MultiViews #other way apache adds automatically .html
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /console
+#    RewriteBase /console
+    #rewritebase is the path relative to document root
+
+    RewriteCond %{SCRIPT_FILENAME} !-d
+    RewriteCond %{SCRIPT_FILENAME} !-f
+    RewriteRule ^(.+)/(.+)*$ index.php?/$1 [QSA,L]
+
+</IfModule>

@@ -1,0 +1,1 @@
+﻿var LITE={Events:{INIT:"lite:init",ACCEPT:"lite:accept",REJECT:"lite:reject",SHOW_HIDE:"lite:showHide",TRACKING:"lite:tracking"},Commands:{TOGGLE_TRACKING:"lite.ToggleTracking",TOGGLE_SHOW:"lite.ToggleShow",ACCEPT_ALL:"lite.AcceptAll",REJECT_ALL:"lite.RejectAll",ACCEPT_ONE:"lite.AcceptOne",REJECT_ONE:"lite.RejectOne"}};

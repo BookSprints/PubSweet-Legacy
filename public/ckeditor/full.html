@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        textarea{
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script type="text/javascript" src="../js/jquery-2.0.2.min.js"></script>
+    <script type="text/javascript" src="ckeditor.js"></script>
+    <script type="text/javascript" src="adapters/jquery.js"></script>
+    <script type="text/javascript">
+        $(function(){
+           $('#full').ckeditor();
+            CKEDITOR.on('instanceReady',
+                function( evt )
+                {
+                    $('#full').show();
+                    var editor = evt.editor;
+                    editor.execCommand('maximize');
+
+                });
+        });
+    </script>
+</head>
+<body>
+<textarea class="hide" name="" id="full" cols="30" rows="10"></textarea>
+</body>
+</html>
