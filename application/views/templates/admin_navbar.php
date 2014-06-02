@@ -1,4 +1,6 @@
 <?php
+$this->load->model('user_model');
+
 $id = $this->session->userdata('DX_user_id');
 $module = $this->uri->segment(1);
 $view = $this->uri->segment(2);

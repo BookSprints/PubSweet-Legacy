@@ -1,4 +1,6 @@
 <?php
+$this->load->model('user_model');
+
 $id = $this->session->userdata('DX_user_id');
 $module = $this->uri->segment(1);
 $view = $this->uri->segment(2);
@@ -62,7 +64,7 @@ if (!empty($id)):  ?>
                    <ul class="dropdown-menu" role="menu" title="<?php echo $this->session->userdata('DX_username'); ?> ">
                           <li ><a href="<?php echo base_url(); ?>"><?php echo $this->lang->line('dashboard');?></a> </li>
                          <li>
-                             <a id="logout" href="<?php echo base_url('auth/logout'); ?>"> <?php echo $this->lang->line('logout');?> </a>
+                             <a id="logout" href="<?php echo base_url('auth/logout').'?'.time(); ?>"> <?php echo $this->lang->line('logout');?> </a>
                          </li>
                    </ul>
              </li>
