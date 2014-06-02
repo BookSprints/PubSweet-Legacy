@@ -1,5 +1,5 @@
 <div class="container ">
-    <h1 class="text-center brand">LEXICON</h1>
+    <h1 class="text-center brand">PubSweet</h1>
 
 </div>
 <div class="container" id="login-container">

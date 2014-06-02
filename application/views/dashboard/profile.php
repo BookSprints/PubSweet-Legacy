@@ -172,7 +172,7 @@
         <?php if($this->session->flashdata('register')):?>
             <div class="alert alert-info">
             <h2 class="text-center"><?php echo $this->lang->line('you-have-successfully-registered');?>.</h2>
-            <h1 class="text-center"><?php echo $this->lang->line('welcome-to');?> <span class="brand">LEXICON</span></h1>
+            <h1 class="text-center"><?php echo $this->lang->line('welcome-to');?> <span class="brand">PUBSWEET</span></h1>
             </div>
         <?php endif;?>
     </div>

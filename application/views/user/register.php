@@ -6,7 +6,7 @@
 <?php endif; ?>
 
 <div class="container ">
-    <h1 class="text-center brand" id="registerh1">LEXICON</h1>
+    <h1 class="text-center brand" id="registerh1">PubSweet</h1>
 </div>
 <div class="container">
     <div class="row-fluid">

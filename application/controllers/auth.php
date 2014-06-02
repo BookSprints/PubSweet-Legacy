@@ -124,12 +124,14 @@ class Auth extends CI_Controller
 	
 	function logout()
 	{
+
 		$this->dx_auth->logout();
-		
-		//$data['auth_message'] = 'You have been logged out.';
-        $this->load->view('templates/header');
-		$this->load->view('user/login');
-        $this->load->view('templates/footer');
+
+        $this->output->set_header("Cache-Control: no-store, no-cache, must-revalidate, no-transform, max-age=0, post-check=0, pre-check=0");
+        $this->output->set_header("Pragma: no-cache");
+        //$data['auth_message'] = 'You have been logged out.';
+
+        redirect('register/login', 'refresh');
 	}
 	
 	
