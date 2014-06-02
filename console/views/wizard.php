@@ -103,7 +103,7 @@ $module = $this->uri->segment(2);
 if (!empty($book['id'])):  ?>
     <div class="container navbar navbar-static-top">
         <div class="navbar-inner">
-            <a class="brand" href="<?php echo base_url(); ?>">LEXICON</a>
+            <a class="brand" href="<?php echo base_url(); ?>">PubSweet</a>
             <ul class="nav">
                 <?php if (isset($book)): ?>
                     <li>
@@ -159,7 +159,7 @@ if (!empty($book['id'])):  ?>
                 </div>
                 <div class="control-group"><label class="control-label" for="publisher">Publisher</label>
 
-                    <div class="controls"><input type="text" name="publisher" id="publisher" value="LEXICON"></div>
+                    <div class="controls"><input type="text" name="publisher" id="publisher" value="PUBSWEET"></div>
                 </div>
                 <div class="control-group"><label class="control-label" for="published-date">Published Date</label>
 
@@ -270,6 +270,7 @@ if (!empty($book['id'])):  ?>
     </div>
     <div class="row hide" id="advance">
         <!--<div id="downloading">Getting download link</div>-->
+        <div id="epubing"><h1>Generating XHTML files</h1></div>
         <div id="metadating"><h1>Setting metadata</h1></div>
         <div id="cssing"><h1>Uploading CSS</h1></div>
                 <div id="covering"><h1>Uploading Cover</h1></div>
@@ -449,8 +450,16 @@ if (!empty($book['id'])):  ?>
             },
             process:function () {
                 var steps;
+                /*
+                 steps = [
+                    element: html element, holding the text info about the procedure,
+                    method: function to be executed,
+                    enabled: true if the step is going to be executed |false or custom sentence returning a boolean
+                 ]*/
+
                 steps = [
 //                    {element: $('#downloading'), method: management.getDownloadURL},
+                    {element:$('#epubing'), method:driver.generateXHTMLFiles, enabled:true},
                     {element:$('#metadating'), method:driver.uploadMetadata,
                         enabled: $('#metadata').find('input').filter(function() { return !!this.value }).length>0},
                     {element:$('#cssing'), method:driver.uploadCSS, enabled:true},
@@ -540,7 +549,7 @@ if (!empty($book['id'])):  ?>
 
                 }
             },
-            downloadEpub:function (callback) {
+            /*downloadEpub:function (callback) {
                 $.get('manager/getFromObjavi/'+driver.bookname, function (data) {
                     if (data.ok) {
                         driver.url = data.link;
@@ -562,6 +571,19 @@ if (!empty($book['id'])):  ?>
                 }, 'json').error(function(){
                             callback(false);
                         });
+            },*/
+            generateXHTMLFiles: function(callback){
+                $.post(driver.baseUrl+'render/epub/'+$('#book_id').val(),
+                    {download: false},
+                    function(data){
+                        if(data.ok){
+                            if (!!callback) {
+                                callback(data.ok);
+                            }
+                        }
+                    }, 'json').error(function(){
+                        callback(false);
+                    });
             },
             uploadMetadata:function (callback) {
                 $.post(driver.baseUrl+'console/manager/addMetadata/',

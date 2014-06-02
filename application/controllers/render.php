@@ -48,12 +48,12 @@ class Render extends CI_Controller{
                 $xhtml = $this->renderNormalChapter($item);
             }
 
-            $chapterFileName = underscore($item['title']).'.xhtml';
+            $chapterFileName = underscore(url_title($item['title'], '_', true)).'.xhtml';
             if(!write_file ($path.$chapterFileName, $xhtml, 'w+')){
                 echo 'Error creating '. $item['title'];
             }
             $toc[] = array('title'=>$item['title'],
-                'url'=>$chapterFileName);
+                'url'=>$chapterFileName, 'section'=>$item['section_title']);
         }
         $cover = false;
         if(file_exists($this->path.$this->book.'/static/cover.jpg')){
@@ -70,7 +70,12 @@ class Render extends CI_Controller{
                 'metadata'=>$this->getMetadata()), $path);
         $this->createMimetype($path);
         $this->createContainerXML(null, $path);
-        $this->export($path, $bookName);
+        if($this->input->post('download')!=="false"){
+            $this->export($path, $bookName);
+        }else{
+            echo json_encode(array('ok'=>1));
+        }
+
     }
 
     /**
