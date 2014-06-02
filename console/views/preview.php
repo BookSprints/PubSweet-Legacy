@@ -34,6 +34,7 @@
     <?php if(isset($prettify) && $prettify):?>
         <script type="text/javascript" src="<?php echo base_url();?>public/js/prettifier/prettify.js"></script>
     <?php endif;?>
+<!--    <script type="text/javascript" src="--><?php //echo base_url();?><!--public/js/cssregions.min.js"></script>-->
     <script type="text/javascript">
         window.paginationConfig = {
             'sectionStartMarker': 'div.section',
@@ -51,7 +52,8 @@
             'oddAndEvenMargins': false,
             'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
                 + '<div class="pagination-pagebreak"></div>',
-            'autoStart': true
+            'autoStart': true,
+            'polyfill': true
 
         };
         <?php if(isset($_GET['pageHeight']) && !empty($_GET['pageHeight'])):?>
@@ -64,6 +66,7 @@
         paginationConfig.lengthUnit = '<?php echo $_GET['lengthUnit'];?>';
         <?php endif;?>
     </script>
+
     <script type="text/javascript" src="<?php echo base_url();?>public/js/book.js"></script>
 </head>
 <body
@@ -79,5 +82,6 @@ endif; ?>
 <div id="flow">
     <?php echo $fullHTML; ?>
 </div>
+
 </body>
 </html>

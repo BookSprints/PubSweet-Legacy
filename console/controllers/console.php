@@ -31,25 +31,22 @@ class Console extends CI_Controller
 
             $xhtmlFiles = array();
 
-//            if ($zip) {
+            /*foreach($dirFiles as $file) {
 
-                foreach($dirFiles as $file) {
-//                    $file = file_get_contents( $dir . "/" . $file);
-                    if (!is_dir($dir . "/" . $file)) {
-                        $path_parts = pathinfo($dir . "/" . $file);
+                if (!is_dir($dir . "/" . $file)) {
+                    $path_parts = pathinfo($dir . "/" . $file);
 
-                        $ext = strtolower(trim(isset ($path_parts['extension']) ? $path_parts['extension'] : ''));
+                    $ext = strtolower(trim(isset ($path_parts['extension']) ? $path_parts['extension'] : ''));
 
-                        if ($ext == 'xhtml') {
+                    if ($ext == 'xhtml') {
 
-                            $xhtmlFiles[] = $file;
+                        $xhtmlFiles[] = $file;
 
-                        }
                     }
-//                }
+                }
             }
-//            zip_close($zip);
-            asort($xhtmlFiles);
+
+            asort($xhtmlFiles);*/
 
 //            $zip1 = new ZipArchive;
             //Opens a Zip archive
@@ -70,6 +67,13 @@ class Console extends CI_Controller
                         }
                         $sectionPage .= '</div>';
                         $sections[$sectionId . ''] = $sectionPage;
+                        $i=0;
+                        while(isset($navPoint->navPoint[$i])){
+                            $chapter = $navPoint->navPoint[$i];
+                            $xhtmlFiles[] = (string) $chapter->content->attributes()->src[0];
+                            ++$i;
+                        }
+
                     }
                 }
             }

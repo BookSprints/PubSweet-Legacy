@@ -10,13 +10,36 @@
     <text><?php echo $book_name;?></text>
   </docTitle>
   <navMap>
-  <?php foreach ($chapters as $key => $item) :?>
-      <navPoint id="chapter<?php echo $key;?>" playOrder="<?php echo $key;?>">
-          <navLabel>
-            <text><?php echo $item['title'];?></text>
-          </navLabel>
-          <content src="<?php echo $item['url'];?>"/>
-        </navPoint>
+      <?php $tempSection = null;
+            $counter = 0;
+            $close = false;
+      ?>
+  <?php foreach ($chapters as $item) :?>
+
+      <?php if(isset($item['section']) && $tempSection != $item['section']):?>
+      <?php if($close):?>
+          </navPoint>
+      <?php endif;?>
+          <?php $tempSection = $item['section'];
+          $counter++;
+          $close = true;
+          ?>
+
+          <navPoint id="section<?php echo $counter;?>" playOrder="<?php echo $counter;?>">
+              <navLabel>
+                  <text><?php echo $item['section'];?></text>
+              </navLabel>
+              <content src="<?php echo $item['url'];?>"/>
+      <?php endif;?>
+                <navPoint id="chapter<?php echo ++$counter;?>" playOrder="<?php echo $counter;?>">
+                  <navLabel>
+                    <text><?php echo $item['title'];?></text>
+                  </navLabel>
+                  <content src="<?php echo $item['url'];?>"/>
+                </navPoint>
   <?php endforeach;?>
+      <?php if($close):?>
+          </navPoint>
+      <?php endif;?>
   </navMap>
 </ncx>
