@@ -50,6 +50,11 @@ class Books_model extends CI_Model
         $query= $this->db->get_where('books', array('id'=>$bookId));
         return $query->row_array();
     }
+    public function getUserConfig($bookId, $userId){
+        $this->db->select('book_id, user_id, settings');
+        $query= $this->db->get_where('book_user_settings', array('book_id'=>$bookId, 'user_id'=>$userId));
+        return $query->row_array();
+    }
 
     public function addCoauthor($data)
     {

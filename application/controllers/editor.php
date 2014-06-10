@@ -22,9 +22,12 @@ class Editor extends CI_Controller
 
     public function normal($id)
     {
+        $data['id'] = $id;
        $this->load->model(array('chapters_model','books_model','user_model'));
-       $chaptername= $this->chapters_model->get($id);
-       $bookname = $this->books_model->get($chaptername['book_id']);
+       $data['chaptername']= $this->chapters_model->get($id);
+       $book = $this->books_model->get($data['chaptername']['book_id']);
+       $userConfig = $this->books_model->getUserConfig($book['id'], $this->session->userdata('DX_user_id'));
+       $data['userSettings'] = isset($userConfig['settings'])?json_decode($userConfig['settings']):null;
 
        $lang = $this->session->userdata('language');
        $lang = empty($lang)?'english':$lang;
@@ -35,12 +38,8 @@ class Editor extends CI_Controller
         $this->output->set_header("Pragma: no-cache");
 
        $this->load->view('templates/header');
-       $this->load->view('templates/navbar', array('book'=>$bookname));
-       $this->load->view('editor/normal_editor',
-        array(
-            'id' => $id,
-            'chaptername' => $chaptername
-        ));
+       $this->load->view('templates/navbar', array('book'=>$book));
+       $this->load->view('editor/normal_editor', $data);
        $this->load->view('templates/footer');
 
     }

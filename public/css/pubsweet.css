@@ -642,10 +642,10 @@ html[dir="RTL"] .pull-right{
     background: white;
 }
 
-.cke_button__removeformat_icon {
+.cke_button__removeformat_icon, .cke_button__customautosaveoptions_icon {
     display: none !important;
 }
-.cke_button__removeformat_label {
+.cke_button__removeformat_label, .cke_button__customautosaveoptions_label {
     display: inline !important;
 }
 

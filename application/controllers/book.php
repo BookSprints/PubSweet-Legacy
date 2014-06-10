@@ -189,4 +189,15 @@ class Book extends CI_Controller
         redirect('book/settings/'.$id);
     }
 
+    public function saveUserConfig($id)
+    {
+        $this->load->model('chapters_model');
+        $chapter = $this->chapters_model->get($id);
+        $setting = json_encode(array('autosave_time'=>$this->input->post('time')));
+        $this->db->query(sprintf('INSERT INTO book_user_settings(book_id, user_id, settings)
+            VALUES(%u, %u, \'%s\') ON DUPLICATE KEY UPDATE settings=\'%s\'',
+            $chapter['book_id'], $this->session->userdata('DX_user_id'), $setting, $setting));
+        echo json_encode(array('ok'=>1));
+    }
+
 }

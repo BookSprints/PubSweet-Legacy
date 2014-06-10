@@ -2026,7 +2026,7 @@
                             toolbarCanCollapse: true,
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
-                                    items: [ /*'Source', '-', */'Save'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
+                                    items: [ /*'Source', '-', */'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
                                 { name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ],
                                     items: [ 'Find', 'Replace', '-', /*'SelectAll', '-',*/ 'Scayt' ] },
                                 { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ],
@@ -2049,7 +2049,7 @@
                             removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,contextmenu,liststyle,tabletools,lite,autosave,align,bidi',//elementspath',
                             //elementspath, is for bottom bar
                             // jqueryspellchecker,
-                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,customlanguage,eqneditor,specialchar',
+                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,customlanguage,eqneditor,specialchar,customautosave',
                             resize_enabled: false,
                             contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
                             imageBrowser_listUrl: driver.urlBase + "book/images/",
@@ -2068,7 +2068,9 @@
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
                             filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage',
-                            format_tags: "p;h1;h2;h3;h4;pre;blockquote"
+                            format_tags: "p;h1;h2;h3;h4;pre;blockquote",
+                            autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
+                            autoSaveOptionTime: $('#editor').data('auto-save-time')
                         }
                         $('#editor').ckeditor(config);
                     }
