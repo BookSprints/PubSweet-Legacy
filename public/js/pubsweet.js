@@ -2052,7 +2052,7 @@
                             extraPlugins: 'imagebrowser,backup,placeholder,indentlist,customlanguage,eqneditor,specialchar,customautosave',
                             resize_enabled: false,
                             contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: driver.urlBase + "book/images/",
+                            imageBrowser_listUrl: driver.urlBase + "book/images/"+driver.parameters[0],
 
                             height: '75vh',
                             magicline_color: '#666',
@@ -2067,7 +2067,7 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage',
+                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage/'+driver.parameters[0],
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
                             autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time')

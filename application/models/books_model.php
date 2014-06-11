@@ -135,7 +135,6 @@ class Books_model extends CI_Model
         return $data;
     }
 
-
     public function wordCount()
     {
         $all = $this->books_model->all();
@@ -143,5 +142,15 @@ class Books_model extends CI_Model
             $chapter['words'] = str_word_count(strip_tags($chapter['content']));
         }
         return $all;
+    }
+
+    public function findByChapter($chapterId)
+    {
+        $this->db->select('books.id, books.title');
+        $this->db->from('books');
+        $this->db->join('chapters c', 'c.book_id = books.id');
+        $this->db->where(array('c.id'=>$chapterId));
+        $query = $this->db->get();
+        return $query->row_array();
     }
 }

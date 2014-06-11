@@ -75,9 +75,15 @@ class Editor extends CI_Controller
         $this->load->view('templates/footer');
     }
 
-    public function uploadImage()
+    public function uploadImage($chapterId)
     {
-        $config['upload_path'] = BASEPATH.'../public/uploads/';
+        $this->load->model('books_model');
+        $book = $this->books_model->findByChapter($chapterId);
+        $folderName = url_title($book['title']);
+        $config['upload_path'] = BASEPATH.'../public/uploads/'.$folderName.'/';
+        if(!file_exists($config['upload_path'])){
+            mkdir($config['upload_path']);
+        }
         $config['allowed_types'] = 'gif|jpg|png|jpeg';
         $config['max_size']	= '5000';
         $config['max_width']  = '7680';

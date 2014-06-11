@@ -114,17 +114,22 @@ class Book extends CI_Controller
 
     }
 
-    public function images()
+    public function images($chapterId)
     {
+        $this->load->model('books_model');
+        $book = $this->books_model->findByChapter($chapterId);
+        $folderName = url_title($book['title']);
         $this->load->helper('file');
-        $files = get_filenames(BASEPATH.'../public/uploads/');
+        $files = get_filenames(BASEPATH.'../public/uploads/'.$folderName);
         $result = array();
-        foreach ($files as $item) {
-            $result[] = array(
-                "image" => base_url()."public/uploads/".$item,
-                "thumb" => base_url()."public/uploads/".$item,
-                "folder" => "uploads"
-            );
+        if(!empty($files)){
+            foreach ($files as $item) {
+                $result[] = array(
+                    "image" => base_url()."public/uploads/".$folderName.'/'.$item,
+                    "thumb" => base_url()."public/uploads/".$folderName.'/'.$item,
+                    "folder" => "uploads/".$folderName
+                );
+            }
         }
 
         echo json_encode($result);
