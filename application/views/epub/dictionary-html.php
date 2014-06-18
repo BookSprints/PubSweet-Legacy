@@ -5,7 +5,7 @@
     <div class="row-fluid">
         <?php ob_start();?>
         <div class="original span4" dir="<?php echo $item['code_dir']; ?>" lang="<?php echo $item['iso_code'];?>"
-            datetime="<?php echo $item['updated'];?>">
+        <?php echo isset($datatime)&&$datetime ? 'datetime="'.$item['updated'].'" ':'';?>>
 
             <p>
                 <span><strong><?php echo $item['term']; ?>:</strong></span>
@@ -27,7 +27,7 @@
         <?php if (isset($definitions[$item['id']])): ?>
             <?php if (isset($definitions[$item['id']][136])): ?>
             <div class="translation span4" lang="<?php echo $definitions[$item['id']][136]['iso_code']; ?>"
-                datetime="<?php echo $definitions[$item['id']][136]['updated']; ?>">
+                <?php echo isset($datatime)&&$datetime ? 'datetime="'.$definitions[$item['id']][136]['updated'].'" ':''; ?>>
                 <span><strong><?php echo $definitions[$item['id']][136]['term']; ?>:</strong></span>
                 <?php echo $definitions[$item['id']][136]['definition']; ?>
                 </div>
@@ -37,7 +37,7 @@
 
             <?php if (isset($definitions[$item['id']][152])): ?>
             <div class="translation span4" lang="<?php echo $definitions[$item['id']][152]['iso_code']; ?>"
-                 datetime="<?php echo $definitions[$item['id']][152]['updated']; ?>">
+                <?php echo isset($datatime)&&$datetime ? 'datetime="'.$definitions[$item['id']][152]['updated'].'" ':''; ?>>
 
 
                 <span><strong><?php echo $definitions[$item['id']][152]['term']; ?>:</strong></span>

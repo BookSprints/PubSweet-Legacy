@@ -11,7 +11,10 @@
 class Render extends CI_Controller{
     private $path = 'application/epub/';
     private $book = NULL;
+    private $bookname = NULL;
     private $cssFiles = NULL;
+    private $images = array();
+
     public function __construct()
     {
         parent::__construct();
@@ -31,11 +34,10 @@ class Render extends CI_Controller{
         $this->load->helper(array('file','inflector'));
         $this->load->model('Books_model','books');
         $this->load->model('Chapters_model','chapters');
-        $book = $this->books->get($id);
-        $bookName = underscore($book['title']);
-        $this->book = $bookName;
+        $this->book = $this->books->get($id);
+        $this->bookname = underscore($this->book['title']);
         $chapters = $this->chapters->find($id);
-        $path = $this->path.$this->book.'/';
+        $path = $this->path.$this->bookname.'/';
         @mkdir($path);
 
         $this->cssFiles = $this->getCSSFiles();
@@ -56,22 +58,24 @@ class Render extends CI_Controller{
                 'url'=>$chapterFileName, 'section'=>$item['section_title']);
         }
         $cover = false;
-        if(file_exists($this->path.$this->book.'/static/cover.jpg')){
+        if(file_exists($this->path.$this->bookname.'/static/cover.jpg')){
             $cover = true;
             $this->createCoverHtml();
         }
 
         $this->createEpubTOC(array('chapters'=>$toc,
-            'book_name'=>$book['title'], 'cover'=>$cover), $path);
+            'book_name'=>$this->book['title'], 'cover'=>$cover), $path);
         $this->createEpubContentOPF(
             array('chapters'=>$toc,
-                'book_name'=>$book['title'],
+                'book_name'=>$this->book['title'],
                 'css'=>$this->getCSSFiles(),
-                'metadata'=>$this->getMetadata()), $path);
+                'metadata'=>$this->getMetadata(),
+                'images'=>$this->getImages()), $path);
         $this->createMimetype($path);
         $this->createContainerXML(null, $path);
+
         if($this->input->post('download')!=="false"){
-            $this->export($path, $bookName);
+            $this->export($path, $this->bookname);
         }else{
             echo json_encode(array('ok'=>1));
         }
@@ -94,7 +98,7 @@ class Render extends CI_Controller{
     private function createEpubTOC($data)
     {
         $toc = $this->load->view('epub/toc-ncx', $data, true);
-        if(!write_file ($this->path.$this->book.'/toc.ncx', $toc, 'w+')){
+        if(!write_file ($this->path.$this->bookname.'/toc.ncx', $toc, 'w+')){
             echo 'Error creating toc.ncx';
         }
     }
@@ -102,7 +106,7 @@ class Render extends CI_Controller{
     private function getCSSFiles()
     {
         if($this->cssFiles==null){
-            $files = get_dir_file_info($this->path.$this->book.'/css', FALSE);
+            $files = get_dir_file_info($this->path.$this->bookname.'/css', FALSE);
             $this->cssFiles = $files;
         }
         return $this->cssFiles;
@@ -117,14 +121,14 @@ class Render extends CI_Controller{
     private function createEpubContentOPF($data)
     {
         $content = $this->load->view('epub/content-opf', $data, true);
-        if(!write_file ($this->path.$this->book.'/content.opf', $content, 'w+')){
+        if(!write_file ($this->path.$this->bookname.'/content.opf', $content, 'w+')){
             echo 'Error creating content.opf';
         }
     }
 
     private function createMimetype()
     {
-        if(!write_file ($this->path.$this->book.'/mimetype', 'application/epub+zip', 'w+')){
+        if(!write_file ($this->path.$this->bookname.'/mimetype', 'application/epub+zip', 'w+')){
             echo 'Error creating mimetype';
         }
     }
@@ -132,8 +136,8 @@ class Render extends CI_Controller{
     private function createContainerXML($data)
     {
         $content = $this->load->view('epub/container-xml', $data, true);
-        @mkdir($this->path.$this->book.'/META-INF');
-        if(!write_file ($this->path.$this->book.'/META-INF/container.xml', $content, 'w+')){
+        @mkdir($this->path.$this->bookname.'/META-INF');
+        if(!write_file ($this->path.$this->bookname.'/META-INF/container.xml', $content, 'w+')){
             echo 'Error creating META-INF/container.xml';
         }
     }
@@ -141,6 +145,7 @@ class Render extends CI_Controller{
     private function getLexiconContent($chapter)
     {
         $data['chapter'] = $chapter;
+        $data['datetime'] = false;
         $this->load->model('Dictionary_entries_model','dictionary');
         $data['entries'] = $this->dictionary->term_list($chapter['id']);
         $this->load->model('Definitions_model','definitions');
@@ -160,6 +165,7 @@ class Render extends CI_Controller{
         if(isset($this->html) && $this->html){
             return $content;
         }else{
+            $content = $this->fixImageLinks($content);
             return $this->getXhtml(array('title'=>$chapter['title'], 'content'=>$content));
         }
 
@@ -182,12 +188,60 @@ class Render extends CI_Controller{
         }elseif(isset($this->structure) && $this->structure){
             return $this->getStructure($item);
         }else{
-            return $this->getXhtml(array('title'=>$item['title'], 'content'=>$item['content']));
+            $content = $this->fixImageLinks($item['content']);
+            return $this->getXhtml(array('title'=>$item['title'], 'content'=>$content));
         }
     }
 
+    public function fixImageLinks($content)
+    {
+        if(!function_exists('str_get_html')){
+            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+        }
+
+        $dom = str_get_html($content);
+        if(empty($dom)){
+            return '';
+        }
+
+        foreach($dom->find('img') as $element){
+            if(strpos($element->src, base_url())!==false){
+                $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'),'graphics', $element->src);
+                $css = $this->BreakCSS('image{'.$element->style.'}');
+                $this->images[str_replace('graphics/','', $element->src)] = array(
+                    'src'=>$element->src,
+                    'height'=>$css['image']['height'],
+                    'width'=>$css['image']['width']
+                );
+
+            }
+
+        }
+        return $dom->innertext;
+    }
+
+    function BreakCSS($css)
+    {
+
+        $results = array();
+
+        preg_match_all('/(.+?)\s?\{\s?(.+?)\s?\}/', $css, $matches);
+        foreach($matches[0] AS $i=>$original)
+            foreach(explode(';', $matches[2][$i]) AS $attr)
+                if (strlen(trim($attr)) > 0) // for missing semicolon on last element, which is legal
+                {
+                    list($name, $value) = explode(':', $attr);
+                    $results[$matches[1][$i]][trim($name)] = trim($value);
+                }
+        return $results;
+    }
+
+
     public function getStructure($item)
     {
+        if(!function_exists('str_get_html')){
+            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+        }
 
         $dom = str_get_html($item['content']);
         if(empty($dom)){
@@ -231,6 +285,37 @@ class Render extends CI_Controller{
         return false;
     }
 
+    private function getImages(){
+//        $this->load->helper('directory');
+        $folderName = BASEPATH.'../public/uploads/'.url_title($this->book['title']);
+        if(!file_exists($this->path.$this->bookname.'/graphics')){
+            mkdir($this->path.$this->bookname.'/graphics');
+        }
+//        directory_copy(BASEPATH.'../public/uploads/'.$folderName, $this->path.$this->bookname.'/graphics');
+//        $this->load->helper('file');
+//        $files = get_filenames($this->path.$this->bookname.'/graphics');
+//        return $files;
+        $config['image_library'] = 'gd';
+        $config['maintain_ratio'] = TRUE;
+        foreach ($this->images as $key=>$image) {
+            copy($folderName.'/'.$key, $this->path.$this->bookname.'/graphics/'.$key);
+
+            $config['source_image'] = $this->path.$this->bookname.'/graphics/'.$key;
+//            $config['create_thumb'] = TRUE;
+
+            $config['width'] = str_replace('px','',$image['width']);
+            $config['height'] = str_replace('px','',$image['height']);
+
+            $this->load->library('image_lib', $config);
+
+            if ( ! $this->image_lib->resize())
+            {
+                echo $this->image_lib->display_errors();
+            }
+        }
+        return $this->images;
+    }
+
     /**
      * Will render the book's content as plain html
      * @param $id
@@ -262,7 +347,6 @@ class Render extends CI_Controller{
      */
     public function structure($id, $draft = false)
     {
-        require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         $this->structure = true;
         $this->load->model('Chapters_model', 'chapters');
         $chapters = $this->chapters->find($id);
@@ -280,5 +364,29 @@ class Render extends CI_Controller{
         ob_end_clean();
         $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
         $this->load->view('templates/simple/footer', array('draft'=>$draft));
+    }
+}
+
+if(!function_exists('directory_copy'))
+{
+    function directory_copy($srcdir, $dstdir)
+    {
+        //preparing the paths
+        $srcdir=rtrim($srcdir,'/');
+        $dstdir=rtrim($dstdir,'/');
+
+        //creating the destination directory
+        if(!is_dir($dstdir))mkdir($dstdir, 0777, true);
+
+        //Mapping the directory
+        $dir_map=directory_map($srcdir);
+
+        foreach($dir_map as $object_key=>$object_value)
+        {
+            if(is_numeric($object_key))
+                copy($srcdir.'/'.$object_value,$dstdir.'/'.$object_value);//This is a File not a directory
+            else
+                directory_copy($srcdir.'/'.$object_key,$dstdir.'/'.$object_key);//this is a directory
+        }
     }
 }

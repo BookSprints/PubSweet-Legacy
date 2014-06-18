@@ -44,7 +44,12 @@
       ?>
       <?php foreach ($chapters as $key => $item) :?>
           <item href="<?php echo $item['url'];?>" media-type="application/xhtml+xml" id="<?php echo str_replace('.xhtml','', $item['url'])?>"/>
-        <?php endforeach;?>
+    <?php endforeach;
+      foreach ($images as $key=>$image) :?>
+          <item id="<?php echo str_replace('.jpg','', $key);?>" href="graphics/<?php echo $key;?>" media-type="image/jpeg"/>
+      <?php endforeach;
+      ?>
+
       <?php if(isset($cover)&&$cover):?>
           <item href="cover.xhtml" media-type="application/xhtml+xml" id="coverxhtml"/>
       <?php endif;?>
@@ -53,6 +58,7 @@
       <?php foreach ($chapters as $key => $item) :?>
       <itemref idref="<?php echo str_replace('.xhtml','', $item['url'])?>"/>
       <?php endforeach;?>
+
       <?php if(isset($cover)&&$cover):?>
           <itemref idref="coverxhtml" linear="no"/>
       <?php endif;?>
