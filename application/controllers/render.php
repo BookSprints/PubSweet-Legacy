@@ -205,8 +205,14 @@ class Render extends CI_Controller{
         }
 
         foreach($dom->find('img') as $element){
+
             if(strpos($element->src, base_url())!==false){
-                $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'),'graphics', $element->src);
+                if(strpos($element->src, base_url().'public/uploads/'.url_title($this->book['title']).'/')!==false){
+                    $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'), 'graphics/', $element->src);
+                }else if(strpos($element->src, base_url().'public/uploads/')!==false){
+                    $element->src = str_replace(base_url().'public/uploads/','graphics/', $element->src);
+                }
+
                 $css = $this->BreakCSS('image{'.$element->style.'}');
                 $this->images[str_replace('graphics/','', $element->src)] = array(
                     'src'=>$element->src,
@@ -287,7 +293,7 @@ class Render extends CI_Controller{
 
     private function getImages(){
 //        $this->load->helper('directory');
-        $folderName = BASEPATH.'../public/uploads/'.url_title($this->book['title']);
+        $uploadsFolder = BASEPATH.'../public/uploads/';
         if(!file_exists($this->path.$this->bookname.'/graphics')){
             mkdir($this->path.$this->bookname.'/graphics');
         }
@@ -295,23 +301,30 @@ class Render extends CI_Controller{
 //        $this->load->helper('file');
 //        $files = get_filenames($this->path.$this->bookname.'/graphics');
 //        return $files;
-        $config['image_library'] = 'gd';
+        $config['image_library'] = 'gd2';
         $config['maintain_ratio'] = TRUE;
         foreach ($this->images as $key=>$image) {
-            copy($folderName.'/'.$key, $this->path.$this->bookname.'/graphics/'.$key);
-
-            $config['source_image'] = $this->path.$this->bookname.'/graphics/'.$key;
-//            $config['create_thumb'] = TRUE;
-
-            $config['width'] = str_replace('px','',$image['width']);
-            $config['height'] = str_replace('px','',$image['height']);
-
-            $this->load->library('image_lib', $config);
-
-            if ( ! $this->image_lib->resize())
-            {
-                echo $this->image_lib->display_errors();
+            if(file_exists($uploadsFolder.url_title($this->book['title']).'/'.$key)){
+                copy($uploadsFolder.url_title($this->book['title']).'/'.$key, $this->path.$this->bookname.'/graphics/'.$key);
+            }else if(file_exists($uploadsFolder.$key)){
+                copy($uploadsFolder.$key, $this->path.$this->bookname.'/graphics/'.$key);
             }
+
+            if(extension_loaded($config['image_library'])){
+                $config['source_image'] = $this->path.$this->bookname.'/graphics/'.$key;
+    //            $config['create_thumb'] = TRUE;
+
+                $config['width'] = str_replace('px','',$image['width']);
+                $config['height'] = str_replace('px','',$image['height']);
+
+                $this->load->library('image_lib', $config);
+
+                if ( ! $this->image_lib->resize())
+                {
+                    echo $this->image_lib->display_errors();
+                }
+            }
+
         }
         return $this->images;
     }
