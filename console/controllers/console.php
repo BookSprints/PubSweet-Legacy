@@ -11,7 +11,11 @@ class Console extends CI_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->library('DX_Auth');
         $this->load->helper('url');
+        if (!$this->session->userdata('DX_user_id')){
+            redirect('register/login', 'refresh');
+        }
     }
 
     public function wizard($id)
@@ -25,7 +29,7 @@ class Console extends CI_Controller
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
-            $dir = '../application/epub/' . $book;
+            $dir = '../application/epub/' . $book.'/';
 
             $dirFiles = scandir($dir);
 
@@ -51,8 +55,8 @@ class Console extends CI_Controller
 //            $zip1 = new ZipArchive;
             //Opens a Zip archive
 //            $epub = $zip1->open($file);
-            if(file_exists($dir.'/toc.ncx')){
-                $toc = file_get_contents($dir.'/toc.ncx');
+            if(file_exists($dir.'toc.ncx')){
+                $toc = file_get_contents($dir.'toc.ncx');
                 if($toc!==false){
                     $xml = new SimpleXMLElement($toc);
                     $sections = array();
@@ -83,7 +87,7 @@ class Console extends CI_Controller
                 if ($entry == 'cover.xhtml') {
                     continue;
                 }
-                $xhtml = file_get_contents($dir.'/'.$entry);
+                $xhtml = file_get_contents($dir.$entry);
                 $dom = str_get_html($xhtml);
 
                 if (isset($_GET['prettify']) && $_GET['prettify']) {
@@ -97,7 +101,8 @@ class Console extends CI_Controller
                     $uri = $element->src;
                     if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
                         $parts = pathinfo($uri);
-                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' . base64_encode($zip1->getFromName($uri));
+                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
+                            base64_encode(file_get_contents($dir.$uri));
                     }
 
                 }
@@ -123,8 +128,8 @@ class Console extends CI_Controller
             }
 
             /** CSS */
-            $css[] = file_exists($dir.'/objavi.css')?file_get_contents($dir.'/objavi.css'):'';
-            $css[] = file_exists($dir.'/css/extra.css')?file_get_contents($dir.'/css/extra.css'):'';
+            $css[] = file_exists($dir.'objavi.css')?file_get_contents($dir.'objavi.css'):'';
+            $css[] = file_exists($dir.'css/extra.css')?file_get_contents($dir.'css/extra.css'):'';
         }
 
         $params = array('book' => $book, 'editablecss' => $editablecss,
@@ -204,7 +209,8 @@ class Console extends CI_Controller
                     $uri = $element->src;
                     if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
                         $parts = pathinfo($uri);
-                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' . base64_encode($zip1->getFromName($uri));
+                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,'
+                            . base64_encode(file_get_contents($dir.$uri));
                     }
 
                 }
