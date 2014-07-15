@@ -18,6 +18,7 @@ class Render extends CI_Controller{
     public function __construct()
     {
         parent::__construct();
+
         $this->load->library('DX_Auth');
         $this->load->helper('url');
         if (!$this->session->userdata('DX_user_id')){
@@ -49,12 +50,15 @@ class Render extends CI_Controller{
             }else{
                 $xhtml = $this->renderNormalChapter($item);
             }
-
-            $chapterFileName = underscore(url_title($item['title'], '_', true)).'.xhtml';
+            $identifier = underscore(url_title($item['title'], '_', true));
+            if(isset($toc[$identifier])){
+                $identifier.='_'.$item['id'];
+            }
+            $chapterFileName = $identifier.'.xhtml';
             if(!write_file ($path.$chapterFileName, $xhtml, 'w+')){
                 echo 'Error creating '. $item['title'];
             }
-            $toc[] = array('title'=>$item['title'],
+            $toc[$identifier] = array('title'=>$item['title'],
                 'url'=>$chapterFileName, 'section'=>$item['section_title']);
         }
         $cover = false;
@@ -62,9 +66,9 @@ class Render extends CI_Controller{
             $cover = true;
             $this->createCoverHtml();
         }
-
-        $this->createEpubTOC(array('chapters'=>$toc,
-            'book_name'=>$this->book['title'], 'cover'=>$cover), $path);
+        $tocObject = new EpubTOC();
+        $tocObject->save($this->path.$this->bookname, array('chapters'=>$toc,
+            'book_name'=>$this->book['title'], 'cover'=>$cover));
         $this->createEpubContentOPF(
             array('chapters'=>$toc,
                 'book_name'=>$this->book['title'],
@@ -95,13 +99,13 @@ class Render extends CI_Controller{
 
     }
 
-    private function createEpubTOC($data)
+    /*private function saveEpubTOC($data)
     {
         $toc = $this->load->view('epub/toc-ncx', $data, true);
         if(!write_file ($this->path.$this->bookname.'/toc.ncx', $toc, 'w+')){
             echo 'Error creating toc.ncx';
         }
-    }
+    }*/
 
     private function getCSSFiles()
     {
@@ -400,6 +404,21 @@ if(!function_exists('directory_copy'))
                 copy($srcdir.'/'.$object_value,$dstdir.'/'.$object_value);//This is a File not a directory
             else
                 directory_copy($srcdir.'/'.$object_key,$dstdir.'/'.$object_key);//this is a directory
+        }
+    }
+}
+
+class EpubTOC{
+    public function __construct()
+    {
+        $this->ci =& get_instance();
+    }
+
+    public function save($path, $data)
+    {
+        $toc = $this->ci->load->view('epub/toc-ncx', $data, true);
+        if(!write_file ($path.'/toc.ncx', $toc, 'w+')){
+            echo 'Error creating toc.ncx';
         }
     }
 }

@@ -29,7 +29,7 @@
               <navLabel>
                   <text><?php echo $item['section'];?></text>
               </navLabel>
-              <content src="<?php echo $item['url'];?>"/>
+              <content src="<?php echo $item['url'];?>#title"/>
       <?php endif;?>
                 <navPoint id="chapter<?php echo ++$counter;?>" playOrder="<?php echo $counter;?>">
                   <navLabel>
