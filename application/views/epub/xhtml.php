@@ -10,4 +10,4 @@
     <?php endforeach;
         endif;?>
 </head>
-<body><div id="title"></div><?php echo $content;?></body></html>
+<body><?php echo $content;?></body></html>

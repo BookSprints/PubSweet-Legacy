@@ -12,6 +12,7 @@ class Render extends CI_Controller{
     private $path = 'application/epub/';
     private $book = NULL;
     private $bookname = NULL;
+    private $fullPath = NULL;
     private $cssFiles = NULL;
     private $images = array();
 
@@ -37,80 +38,91 @@ class Render extends CI_Controller{
         $this->load->model('Chapters_model','chapters');
         $this->book = $this->books->get($id);
         $this->bookname = underscore($this->book['title']);
-        $chapters = $this->chapters->find($id);
-        $path = $this->path.$this->bookname.'/';
-        @mkdir($path);
+        $full = $this->chapters->findGrouped($id);
+        $this->fullPath = $this->path.$this->bookname.'/';
+        @mkdir($this->fullPath);
 
         $this->cssFiles = $this->getCSSFiles();
 
         $toc = array();
-        foreach ($chapters as $item) {
-            if($item['editor_id']==1){
-                $xhtml = $this->renderLexiconChapter($item);
-            }else{
-                $xhtml = $this->renderNormalChapter($item);
+        $temp = array();
+        foreach ($full as $chapters) {
+            $section = $this->saveSection($chapters[0]['section_title']);
+            foreach ($chapters as $item) {
+                if($item['editor_id']==1){
+                    $xhtml = $this->renderLexiconChapter($item);
+                }else{
+                    $xhtml = $this->renderNormalChapter($item);
+                }
+                $identifier = underscore(url_title($item['title'], '_', true));
+                if(isset($temp[$identifier])){
+                    $identifier.='_'.$item['id'];
+                }
+                $chapterFileName = $identifier.'.xhtml';
+                if(!write_file ($this->fullPath.$chapterFileName, $xhtml, 'w+')){
+                    echo 'Error creating '. $item['title'];
+                }
+                $temp[$identifier] = true;
+                $section['chapters'][$identifier] = array('title'=>$item['title'],
+                    'url'=>$chapterFileName, 'section'=>$item['section_title']);
             }
-            $identifier = underscore(url_title($item['title'], '_', true));
-            if(isset($toc[$identifier])){
-                $identifier.='_'.$item['id'];
-            }
-            $chapterFileName = $identifier.'.xhtml';
-            if(!write_file ($path.$chapterFileName, $xhtml, 'w+')){
-                echo 'Error creating '. $item['title'];
-            }
-            $toc[$identifier] = array('title'=>$item['title'],
-                'url'=>$chapterFileName, 'section'=>$item['section_title']);
+            $toc[] = $section;
         }
         $cover = false;
-        if(file_exists($this->path.$this->bookname.'/static/cover.jpg')){
+        if(file_exists($this->fullPath.'/static/cover.jpg')){
             $cover = true;
             $this->createCoverHtml();
         }
         $tocObject = new EpubTOC();
-        $tocObject->save($this->path.$this->bookname, array('chapters'=>$toc,
+        $tocObject->save($this->fullPath, array('toc'=>$toc,
             'book_name'=>$this->book['title'], 'cover'=>$cover));
         $this->createEpubContentOPF(
-            array('chapters'=>$toc,
+            array('toc'=>$toc,
                 'book_name'=>$this->book['title'],
                 'css'=>$this->getCSSFiles(),
                 'metadata'=>$this->getMetadata(),
-                'images'=>$this->getImages()), $path);
-        $this->createMimetype($path);
-        $this->createContainerXML(null, $path);
+                'images'=>$this->getImages()));
+        $this->createMimetype();
+        $this->createContainerXML(null);
 
         if($this->input->post('download')!=="false"){
-            $this->export($path, $this->bookname);
+            $this->export($this->bookname);
         }else{
             echo json_encode(array('ok'=>1));
         }
 
     }
 
+    public function saveSection($title)
+    {
+        $identifier = underscore(url_title($title, '_', true));
+        $sectionFileName = $identifier.'.xhtml';
+        if(!write_file ($this->fullPath.$sectionFileName,
+            $this->getXhtml(array('title'=>$title,
+                'content'=>sprintf('<h1 class="sectiontitle">%s</h1>', $title))), 'w+')){
+            echo 'Error creating section: '. $title;
+        }
+
+        return array('title'=>$title, 'url'=>$sectionFileName);
+    }
+
     /**
      * @param $path
      * @param $bookname
      */
-    private function export($path, $bookname)
+    private function export($bookname)
     {
         $this->load->library('zip');
-        $this->zip->read_dir($path, FALSE, $path);
+        $this->zip->read_dir($this->fullPath, FALSE, $this->fullPath);
         //$this->zip->archive('application/epub/'.$bookname.'.epub');
         $this->zip->download($bookname.'.epub');
 
     }
 
-    /*private function saveEpubTOC($data)
-    {
-        $toc = $this->load->view('epub/toc-ncx', $data, true);
-        if(!write_file ($this->path.$this->bookname.'/toc.ncx', $toc, 'w+')){
-            echo 'Error creating toc.ncx';
-        }
-    }*/
-
     private function getCSSFiles()
     {
         if($this->cssFiles==null){
-            $files = get_dir_file_info($this->path.$this->bookname.'/css', FALSE);
+            $files = get_dir_file_info($this->fullPath.'/css', FALSE);
             $this->cssFiles = $files;
         }
         return $this->cssFiles;
@@ -125,14 +137,14 @@ class Render extends CI_Controller{
     private function createEpubContentOPF($data)
     {
         $content = $this->load->view('epub/content-opf', $data, true);
-        if(!write_file ($this->path.$this->bookname.'/content.opf', $content, 'w+')){
+        if(!write_file ($this->fullPath.'/content.opf', $content, 'w+')){
             echo 'Error creating content.opf';
         }
     }
 
     private function createMimetype()
     {
-        if(!write_file ($this->path.$this->bookname.'/mimetype', 'application/epub+zip', 'w+')){
+        if(!write_file ($this->fullPath.'/mimetype', 'application/epub+zip', 'w+')){
             echo 'Error creating mimetype';
         }
     }
@@ -140,8 +152,8 @@ class Render extends CI_Controller{
     private function createContainerXML($data)
     {
         $content = $this->load->view('epub/container-xml', $data, true);
-        @mkdir($this->path.$this->bookname.'/META-INF');
-        if(!write_file ($this->path.$this->bookname.'/META-INF/container.xml', $content, 'w+')){
+        @mkdir($this->fullPath.'/META-INF');
+        if(!write_file ($this->fullPath.'/META-INF/container.xml', $content, 'w+')){
             echo 'Error creating META-INF/container.xml';
         }
     }
@@ -298,24 +310,24 @@ class Render extends CI_Controller{
     private function getImages(){
 //        $this->load->helper('directory');
         $uploadsFolder = BASEPATH.'../public/uploads/';
-        if(!file_exists($this->path.$this->bookname.'/graphics')){
-            mkdir($this->path.$this->bookname.'/graphics');
+        if(!file_exists($this->fullPath.'/graphics')){
+            mkdir($this->fullPath.'/graphics');
         }
-//        directory_copy(BASEPATH.'../public/uploads/'.$folderName, $this->path.$this->bookname.'/graphics');
+//        directory_copy(BASEPATH.'../public/uploads/'.$folderName, $this->fullPath.'/graphics');
 //        $this->load->helper('file');
-//        $files = get_filenames($this->path.$this->bookname.'/graphics');
+//        $files = get_filenames($this->fullPath.'/graphics');
 //        return $files;
         $config['image_library'] = 'gd2';
         $config['maintain_ratio'] = TRUE;
         foreach ($this->images as $key=>$image) {
             if(file_exists($uploadsFolder.url_title($this->book['title']).'/'.$key)){
-                copy($uploadsFolder.url_title($this->book['title']).'/'.$key, $this->path.$this->bookname.'/graphics/'.$key);
+                copy($uploadsFolder.url_title($this->book['title']).'/'.$key, $this->fullPath.'/graphics/'.$key);
             }else if(file_exists($uploadsFolder.$key)){
-                copy($uploadsFolder.$key, $this->path.$this->bookname.'/graphics/'.$key);
+                copy($uploadsFolder.$key, $this->fullPath.'/graphics/'.$key);
             }
 
             if(extension_loaded($config['image_library'])){
-                $config['source_image'] = $this->path.$this->bookname.'/graphics/'.$key;
+                $config['source_image'] = $this->fullPath.'/graphics/'.$key;
     //            $config['create_thumb'] = TRUE;
 
                 $config['width'] = str_replace('px','',$image['width']);

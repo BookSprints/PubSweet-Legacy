@@ -17,7 +17,7 @@
       <dc:<?php echo $item['attribute'];?>><?php echo $item['value'];?></dc:<?php echo $item['attribute'];?>>
       <?php endforeach;
             endif;?>
-      <dc:identifier id="primary_id">http://pubsweet.booksprints.net/<?php echo $book_name;?></dc:identifier>
+      <dc:identifier id="primary_id">http://pubsweet-new.booksprints.net/<?php echo $book_name;?></dc:identifier>
       <?php if(isset($cover)&&$cover):?>
           <meta name="cover" content="cover">
       <?php endif;?>
@@ -42,10 +42,15 @@
       <?php endforeach;
             endif;
       ?>
-      <?php foreach ($chapters as $key => $item) :?>
-          <item href="<?php echo $item['url'];?>" media-type="application/xhtml+xml" id="<?php echo str_replace('.xhtml','', $item['url'])?>"/>
-    <?php endforeach;
-      foreach ($images as $key=>$image) :?>
+      <?php foreach ($toc as $key => $section) :?>
+          <item href="<?php echo $section['url'];?>" media-type="application/xhtml+xml"
+                id="<?php echo str_replace('.xhtml','', $section['url'])?>"/>
+          <?php foreach ($section['chapters'] as $key => $item) :?>
+          <item href="<?php echo $item['url'];?>" media-type="application/xhtml+xml"
+                id="<?php echo str_replace('.xhtml','', $item['url'])?>"/>
+          <?php endforeach;?>
+    <?php endforeach;?>
+      <?php foreach ($images as $key=>$image) :?>
           <item id="<?php echo str_replace('.jpg','', $key);?>" href="graphics/<?php echo $key;?>" media-type="image/jpeg"/>
       <?php endforeach;
       ?>
@@ -55,8 +60,11 @@
       <?php endif;?>
   </manifest>
   <spine toc="ncx">
-      <?php foreach ($chapters as $key => $item) :?>
+      <?php foreach ($toc as $key => $section) :?>
+      <itemref idref="<?php echo str_replace('.xhtml','', $section['url'])?>"/>
+        <?php foreach ($section['chapters'] as $key => $item) :?>
       <itemref idref="<?php echo str_replace('.xhtml','', $item['url'])?>"/>
+        <?php endforeach;?>
       <?php endforeach;?>
 
       <?php if(isset($cover)&&$cover):?>

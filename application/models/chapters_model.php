@@ -29,6 +29,16 @@ class Chapters_model extends CI_Model
         return $query->result_array();
     }
 
+    public function findGrouped($id)
+    {
+        $rows = $this->find($id);
+        $result = array();
+        foreach ($rows as $item) {
+            $result[$item['section_id']][] = $item;
+        }
+        return $result;
+    }
+
     public function set_chapter($data)
     {
         $this->db->insert('chapters', $data);
