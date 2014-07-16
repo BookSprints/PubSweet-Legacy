@@ -210,17 +210,26 @@ if (!empty($book['id'])):  ?>
                         <input type="checkbox" name="create-bookjs" id="create-bookjs"
                            data-toggle="collapse" data-target="#bookjs-option">Create Book PDF</label>
                         <div id="bookjs-option" class="collapse">
-                            <div class="control-group"><label class="control-label" for="page-height">Page Height</label>
+                            <div class="control-group"><label class="control-label" for="language">Language</label>
 
-                                <div class="controls"><input type="text" value="9.68" id="page-height" name="pageHeight"></div>
+                                <div class="controls"><input type="text" value="en-US" id="language" name="language"></div>
                             </div>
-                            <div class="control-group"><label class="control-label" for="page-width">Page Width</label>
+                            <div class="control-group"><label class="control-label" for="pageHeight">Page Height</label>
 
-                                <div class="controls"><input type="text" value="7.44" id="page-width" name="pageWidth"></div>
+                                <div class="controls"><input type="text" value="9.68" id="pageHeight" name="pageHeight"></div>
                             </div>
-                            <div class="control-group"><label class="control-label" for="length-unit">Length Unit</label>
+                            <div class="control-group"><label class="control-label" for="pageWidth">Page Width</label>
 
-                                <div class="controls"><input type="text" value="in" id="length-unit" name="lengthUnit"></div>
+                                <div class="controls"><input type="text" value="7.44" id="pageWidth" name="pageWidth"></div>
+                            </div>
+                            <div class="control-group"><label class="control-label" for="lengthUnit">Length Unit</label>
+
+                                <div class="controls"><input type="text" value="in" id="lengthUnit" name="lengthUnit"></div>
+                            </div>
+                            <div class="control-group ">
+                                <div class="controls">
+                                    <label class="checkbox" for="hyphen"><input type="checkbox" name="hyphen" id="hyphen"/>Hyphenate</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -523,17 +532,16 @@ if (!empty($book['id'])):  ?>
             },
             createPreviewURL: function($link){
                 if($('#create-bookjs').is(':checked')){
-                    /*$link.attr('href',
-                            'preview.php?book='+management.bookname
-                                    +($('#editablecss').is(':checked')?'&editablecss':'')
-                                    +($('#hyphen').is(':checked')?'&hyphen=1':'')
-                                    +($('#prettify').is(':checked')?'&prettify=1':''))
-                            .removeClass('hide');*/
                     $link.attr('href', this.baseUrl+
                             'console/console/preview/'+driver.bookname+'/'+
                                     +($('#editablecss').is(':checked')?true:false)+'/'+
                                     +($('#hyphen').is(':checked')?true:false)+'/'+
-                                    +($('#prettify').is(':checked')?true:false))
+                                    +($('#prettify').is(':checked')?true:false)
+                                    +'/?a=1'//only a placeholder
+                                    +($('#pageWidth').val()!=7.44?'&w='+$('#pageWidth').val():'')
+                                    +($('#pageHeight').val()!=9.68?'&h='+$('#pageHeight').val():'')
+                                    +($('#lengthUnit').val()!='in'?'&u='+$('#lengthUnit').val():'')
+                                    +($('#language').val()!='en-US'?'&l='+$('#language').val():''))
                             .removeClass('hide');
 
                 }

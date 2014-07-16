@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en-US">
+<html lang="<?php echo empty($_GET['l'])? 'en-US' : sprintf('%s',$_GET['l']) ;?>">
 <head>
     <meta charset="UTF-8">
     <title>Preview - <?php echo $bookTitle;?></title>
@@ -46,8 +46,8 @@
             'enableFrontmatter': true,
             'bulkPagesToAdd': 50,
             'pagesToAddIncrementRatio': 1.4,
-            'pageHeight': 11,
-            'pageWidth': 8.5,
+            'pageHeight': 9.68,
+            'pageWidth': 7.44,
             'lengthUnit: ': 'in',
             'oddAndEvenMargins': false,
             'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
@@ -56,14 +56,14 @@
             'polyfill': true
 
         };
-        <?php if(isset($_GET['pageHeight']) && !empty($_GET['pageHeight'])):?>
-        paginationConfig.pageHeight = <?php echo $_GET['pageHeight'];?>;
+        <?php if(isset($_GET['h']) && !empty($_GET['h'])):?>
+        paginationConfig.pageHeight = <?php echo sprintf('%f',$_GET['h']);?>;
         <?php endif;?>
-        <?php if(isset($_GET['pageWidth']) && !empty($_GET['pageHeight'])):?>
-        paginationConfig.pageWidth = <?php echo $_GET['pageWidth'];?>;
+        <?php if(isset($_GET['w']) && !empty($_GET['w'])):?>
+        paginationConfig.pageWidth = <?php echo sprintf('%f',$_GET['w']);?>;
         <?php endif;?>
-        <?php if(isset($_GET['lengthUnit']) && !empty($_GET['pageHeight'])):?>
-        paginationConfig.lengthUnit = '<?php echo $_GET['lengthUnit'];?>';
+        <?php if(isset($_GET['u']) && !empty($_GET['u'])):?>
+        paginationConfig.lengthUnit = '<?php echo sprintf('%s',$_GET['u']);?>';
         <?php endif;?>
     </script>
 
@@ -82,6 +82,22 @@ endif; ?>
 <div id="flow">
     <?php echo $fullHTML; ?>
 </div>
+<?php if (isset($hyphen) && $hyphen): ?>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="<?php echo base_url();?>public/js/hyphenator/Hyphenator.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var hyphenatorSettings = {
+            selectorfunction: function () {
 
+                return $('p').filter(function(){
+                    return $(this).css('text-align')=='justify';
+                }).get();
+//            return $('[style="text-align: justify;"]').get();
+            }
+        };
+        Hyphenator.config(hyphenatorSettings);
+        Hyphenator.run();
+    </script>
+<?php endif;?>
 </body>
 </html>
