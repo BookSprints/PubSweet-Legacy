@@ -60,6 +60,8 @@ class Console extends CI_Controller
                 if($toc!==false){
                     $xml = new SimpleXMLElement($toc);
                     $sections = array();
+                    $fullHTML = '';
+
                     foreach ($xml->navMap->navPoint as $navPoint) {
                         $sectionId = $navPoint->content->attributes()->src[0];
                         $sectionPage = '<div class="section">';
@@ -71,10 +73,61 @@ class Console extends CI_Controller
                         }
                         $sectionPage .= '</div>';
                         $sections[$sectionId . ''] = $sectionPage;
+                        $fullHTML .= $sectionPage;
                         $i=0;
+
                         while(isset($navPoint->navPoint[$i])){
                             $chapter = $navPoint->navPoint[$i];
-                            $xhtmlFiles[] = (string) $chapter->content->attributes()->src[0];
+                            $entry = (string) $chapter->content->attributes()->src[0];
+
+//                            foreach ($xhtmlFiles as $entry) {
+                                if ($entry == 'cover.xhtml') {
+                                    continue;
+                                }
+                                $xhtml = file_get_contents($dir.$entry);
+                                $dom = str_get_html($xhtml);
+
+                                if (isset($_GET['prettify']) && $_GET['prettify']) {
+                                    foreach ($dom->find('pre, code') as $element) {
+                                        $element->class = 'prettyprint linenums';
+                                        $element->outertext = '<div class="no-page-break">' . $element->outertext . '</div>';
+                                    }
+                                }
+
+                                foreach ($dom->find('img') as $element) {
+                                    $uri = $element->src;
+                                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
+                                        $parts = pathinfo($uri);
+                                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
+                                            base64_encode(file_get_contents($dir.$uri));
+                                    }
+                                    $parent = $element->parent();
+                                    if($parent->tag=='p'){
+                                        $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
+                                    }
+
+                                }
+                                foreach ($dom->find('h1') as $element) {
+                                    $element->class = 'chaptertitle';
+                                }
+
+                                foreach ($dom->find('h2,h3') as $element) {
+                                    $next = $element->next_sibling();
+                                    if (!empty($next)) {
+                                        $element->outertext = '<div class="no-page-break">' . $element->outertext . $next->outertext . '</div>';
+                                        $next->outertext = '';
+                                    }
+                                }
+
+                                foreach ($dom->find('table#bluebox') as $element) {
+                                    $element->outertext = '<div>' . $element->outertext . '</div>';
+                                }
+
+                                $body = $dom->find('body', 0);
+                                $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
+                                    . '<div class="chapter">' . $body->innertext . '</div>';
+//                            }
+
                             ++$i;
                         }
 
@@ -82,50 +135,7 @@ class Console extends CI_Controller
                 }
             }
 
-            $fullHTML = '';
-            foreach ($xhtmlFiles as $entry) {
-                if ($entry == 'cover.xhtml') {
-                    continue;
-                }
-                $xhtml = file_get_contents($dir.$entry);
-                $dom = str_get_html($xhtml);
 
-                if (isset($_GET['prettify']) && $_GET['prettify']) {
-                    foreach ($dom->find('pre, code') as $element) {
-                        $element->class = 'prettyprint linenums';
-                        $element->outertext = '<div class="no-page-break">' . $element->outertext . '</div>';
-                    }
-                }
-
-                foreach ($dom->find('img') as $element) {
-                    $uri = $element->src;
-                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
-                        $parts = pathinfo($uri);
-                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
-                            base64_encode(file_get_contents($dir.$uri));
-                    }
-
-                }
-                foreach ($dom->find('h1') as $element) {
-                    $element->class = 'chaptertitle';
-                }
-
-                foreach ($dom->find('h2,h3') as $element) {
-                    $next = $element->next_sibling();
-                    if (!empty($next)) {
-                        $element->outertext = '<div class="no-page-break">' . $element->outertext . $next->outertext . '</div>';
-                        $next->outertext = '';
-                    }
-                }
-
-                foreach ($dom->find('table#bluebox') as $element) {
-                    $element->outertext = '<div>' . $element->outertext . '</div>';
-                }
-
-                $body = $dom->find('body', 0);
-                $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
-                    . '<div class="chapter">' . $body->innertext . '</div>';
-            }
 
             /** CSS */
             $css[] = file_exists($dir.'objavi.css')?file_get_contents($dir.'objavi.css'):'';
