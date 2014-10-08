@@ -54,7 +54,7 @@ class Render extends CI_Controller{
                 }else{
                     $xhtml = $this->renderNormalChapter($item);
                 }
-                $identifier = underscore(url_title($item['title'], '_', true));
+                $identifier = underscore(url_title($item['title'], '_', true)).$item['id'];
                 if(isset($temp[$identifier])){
                     $identifier.='_'.$item['id'];
                 }
@@ -200,7 +200,9 @@ class Render extends CI_Controller{
     private function renderNormalChapter($item)
     {
         if(isset($this->html) && $this->html){
-            return empty($item['content'])?'<h1>'.$item['title'].'</h1>':$item['content'];
+            $content = $this->fixImageLinks($item['content']);
+//            var_dump($content);
+            return empty($content)?'<h1>'.$item['title'].'</h1>':$content;
         }elseif(isset($this->structure) && $this->structure){
             return $this->getStructure($item);
         }else{
@@ -209,6 +211,12 @@ class Render extends CI_Controller{
         }
     }
 
+    /**
+     * Images sources must be different when they are in the self contained zip
+     *
+     * @param $content
+     * @return string
+     */
     public function fixImageLinks($content)
     {
         if(!function_exists('str_get_html')){
