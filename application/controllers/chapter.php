@@ -130,7 +130,7 @@ class Chapter extends CI_Controller
             'removed'=> 1
         );
         $this->model-> delete($id,$data);
-        echo json_encode(array('ok'=>1));
+        echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 
     public function history($id)

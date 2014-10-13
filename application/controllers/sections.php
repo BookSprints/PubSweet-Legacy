@@ -52,6 +52,6 @@ class Sections extends CI_Controller{
         'removed'=> 1
         );
         $this->sections_model-> delete($id,$data);
-        echo json_encode(array('ok'=>1));
+        echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 }

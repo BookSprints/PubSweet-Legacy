@@ -33,8 +33,10 @@
 
                     self.socket.on('new-section', window.driver.book.drawSection);
                     self.socket.on('move-section', window.driver.book.moveSection);
+                    self.socket.on('delete-section', window.driver.book.deleteSection);
                     self.socket.on('new-chapter', window.driver.book.drawChapter);
                     self.socket.on('move-chapter', window.driver.book.moveChapter);
+                    self.socket.on('delete-chapter', window.driver.book.deleteChapter);
                     self.socket.on('add-chapter-status', window.driver.book.addStatus);
                     self.socket.on('delete-chapter-status', window.driver.book.deleteChapterStatus);
                     self.socket.on('update-status-chapter', window.driver.book.updateStatus);
@@ -976,8 +978,13 @@
                     .on('click','.delete-chapter', function(){
                         var $this = $(this);
                         if(confirm('Are you sure?')){
-                            $.post(driver.urlBase+'chapter/delete_chapter', {chapter_id: $this.data('id')}, function(){
-                                $this.parents('.chapter').remove();
+                            $.post(driver.urlBase+'chapter/delete_chapter',
+                                {chapter_id: $this.data('id')}, function(response){
+                                if(response.ok){
+                                    driver.book.deleteChapter(response);
+                                    broadcast.emit('delete-chapter',response);
+                                }
+
                             },'json');
                         }
                         return false;
@@ -1066,8 +1073,12 @@
                 $('body').on('click','.delete-section', function(){
                     var $this = $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'sections/delete_section', {section_id: $this.data('id')}, function(){
-                            $this.parents('.section').remove();
+                        $.post(driver.urlBase+'sections/delete_section', {section_id: $this.data('id')}, function(response){
+                            if(response.ok)
+                            {
+                                driver.book.deleteSection(response);
+                                broadcast.emit('delete-section',response);
+                            }
                         },'json');
                     }
                     return false;
@@ -1306,6 +1317,9 @@
                 });
                 $(".sections").sortable("refresh");
             },
+            deleteSection: function(data){
+                $('.section[data-id="'+data.id+'"]').remove();
+            },
             moveChapter: function (data) {
                 var section = data.section.split(',');
                 var chapter = data.id.split(',');
@@ -1315,6 +1329,9 @@
                 });
                 $(".sections").sortable("refresh");
                 $(".chapters").sortable(driver.book.chapterSortConfig);
+            },
+            deleteChapter: function(data){
+                $('.chapter[data-id="'+data.id+'"]').remove();
             },
             addStatus:function(data){
                 var addChapterStatus = H.compile($('#status-chapter-template').html());//element in the drag & drop
@@ -2026,7 +2043,7 @@
                             toolbarCanCollapse: true,
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
-                                    items: [ /*'Source', '-', */'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
+                                    items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
                                 { name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ],
                                     items: [ 'Find', 'Replace', '-', /*'SelectAll', '-',*/ 'Scayt' ] },
                                 { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ],

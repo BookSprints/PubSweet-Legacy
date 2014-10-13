@@ -6,7 +6,7 @@ var app = require('express')()
 server.listen(8080);
 
 app.get('/', function (req, res) {
-    res.sendfile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
 io.sockets.on('connection', function (socket) {
@@ -87,7 +87,7 @@ var pubsweet = io
             delete usersConnect[socket.id];
         });
 
-    var events = ['new-book','new-section','new-chapter',
+    var events = ['new-book','new-section','delete-section','new-chapter','delete-chapter',
         'move-section','move-chapter','new-term','updating-term','delete-term',
         'delete-chapter-status','add-chapter-status','update-status-chapter',
         'updateTitleChapter','updateTitleSection',

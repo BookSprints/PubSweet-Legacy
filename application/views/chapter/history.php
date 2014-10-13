@@ -15,10 +15,10 @@
                 <th>Date</th>
                 <th></th>
             </tr>
-            <?php foreach ($history as $item) :?>
+            <?php foreach ($history as $item): ?>
 
 
-            <tr>
+            <tr data-id="<?php echo $item['id'];?>">
                 <td><?php echo $item['username'];?></td>
                 <td><a href="#" class="view-content">Click to view content</a>
                     <div class="hide"><?php echo $item['content'];?></div></td>

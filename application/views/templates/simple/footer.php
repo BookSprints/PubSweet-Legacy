@@ -1,15 +1,4 @@
 <script src="<?php echo base_url();?>public/js/jquery-2.0.2.min.js"></script>
-<script>
-    $(function(){
-        $('img').each(function(i, item){
-            var $this = $(this);
-            $this.replaceWith('<span>$$'+$this.attr('alt')+'$$</span>');
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-        });
-
-    });
-
-</script>
 
 <?php if($draft):?>
 

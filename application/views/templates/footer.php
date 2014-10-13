@@ -14,7 +14,8 @@
     <li class="section" data-id="{{id}}" data-order="{{order}}">
         <h3 class="section-name"><span class="name editable editable-click">{{title}}</span>
             <span class="pull-right" >
-               <a href="<?php echo base_url('sections/delete_section/'); ?>"  class="delete-section" data-id="<?php //echo $item['id']; ?>">&times;</a>
+               <a href="<?php echo base_url('sections/delete_section/'); ?>"
+                  class="delete-section" data-id="{{id}}">&times;</a>
             </span>
             <a data-toggle="collapse" data-target="#section-chapters-{{id}}"
                class="accordion-toggle pull-left">&nbsp;</a></h3>
