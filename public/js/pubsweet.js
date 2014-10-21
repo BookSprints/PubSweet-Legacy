@@ -16,7 +16,7 @@
                 servername: 'http://pubsweet.local/'
             }
         },
-        use = conf.server;
+        use = conf.local;
     window.broadcast = {
         server: use.nodejs+'pubsweet',
         socket: null,
@@ -2038,6 +2038,20 @@
                     });
                 driver.addAsync('ckeditor', function () {
                     if (typeof CKEDITOR !== "undefined") {
+                        $.ajax({
+                            type: "GET",
+                            url: use.servername+'flags/all',
+                            async: false,
+                            data: {},
+                            dataType: 'JSON',
+                            success: function(resp)
+                            {
+                                window.myflags=resp.data;
+                            }
+
+                        });
+
+
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
@@ -2066,7 +2080,7 @@
                             removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,contextmenu,liststyle,tabletools,lite,autosave,align,bidi',//elementspath',
                             //elementspath, is for bottom bar
                             // jqueryspellchecker,
-                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,customlanguage,eqneditor,specialchar,customautosave',
+                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave'/*,customlanguage'*/,
                             resize_enabled: false,
                             contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
                             imageBrowser_listUrl: driver.urlBase + "book/images/"+driver.parameters[0],
@@ -2087,7 +2101,9 @@
                             filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage/'+driver.parameters[0],
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
                             autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
-                            autoSaveOptionTime: $('#editor').data('auto-save-time')
+                            autoSaveOptionTime: $('#editor').data('auto-save-time'),
+                            flags: window.myflags,
+                            server: use.servername
                         }
                         $('#editor').ckeditor(config);
                     }

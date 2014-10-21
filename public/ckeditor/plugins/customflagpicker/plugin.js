@@ -8,20 +8,6 @@
  *               text and background colors to editor contents.
  *
  */
-server = 'http://pubsweet.local/';
-$.ajax({
-    type: "GET",
-    url: server+'flags/all',
-    async: false,
-    data: {},
-    dataType: 'JSON',
-    success: function(resp)
-    {
-        window.myflags=resp.data;
-    }
-
-});
-
 CKEDITOR.plugins.add( 'customflagpicker', {
     requires: 'panelbutton,floatpanel',
     icons: 'icon-flag.png', // %REMOVE_LINE_CORE%
@@ -174,7 +160,7 @@ CKEDITOR.plugins.add( 'customflagpicker', {
             });
 
             output.push('<table>');
-            var flags = window.myflags;
+            var flags = CKEDITOR.config.flags;
             for(var i in flags){
                 output.push(
 

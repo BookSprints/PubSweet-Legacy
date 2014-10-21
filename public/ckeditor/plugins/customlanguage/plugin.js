@@ -21,8 +21,7 @@ CKEDITOR.plugins.add('customlanguage',
 
         $.ajax({
             type: "GET",
-            url: 'http://pubsweet.local/language/all',
-//            url: 'http://pubsweet-new.booksprints.net/language/all',
+            url: editor.config.server+'language/all',
             async: false,
             data: {},
             dataType: 'JSON',

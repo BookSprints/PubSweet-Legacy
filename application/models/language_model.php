@@ -24,7 +24,7 @@ class Language_model extends CI_Model{
         foreach ($data as $row) {
             $result[$row['id']] = $row;
         }
-
+        return $result;
     }
 
     public function get($iso)
