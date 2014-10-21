@@ -40,7 +40,8 @@
 
 $route['default_controller'] = "dashboard/profile";
 $route['404_override'] = '';
-
+$route['console/(:num)'] = 'console/wizard/$1';
+$route['console/manager/(:any)'] = 'manager/$1';
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

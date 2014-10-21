@@ -14,10 +14,15 @@ class Mail{
 
         /* SERVER CONFIGURATION */
         $config['protocol'] = 'smtp';
-        $config['smtp_host'] =	'mail.booksprints.net';
+        /*$config['smtp_host'] =	'mail.booksprints.net';
         $config['smtp_user'] =	'lexicon@booksprints.net';
         $config['smtp_pass'] =	'pubsweet';
-        $config['smtp_port'] =	25;
+        $config['smtp_port'] =	25;*/
+
+        $config['smtp_host'] =	'smtp-mail.outlook.com';
+        $config['smtp_user'] =	'jgutierrezb@outlook.com';
+        $config['smtp_pass'] =	'revolucion79';
+        $config['smtp_port'] =	587;
 
         /* LOCAL CONFIGURATION */
 //        $config['protocol'] = 'mail';
