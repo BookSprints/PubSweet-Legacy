@@ -193,6 +193,10 @@ CREATE TABLE IF NOT EXISTS `editor_types` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8  ;
 
+INSERT INTO `editor_types` (`id`, `editor`, `enabled`) VALUES
+(1, 'Lexicon', 1),
+(2, 'WYSI', 1);
+
 -- --------------------------------------------------------
 
 --
