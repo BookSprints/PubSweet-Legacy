@@ -8,7 +8,7 @@
 require dirname(__FILE__).'/simple_html_dom.php';
 class EPUB
 {
-    private $epub, $localFile, $opf;
+    private $epub, $localFile, $opf, $toc;
     public $noFileLinks=array(), $xhtmlFiles, $images;
     private static $shortedChapters;
 
@@ -63,6 +63,15 @@ class EPUB
             $this->backToEpub($item, tidy_repair_string($this->zip->getFromName($item), array('char-encoding'=>'utf8','output-xhtml'=>true)));
         }
 
+    }
+
+    public function getToc()
+    {
+        if($this->toc==null){
+            $this->toc = simplexml_load_string($this->zip->getFromName('toc.ncx'));
+        }
+
+        return $this->toc;
     }
 
     /**
@@ -398,5 +407,21 @@ class EPUB
 
     public function getError(){
         return $this->zip->getStatusString();
+    }
+
+    /**
+     *
+     */
+    public function getCompactContent()
+    {
+        if(empty($this->compactContent)){
+            $toc = $this->getToc();
+            foreach($toc->navMap->navPoint as $item):
+                $file = simplexml_load_string($this->getFromName((string) $item->content['src']));
+                $this->compactContent[(string)$item->navLabel->text] = str_replace(array('<body>','</body>'), array(''), (string)$file->body->asXML());
+            endforeach;
+        }
+
+        return $this->compactContent;
     }
 }
