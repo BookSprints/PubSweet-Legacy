@@ -50,7 +50,7 @@ class Importer extends CI_Controller {
                           'content'=>$item, 'order'=>++$order, 'editor_id'=>2));
             }
 
-            redirect('book/tocmanager/'+$bookId);
+            redirect('book/tocmanager/'+$bookId, 'refresh');
         }else{
             echo $this->upload->display_errors();
         }

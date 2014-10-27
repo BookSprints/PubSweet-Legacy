@@ -14,11 +14,11 @@
 
 	<div class="form-group">
 		<label for="">Title</label>
-		<input type="text" class="form-control" name="title" id="title" placeholder="Input...">
+		<input type="text" class="form-control" name="title" id="title">
 	</div>
     <div class="form-group">
 		<label for="epub">File</label>
-		<input type="file" class="form-control" name="epub" id="epub" placeholder="Input...">
+		<input type="file" class="form-control" name="epub" id="epub">
 	</div>
 	<button type="submit" class="btn btn-primary">Save</button>
 </form>
