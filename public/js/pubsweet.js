@@ -6,17 +6,16 @@
 /*global io, console, driver */
 (function ($, H) {
     "use strict";
-    var conf = {
-            server: {
-                nodejs: 'http://213.108.105.1/',
-                servername: 'http://pubsweet-new.booksprints.net/'
-            },
+    var config = {
             local: {
                 nodejs: 'http://pubsweet.local:8080/',
-                servername: 'http://pubsweet.local/'
             }
         },
-        use = conf.local;
+        use = config.local;
+
+    if(window.conf!=undefined && window.conf.server){
+        use = $.extend(config.local, window.conf.server);
+    }
     window.broadcast = {
         server: use.nodejs+'pubsweet',
         socket: null,
@@ -79,7 +78,6 @@
     };
 
     window.driver = {
-        urlBase: use.servername,
         indexFile: 'index.php',
         defaultURL: 'dashboard/profile',
         async: [],//array of functions to be executed asynchronously
@@ -101,12 +99,12 @@
             this.info = $('#info');
             this.infoTemplate = H.compile($("#info-template").html());
 
-            var fullURL = window.location.href.replace(this.urlBase, ''),
+            var fullURL = window.location.href.replace($('base').attr('href'), ''),
                 url = fullURL.length > 0 ? fullURL : this.defaultURL;
             this.route(url.split('/'));
             this.UrlPosition = url;
             broadcast.customOnConnect(function () {
-                $.getJSON(driver.urlBase + 'user/getUsersInfo', null, function (response) {
+                $.getJSON('user/getUsersInfo', null, function (response) {
 //                        var book_id = driver.parameters[0];//getting first parameter
                     var data = {
                         id: response.id,
@@ -226,7 +224,7 @@
                     var status = $(this).is(':checked');
                     var data = "id=" + $(this).attr('data-id') + "&" +
                         "checked=" + status;
-                    $.post(driver.urlBase + 'admin/editor_status', data)
+                    $.post('admin/editor_status', data)
                         .fail(function () {
                             $('.result').html(info({type: 'error', text: '<span><strong>Sorry</strong> we had a problem</span>'}));
                         })
@@ -240,7 +238,7 @@
                 $('body').on('click', '.delete-user',function(){
                     var $this= $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'admin/userDelete', {user_id: $this.data('id')}, function(){
+                        $.post('admin/userDelete', {user_id: $this.data('id')}, function(){
                             $this.parents('#user').addClass('banned');
                             $this.text('Unban');
                             $this.removeClass('delete-user');
@@ -252,7 +250,7 @@
                 $('body').on('click', '.enable-user',function(){
                     var $this= $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'admin/user_enabled', {user_id: $this.data('id')}, function(){
+                        $.post('admin/user_enabled', {user_id: $this.data('id')}, function(){
                             $this.parents('#user').removeClass('banned');
                             $this.text('Ban');
                             $this.removeClass('enable-user');
@@ -322,7 +320,7 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.json(driver.urlBase+"admin/login_stats/"+$('#graph').data('last-days'), function(error, data) {
+                d3.json("admin/login_stats/"+$('#graph').data('last-days'), function(error, data) {
                     data.forEach(function(d) {
                         d.date = parseDate(d.date);
                         d.count = +d.count;
@@ -363,7 +361,7 @@
                         $.post($this.attr('action'), $this.serialize(), function (data) {
                             if (data.ok) {
 
-                                window.location.href = driver.urlBase + 'book/tocmanager/' + data.id;
+                                window.location.href = 'book/tocmanager/' + data.id;
                             } else {
                                 $this.find(":submit").button('reset');
                             }
@@ -382,7 +380,7 @@
                                 text = $('input', this).val();
                                 $(this).html(text);
                                 var data = 'name=' + text;
-                                $.post(driver.urlBase + 'register/profile_update', data);
+                                $.post('register/profile_update', data);
                             }
                             if (e.keyCode === 27) {//press scape
                                 $(this).html(text);
@@ -678,7 +676,7 @@
                 });
             },
             uploadPicture: function (picture) {
-                $.post(driver.urlBase + 'register/set_picture', {picture: picture}, function (data) {
+                $.post('register/set_picture', {picture: picture}, function (data) {
                     console.log(data)
                 });
             }
@@ -713,7 +711,7 @@
                         id: driver.book.data[1].toString(),
                         order: driver.book.data[2].toString()
                     };
-                    $.post(driver.urlBase + "chapter/update",
+                    $.post("chapter/update",
                         data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-chapter', data);
@@ -780,7 +778,7 @@
 //                                driver.book.reorder();
                         });
 
-                        $.post(driver.urlBase + "sections/update", data, function (response) {
+                        $.post("sections/update", data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-section', newPositions);
                         });
@@ -799,7 +797,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: driver.urlBase + 'chapter/changeName',
+                        url: 'chapter/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -818,7 +816,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: driver.urlBase + 'sections/changeName',
+                        url: 'sections/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -846,7 +844,7 @@
                         $('#chapter-message-title').text(name);
                         $('#chapter_id').val(chapter_id);
                         $('#selected-user').val($this.data('user_id'));
-                        $.post(driver.urlBase+'status/chapterStatusList',{'chapter_id':chapter_id},function(response){
+                        $.post('status/chapterStatusList',{'chapter_id':chapter_id},function(response){
                             var addStatus = H.compile($('#status-item-template').html());
                             $('#StatusList').empty();
                             for(var item in response){
@@ -859,7 +857,7 @@
                                 $('#StatusList').append(addStatus(data));
                             }
                         },'json');
-                        $.getJSON(driver.urlBase+'user/get_all_users',null)
+                        $.getJSON('user/get_all_users',null)
                             .done(function(response){
                                 $('.select-user').empty();
                                 var addUser = H.compile($('#status-user-template').html());
@@ -892,7 +890,7 @@
                     var id = status.data('id');
                     var user = status.data('user_id');
                     if(user !== "" && status.data('user')=="" ){
-                        var url = driver.urlBase+'user/getUsersInfo/'+user.toString();
+                        var url = 'user/getUsersInfo/'+user.toString();
                         $.post(url,null,function(response){
                             user = response.names;
                             $('.chapter-status').find('.status[data-id="'+id+'"]').data('user',user);
@@ -933,7 +931,7 @@
                         user_id:data[2].toString(),
                         status:data[3].toString()
                     }
-                    $.post(driver.urlBase+'status/update',info,function(response){
+                    $.post('status/update',info,function(response){
                         if(response.ok){
                             $('#chapter-message-modal').modal('hide');
                             driver.book.updateStatus(info);
@@ -954,7 +952,7 @@
                         user_id:0,
                         status_id:''
                     };
-                    $.post(driver.urlBase+'status/save',data,function(response){
+                    $.post('status/save',data,function(response){
                         data.status_id = response.id;
                         driver.book.addStatus(data);
                         broadcast.emit('add-chapter-status',data);
@@ -965,7 +963,7 @@
                 $('body').on('click','.status-delete',function(){
                     if(confirm('are you sure?')){
                         var status_id =$(this).parents('.status-item').data('id');
-                        $.post(driver.urlBase+'status/delete',{id:status_id},function(response){
+                        $.post('status/delete',{id:status_id},function(response){
                             if(response.ok)
                             {
                                 driver.book.deleteChapterStatus(response);
@@ -978,7 +976,7 @@
                     .on('click','.delete-chapter', function(){
                         var $this = $(this);
                         if(confirm('Are you sure?')){
-                            $.post(driver.urlBase+'chapter/delete_chapter',
+                            $.post('chapter/delete_chapter',
                                 {chapter_id: $this.data('id')}, function(response){
                                 if(response.ok){
                                     driver.book.deleteChapter(response);
@@ -1073,7 +1071,7 @@
                 $('body').on('click','.delete-section', function(){
                     var $this = $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'sections/delete_section', {section_id: $this.data('id')}, function(response){
+                        $.post('sections/delete_section', {section_id: $this.data('id')}, function(response){
                             if(response.ok)
                             {
                                 driver.book.deleteSection(response);
@@ -1140,14 +1138,14 @@
             unlockChapter: function(data){
                 var $edit = $('li.chapter[data-id="'+data.chapter_id+'"]').find('.edit'),
                     $newEdit = $('<a></a>', {"class":'edit', text: 'Edit',
-                        'href': driver.urlBase+"editor/normal/"+data.chapter_id});
+                        'href': "editor/normal/"+data.chapter_id});
                 $edit.tooltip('destroy');
                 $edit.replaceWith($newEdit);
             },
             handleToCPersistence: function($sections){
                 var user_id;
                 $(function(){
-//                    $.getJSON(driver.urlBase + 'user/getUsersInfo',function (response) {
+//                    $.getJSON('user/getUsersInfo',function (response) {
 //                        user_id = response.id;
 //                        sessionStorage.user_id = user_id;
 //
@@ -1274,7 +1272,7 @@
                 })
                     .on('click', '.btn-update', function(){
                         var $this = $(this);
-                        $.post(driver.urlBase+'book/updateCoAuthor/',
+                        $.post('book/updateCoAuthor/',
                             {
                                 user: $this.data('user-id'),
                                 book: bookid,
@@ -1344,7 +1342,7 @@
                 }
                 $('#StatusList').append(addStatus(data2));
                 $('.status-item[data-id="'+data2.id+'"] .chapter-message-user').children('.name').find('strong').text('nobody');
-                $.getJSON(driver.urlBase+'user/get_all_users',null,function(response){
+                $.getJSON('user/get_all_users',null,function(response){
                     $('.select-user').empty();
                     var addUser = H.compile($('#status-user-template').html());
                     for(var item in response){
@@ -1383,7 +1381,7 @@
                     if(title[i] !== "")
                         statusItem.data('title',title[i]);
                     if(user[i] !== ''){
-                        $.getJSON(driver.urlBase+'user/getUsersInfo/'+user[i],null,function(response){
+                        $.getJSON('user/getUsersInfo/'+user[i],null,function(response){
                             statusItem.data('user', response.names);
                             statusItem.data('user_id', response.id);
                         });
@@ -1416,7 +1414,7 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.json(driver.urlBase+"review/data/"+driver.parameters[0], function(error, data) {
+                d3.json("review/data/"+driver.parameters[0], function(error, data) {
 
                     x.domain(data.map(function(d) { return d.names; }));
                     y.domain([0, d3.max(data, function(d) { return d.allComments; })]);
@@ -1570,7 +1568,7 @@
                     }
                 });
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.username = response.username;
                     });
                     localStorage.removeItem('term');
@@ -1686,7 +1684,7 @@
                     var $this = $(this),
                         itemId = $this.val(),
                         term_id =  $termId.val();
-                    $.post(driver.urlBase+'dictionary/update_chapter/',{
+                    $.post('dictionary/update_chapter/',{
                         chapter_id: itemId,
                         term_id: term_id
                     }, function (response) {
@@ -1791,7 +1789,7 @@
                     $(".item-editor").val($this.text());
                     //Assigns the id to input hidden
                     $termId.val($this.data("id"));
-                    $.getJSON(driver.urlBase + 'term/get/' + $this.data("id"), function (data) {
+                    $.getJSON('term/get/' + $this.data("id"), function (data) {
                         driver.dictionary.handleFileUpload(data);
 
                         if(data.term.meaning === null)
@@ -1871,7 +1869,7 @@
                 $('#delete-image').on('click', function(){
                     if(confirm('Are you sure?')){
 
-                        $.post(driver.urlBase+'dictionary/delete_image',{id: $(this).data('id')}, function(){
+                        $.post('dictionary/delete_image',{id: $(this).data('id')}, function(){
                             $('#result').html($('<img/>', {src: 'http://placehold.it/200'}))
                         } );
                     }
@@ -1997,7 +1995,7 @@
             normal: function () {
 
                 broadcast.customOnConnect(function (io) {
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                         io.socket.emit('lock-wysi', {chapter_id: driver.parameters[0],
                             'user': response});
@@ -2013,7 +2011,7 @@
                     var $this = $(this);
                     $this.find(':submit').button('loading');
                     $('.cke_button__save').find('.cke_button__save_icon')
-                        .attr('style','background-image:url('+driver.urlBase+'public/img/loading.gif)!important; ' +
+                        .attr('style','background-image:url('+'public/img/loading.gif)!important; ' +
                             'background-position:0 0!important;');
                     $.post($this.attr('action'), $this.serialize(), function (data) {
                         if (data.ok) {
@@ -2082,8 +2080,8 @@
                             // jqueryspellchecker,
                             extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave'/*,customlanguage'*/,
                             resize_enabled: false,
-                            contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: driver.urlBase + "book/images/"+driver.parameters[0],
+                            contentsCss: "public/css/custom_ckeditor.css",
+                            imageBrowser_listUrl: "book/images/"+driver.parameters[0],
 
                             height: '75vh',
                             magicline_color: '#666',
@@ -2098,7 +2096,7 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage/'+driver.parameters[0],
+                            filebrowserImageUploadUrl : 'editor/uploadImage/'+driver.parameters[0],
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
                             autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),
@@ -2160,7 +2158,7 @@
                     var $this = $(this);
                     $this.find(':submit').button('loading');
                     $('.cke_button__save').find('.cke_button__save_icon')
-                        .attr('style','background-image:url('+driver.urlBase+'public/img/loading.gif)!important; ' +
+                        .attr('style','background-image:url('+'public/img/loading.gif)!important; ' +
                             'background-position:0 0!important;');
                     $.post($this.attr('action'), $this.serialize(), function (data) {
                         if (data.ok) {
@@ -2210,8 +2208,8 @@
                             // jqueryspellchecker,
                             extraPlugins: 'savebutton,imagebrowser,backup,placeholder,indentlist,customlanguage',
                             resize_enabled: false,
-                            contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: driver.urlBase + "book/images/",
+                            contentsCss: "public/css/custom_ckeditor.css",
+                            imageBrowser_listUrl: "book/images/",
                             height: '75vh',
                             magicline_color: '#666',
                             sharedSpaces:{top:'top', bottom:'bottom'},
@@ -2225,7 +2223,7 @@
 
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
-                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage',
+                            filebrowserImageUploadUrl : 'editor/uploadImage',
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote"
 
                         }
@@ -2287,7 +2285,7 @@
             view: function(){
 
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                     });
                 });
@@ -2331,7 +2329,7 @@
                         message_id:message_id,
                         book_id: book_id
                     }
-                    $.post(driver.urlBase+'likes/add_like',data,function(response){
+                    $.post('likes/add_like',data,function(response){
                         if(response.ok){
                             var data ={id:message_id,user_id:user_id};
                             driver.discussion.addLike(data);
@@ -2348,7 +2346,7 @@
                             message_id:message_id,
                             book_id: book_id
                         }
-                        $.post(driver.urlBase+'likes/remove_like',data,function(response){
+                        $.post('likes/remove_like',data,function(response){
                             if(response.ok)
                             {
                                 var data ={id:message_id,user_id:user_id};
@@ -2393,7 +2391,7 @@
                 return driver.discussion.$comments
             },
             drawMessage: function(data){
-                data.url = driver.urlBase+'discussion/delete/';
+                data.url = 'discussion/delete/';
                 driver.discussion.getCommentsDiv().prepend(driver.discussion.getMessageTemplate()(data));
             }
 
@@ -2402,7 +2400,7 @@
             review: function(){
 
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                     });
                 });
@@ -2445,7 +2443,7 @@
                             term_id:$(this).data('term-id')
                         };
 
-                    $.post(driver.urlBase+'review/new_approve',data,function(resp){
+                    $.post('review/new_approve',data,function(resp){
                         if(resp.ok){
                             $this.attr('disabled','disabled');
                             data.user_id = resp.user_id;
@@ -2460,7 +2458,7 @@
                     var $this = $(this);
                     var id = $this.data('term-id');
                     var add = H.compile($('#user-approve').html());
-                    $.getJSON(driver.urlBase+'review/list_approve_by_term/'+id)
+                    $.getJSON('review/list_approve_by_term/'+id)
                         .done(function(data){
                             $('.users-approves').empty();
                             for(var user in data){
@@ -2524,7 +2522,7 @@
     var topic={
         view: function(){
             $(function(){
-                $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                $.getJSON('user/getUsersInfo',function(response){
                     sessionStorage.user_id = response.id;
                 });
             });
@@ -2542,7 +2540,7 @@
                                 base: driver.urlBase}));
 
                             var $comments = $('#comments-'+data.id),
-                                href=driver.urlBase+'topic/detail/'+data.id;
+                                href='topic/detail/'+data.id;
                             $comments.load(href+' #comments .media', function(){
                                 $comments.before($('<a></a>', {'class':'actions',/*'href': href+'/new',*/ text: 'Reply',"data-id":data.id}));
                                 // $comments.before($('<a></a>', {'class':'actions','href': href, text: 'View all comments >>'}));
@@ -2563,7 +2561,7 @@
                 var $this = $(this),
                     $comments = $('#comments-'+$this.data('id')),
                     target = $this.data('target');
-                $this.find(".loading").attr('src',''+driver.urlBase+'public/img/loading.gif').show();
+                $this.find(".loading").attr('src',''+'public/img/loading.gif').show();
                 $comments.load(target+' #comments .media', function(){
                     $comments.prepend($('<a></a>', {'class':'actions',/*'href': target+'/new',*/ text: 'Reply',"data-id":$this.data('id')}));
                     /* $comments.prepend($('<a></a>', {'class':'actions','href': target, text: 'View all comments >>'})); */
@@ -2622,7 +2620,7 @@
                         comment_id:comment_id,
                         book_id:book_id
                     }
-                    $.post(driver.urlBase+'like_comment/add_like',data,function(response){
+                    $.post('like_comment/add_like',data,function(response){
                         if(response.ok){
                             var data ={id:comment_id,user_id:user_id};
                             driver.topic.addLike(data);
@@ -2639,7 +2637,7 @@
                         comment_id:comment_id,
                         book_id: book_id
                     }
-                    $.post(driver.urlBase+'like_comment/remove_like',data,function(response){
+                    $.post('like_comment/remove_like',data,function(response){
                         if(response.ok){
                             var data ={id:comment_id,user_id:user_id};
                             driver.topic.removeLike(data);

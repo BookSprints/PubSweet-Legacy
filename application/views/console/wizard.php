@@ -2,36 +2,37 @@
 <html lang="en-US">
 <head>
     <meta charset="UTF-8">
+    <base href="<?php echo base_url();?>">
     <title>EPUB Management Console</title>
-    <link href="<?php echo base_url();?>public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="public/css/bootstrap.min.css" rel="stylesheet">
     <!-- FONTS -->
     <style type="text/css">
         @font-face {
             font-family:"cabin";
-            src: url(<?php echo base_url(); ?>public/css/cabin/Cabin-Regular.otf) format("opentype");
+            src: url(public/css/cabin/Cabin-Regular.otf) format("opentype");
         }
         @font-face {
             font-family:"cabin";
-            src: url(<?php echo base_url(); ?>public/css/cabin/Cabin-Bold.otf) format("opentype");
+            src: url(public/css/cabin/Cabin-Bold.otf) format("opentype");
             font-weight: bold;
         }
         @font-face {
             font-family:"cabin";
-            src: url(<?php echo base_url(); ?>public/css/cabin/Cabin-Italic.otf) format("opentype");
+            src: url(public/css/cabin/Cabin-Italic.otf) format("opentype");
             font-style: italic;
         }
         @font-face {
             font-family:"libre-baskerville";
-            src: url(<?php echo base_url(); ?>public/css/libre-baskerville/LibreBaskerville-Regular.otf) format('opentype');
+            src: url(public/css/libre-baskerville/LibreBaskerville-Regular.otf) format('opentype');
         }
         @font-face {
             font-family:"libre-baskerville";
-            src: url(<?php echo base_url(); ?>public/css/libre-baskerville/LibreBaskerville-Bold.otf) format('opentype');
+            src: url(public/css/libre-baskerville/LibreBaskerville-Bold.otf) format('opentype');
             font-weight: bold;
         }
         @font-face {
             font-family:"libre-baskerville";
-            src: url(<?php echo base_url(); ?>public/css/libre-baskerville/LibreBaskerville-Italic.otf) format('opentype');
+            src: url(public/css/libre-baskerville/LibreBaskerville-Italic.otf) format('opentype');
             font-style: italic;
         }
     </style>
@@ -103,23 +104,23 @@ $module = $this->uri->segment(2);
 if (!empty($book['id'])):  ?>
     <div class="container navbar navbar-static-top">
         <div class="navbar-inner">
-            <a class="brand" href="<?php echo base_url(); ?>">PubSweet</a>
+            <a class="brand" href="">PubSweet</a>
             <ul class="nav">
                 <?php if (isset($book)): ?>
                     <li>
-                        <a href="<?php echo base_url() . 'book/tocmanager/' . $book['id'] ?>"><?php echo $book['title']; ?></a>
+                        <a href="<?php echo 'book/tocmanager/' . $book['id'] ?>"><?php echo $book['title']; ?></a>
                     </li>
                 <?php endif; ?>
                 <li>
-                <li><a href="<?php echo base_url() . 'taskmanager/' . $book['id'] . '/'; ?>" target="_blank">Task Manager</a></li>
-                <li class="active"><a href="<?php echo base_url() . 'console/' . $book['id'] . '/' ?>">Console</a>
+                <li><a href="<?php echo 'taskmanager/' . $book['id'] . '/'; ?>" target="_blank">Task Manager</a></li>
+                <li class="active"><a href="<?php echo 'console/' . $book['id'] . '/' ?>">Console</a>
                 </li>
 
             </ul>
             <ul class="nav pull-right">
                 <li>
                     <a id="logout"
-                       href="<?php echo base_url(); ?>auth/logout">
+                       href="auth/logout">
                         <!--<span><?php/* echo $this->session->userdata(
                                 'DX_username'
                             );*/ ?></span>-->  Logout</a>
@@ -334,10 +335,10 @@ if (!empty($book['id'])):  ?>
 <option value="{{this}}">{{this}}</option>
 {{/each}}
 </script>
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/jquery-2.0.2.min.js"></script>
-<script src="<?php echo base_url(); ?>public/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/jquery-ui-1.10.3.custom.min.js"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/handlebars.js"></script>
+<script type="text/javascript" src="public/js/jquery-2.0.2.min.js"></script>
+<script src="public/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="public/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script type="text/javascript" src="public/js/handlebars.js"></script>
 <!--http://www.smashingmagazine.com/2010/01/15/progress-trackers-in-web-design-examples-and-best-design-practices/-->
 <script type="text/javascript">
     (function ($) {
@@ -392,8 +393,6 @@ if (!empty($book['id'])):  ?>
 <script type="text/javascript">
     (function ($) {
         var driver = {
-            baseUrl: 'http://pubsweet.local/',
-//            baseUrl: 'http://pubsweet-new.booksprints.net/',
             init:function () {
                 driver.handleCoverPreview();
                 $('#management-form').bootzard({'done':function () {
@@ -526,14 +525,13 @@ if (!empty($book['id'])):  ?>
                 $result.find('#epub').attr('href', driver.url).removeClass('hide');
                 $result.show();
                 if($('#download').is(':checked')){
-                    document.location = driver.baseUrl+'render/epub/'+$('#book_id').val();
+                    document.location = 'render/epub/'+$('#book_id').val();
                 }
 
             },
             createPreviewURL: function($link){
                 if($('#create-bookjs').is(':checked')){
-                    $link.attr('href', this.baseUrl+
-                            'console/preview/'+driver.bookname+'/'+
+                    $link.attr('href', 'console/preview/'+driver.bookname+'/'+
                                     +($('#editablecss').is(':checked')?true:false)+'/'+
                                     +($('#hyphen').is(':checked')?true:false)+'/'+
                                     +($('#prettify').is(':checked')?true:false)
@@ -548,8 +546,7 @@ if (!empty($book['id'])):  ?>
             },
             createLiveCSSURL: function($link){
                 if($('#create-bookjs').is(':checked')){
-                    $link.attr('href', this.baseUrl+
-                            'console/livecss/'+driver.bookname+'/'+
+                    $link.attr('href', 'console/livecss/'+driver.bookname+'/'+
                                     +($('#editablecss').is(':checked')?true:false)+'/'+
                                     +($('#hyphen').is(':checked')?true:false)+'/'+
                                     +($('#prettify').is(':checked')?true:false))
@@ -581,7 +578,7 @@ if (!empty($book['id'])):  ?>
                         });
             },*/
             generateXHTMLFiles: function(callback){
-                $.post(driver.baseUrl+'render/epub/'+$('#book_id').val(),
+                $.post('render/epub/'+$('#book_id').val(),
                     {download: false},
                     function(data){
                         if(data.ok){
@@ -594,7 +591,7 @@ if (!empty($book['id'])):  ?>
                     });
             },
             uploadMetadata:function (callback) {
-                $.post(driver.baseUrl+'console/manager/addMetadata/',
+                $.post('console/manager/addMetadata/',
                     $('#metadata').serialize()+'&book='+driver.bookname,
                     function(data){
                         if(data.ok){
@@ -653,7 +650,7 @@ if (!empty($book['id'])):  ?>
                 });
             },
             uploadCSS:function (callback) {
-                $.post(driver.baseUrl+'console/manager/injectCSS/',
+                $.post('console/manager/injectCSS/',
                 {css:$('#css').val(), 'prettify-epub': $('#prettify-epub').is(':checked'),
                     book:$('#book_id').val()}, function (data) {
                     if (!!callback) {
@@ -672,7 +669,7 @@ if (!empty($book['id'])):  ?>
                     contentType:false,
                     processData:false,
                     type:"POST",
-                    url: driver.baseUrl+"console/manager/injectCover/",
+                    url: "console/manager/injectCover/",
                     dataType:'json',
                     data:fd,
                     success:function (data, textStatus, jqXHR) {

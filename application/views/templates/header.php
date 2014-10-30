@@ -2,6 +2,7 @@
 <html dir="<?php echo $this->session->userdata('lang_dir');?>" lang="<?php echo $this->session->userdata('lang_iso_code');?>">
 <head>
 <meta charset="utf-8">
+<base href="<?php echo base_url();?>">
 <title>PUBSWEET</title>
 <!--    <link href='http://fonts.googleapis.com/css?family=Abril+Fatface' rel='stylesheet' type='text/css'>-->
 <!--<link href='http://fonts.googleapis.com/css?family=Playfair+Display' rel='stylesheet' type='text/css'>-->

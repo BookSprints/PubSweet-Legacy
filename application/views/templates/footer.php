@@ -37,11 +37,11 @@
                 </a>
             </span>
             <span class='chapter-type'>
-                <a href="<?php echo base_url() . 'render/chapter/{{id}}'; ?>"
+                <a href="<?php echo 'render/chapter/{{id}}'; ?>"
                    class="chapter-contents">{{type}}</a></span>&nbsp;&nbsp;
-            <a href="<?php echo base_url(); ?>{{url}}{{id}}">Edit</a>
-            <a href="<?php echo base_url();?>chapter/delete_chapter/"  class="delete-chapter" data-id="{{id}}">Delete</a>
-            <a href="<?php echo base_url();?>chapter/review/{{id}}">Review</a>
+            <a href="{{url}}{{id}}">Edit</a>
+            <a href="chapter/delete_chapter/"  class="delete-chapter" data-id="{{id}}">Delete</a>
+            <a href="chapter/review/{{id}}">Review</a>
         </span>
     </li>
 </script>
@@ -109,7 +109,7 @@
 <div class="deletable media" data-id="{{id}}">
 
     <a class="pull-left" href="">
-              <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
+              <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
          </a>
     <div class="media-body">
         <div class="pull-right btn-like">
@@ -151,7 +151,7 @@
 <div class="deletable media comment" data-id="{{id}}">
 
     <a class="pull-left" href="">
-              <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
+              <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
          </a>
     <div class="media-body">
         <div class="pull-right btn-like">
@@ -178,7 +178,7 @@
 <script id="new-review" type="text/x-handlebars-template">
     <div class="deletable media">
         <span class="pull-left" >
-            <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="48px" height="48px"/>
+            <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="48px" height="48px"/>
         </span>
         <div class="media-body">
 
@@ -236,13 +236,14 @@
 <script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/handlebars.js"></script>
 <script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/timeago.js"></script>-->
 
-<script type="text/javascript" src="<?php echo base_url();?>public/js/pubsweet-libs.js"></script>
+<script type="text/javascript" src="public/js/pubsweet-libs.js"></script>
 
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/pubsweet.js"></script>
+<!--<script type="text/javascript" src="public/js/config.js"></script>-->
+<script type="text/javascript" src="public/js/pubsweet.js"></script>
 <!--<script type="text/javascript" src="--><?php //echo base_url(); ?><!--public/js/pubsweet.min.js"></script>-->
 
-<script type="text/javascript" src="http://booksprints.net:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>
-<!--<script type="text/javascript" src="http://pubsweet.local:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>-->
-<script src="<?php echo base_url(); ?>public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
+<!--<script type="text/javascript" src="http://booksprints.net:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>-->
+<script type="text/javascript" src="http://pubsweet.local:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>
+<script src="public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
 </body>
 </html>
