@@ -92,8 +92,10 @@ class Manager extends CI_Controller
             $bookData = $this->books->get($book);
             $path = $this->getPath($bookData['title'],'css');
             $file = 'extra.css';
-            if(write_file($path.$file, $this->input->post('css'))){
+            if(write_file($path.$file, $this->input->post('css'), 'w+')){
                 echo json_encode(array('ok'=>1));
+            }else{
+                echo json_encode(array('ok'=>false, 'error'=>'No writable '.$path.$file));
             }
             /*$epub = new EPUB('tmp/'.$_POST['book'].'.epub');
             if(isset($_POST['prettify-epub'])){
@@ -174,7 +176,7 @@ class Manager extends CI_Controller
 
     private function getPath($bookTitle, $folder)
     {
-        $path = '../application/epub/'.underscore($bookTitle);
+        $path = dirname(__FILE__).'/../epub/'.underscore($bookTitle);
         @mkdir($path);
         @mkdir($path=$path.'/'.$folder.'/');
         return $path;
