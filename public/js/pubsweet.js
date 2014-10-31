@@ -2038,7 +2038,7 @@
                     if (typeof CKEDITOR !== "undefined") {
                         $.ajax({
                             type: "GET",
-                            url: use.servername+'flags/all',
+                            url: 'flags/all',
                             async: false,
                             data: {},
                             dataType: 'JSON',
@@ -2101,7 +2101,6 @@
                             autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),
                             flags: window.myflags,
-                            server: use.servername
                         }
                         $('#editor').ckeditor(config);
                     }

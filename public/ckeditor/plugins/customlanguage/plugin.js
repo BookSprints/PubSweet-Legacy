@@ -21,7 +21,7 @@ CKEDITOR.plugins.add('customlanguage',
 
         $.ajax({
             type: "GET",
-            url: editor.config.server+'language/all',
+            url: 'language/all',
             async: false,
             data: {},
             dataType: 'JSON',

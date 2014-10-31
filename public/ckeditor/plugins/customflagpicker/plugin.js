@@ -153,7 +153,7 @@ CKEDITOR.plugins.add( 'customflagpicker', {
             var insertFlag = CKEDITOR.tools.addFunction(function(image, title){
 
                 var oEditor = CKEDITOR.currentInstance;
-                var html = '<img src="'+server+'public/uploads/flags/'+image+'" alt="'+title+'"/>'
+                var html = '<img src="public/uploads/flags/'+image+'" alt="'+title+'"/>'
 
                 var newElement = CKEDITOR.dom.element.createFromHtml( html, oEditor.document );
                 oEditor.insertElement( newElement );
@@ -168,7 +168,7 @@ CKEDITOR.plugins.add( 'customflagpicker', {
                     ' title="', lang.more, '"' +
                     ' onclick="CKEDITOR.tools.callFunction(', insertFlag, ',\'', flags[i].image, '\',\''+flags[i].title+'\' );return false;"' +
                     ' href="javascript:void(\'', lang.more, '\')"', ' role="option">',
-                    '<img src="'+server+'public/uploads/flags/'+flags[i].image+'"/>','&nbsp;'+flags[i].title, '</a>'
+                    '<img src="public/uploads/flags/'+flags[i].image+'"/>','&nbsp;'+flags[i].title, '</a>'
                 ); // tr is later in the code.
 
             }
