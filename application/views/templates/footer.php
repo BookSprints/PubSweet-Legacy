@@ -238,12 +238,24 @@
 
 <script type="text/javascript" src="public/js/pubsweet-libs.js"></script>
 
-<!--<script type="text/javascript" src="public/js/config.js"></script>-->
+<?php
+$serverNodeJS = $this->config->item('nodejs');
+if(empty($serverNodeJS)){
+    $host= gethostname();
+    $ip = gethostbyname($host);
+    $serverNodeJS = '//'.$ip.':8080/';
+}
+?>
+<script>
+    window.use = {
+        nodejs: '<?php echo $serverNodeJS;?>'
+    }
+</script>
+
 <script type="text/javascript" src="public/js/pubsweet.js"></script>
 <!--<script type="text/javascript" src="--><?php //echo base_url(); ?><!--public/js/pubsweet.min.js"></script>-->
 
-<!--<script type="text/javascript" src="http://booksprints.net:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>-->
-<script type="text/javascript" src="http://pubsweet.local:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>
+<script type="text/javascript" src="<?php echo $serverNodeJS;?>socket.io/socket.io.js" async onload="broadcast.init()"></script>
 <script src="public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
 </body>
 </html>

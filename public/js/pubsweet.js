@@ -6,16 +6,7 @@
 /*global io, console, driver */
 (function ($, H) {
     "use strict";
-    var config = {
-            local: {
-                nodejs: 'http://pubsweet.local:8080/',
-            }
-        },
-        use = config.local;
 
-    if(window.conf!=undefined && window.conf.server){
-        use = $.extend(config.local, window.conf.server);
-    }
     window.broadcast = {
         server: use.nodejs+'pubsweet',
         socket: null,
