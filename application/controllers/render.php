@@ -227,22 +227,25 @@ class Render extends CI_Controller{
         if(empty($dom)){
             return '';
         }
+        if(!$this->simpleChapter){
 
-        foreach($dom->find('img') as $element){
+            foreach($dom->find('img') as $element){
 
-            if(strpos($element->src, base_url())!==false){
-                if(strpos($element->src, base_url().'public/uploads/'.url_title($this->book['title']).'/')!==false){
-                    $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'), 'graphics/', $element->src);
-                }else if(strpos($element->src, base_url().'public/uploads/')!==false){
-                    $element->src = str_replace(base_url().'public/uploads/','graphics/', $element->src);
+                if(strpos($element->src, base_url())!==false){
+                    if(strpos($element->src, base_url().'public/uploads/'.url_title($this->book['title']).'/')!==false){
+                        $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'), 'graphics/', $element->src);
+                    }else if(strpos($element->src, base_url().'public/uploads/')!==false){
+                        $element->src = str_replace(base_url().'public/uploads/','graphics/', $element->src);
+                    }
+
+                    $css = $this->BreakCSS('image{'.$element->style.'}');
+                    $this->images[str_replace('graphics/','', $element->src)] = array(
+                        'src'=>$element->src,
+                        'height'=>$css['image']['height'],
+                        'width'=>$css['image']['width']
+                    );
+
                 }
-
-                $css = $this->BreakCSS('image{'.$element->style.'}');
-                $this->images[str_replace('graphics/','', $element->src)] = array(
-                    'src'=>$element->src,
-                    'height'=>$css['image']['height'],
-                    'width'=>$css['image']['width']
-                );
 
             }
 
@@ -297,6 +300,7 @@ class Render extends CI_Controller{
                 echo $this->renderLexiconChapter($item);
                 break;
             case 2:
+                $this->simpleChapter = true;
                 echo $this->renderNormalChapter($item);
                 break;
             default:
