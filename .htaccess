@@ -3,7 +3,7 @@ DirectoryIndex index.php
 #Options -MultiViews #other way apache adds automatically .html
 <IfModule mod_rewrite.c>
     RewriteEngine on
-    RewriteBase /
+    RewriteBase /pubsweet
 #    RewriteBase /
     #rewritebase is the path relative to document root
 

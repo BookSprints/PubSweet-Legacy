@@ -15,7 +15,6 @@
 |
 */
 
-$config['base_url']	= 'http://pubsweet.local';
 //$config['base_url']	= 'http://pubsweet-new.booksprints.net';
 
 /*
@@ -28,7 +27,6 @@ $config['base_url']	= 'http://pubsweet.local';
 | variable so that it is blank.
 |
 */
-$config['index_page'] = '';
 //$config['index_page'] = 'index.php';
 
 /*
