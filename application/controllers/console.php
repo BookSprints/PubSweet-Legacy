@@ -29,7 +29,7 @@ class Console extends CI_Controller
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
-            $dir = '../application/epub/' . $book.'/';
+            $dir = dirname(__FILE__).'/../epub/' . $book.'/';
 
             $dirFiles = scandir($dir);
 
@@ -156,7 +156,7 @@ class Console extends CI_Controller
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
-            $dir = '../application/epub/' . $book;
+            $dir = dirname(__FILE__) . '/../epub/' . $book;
 
             $dirFiles = scandir($dir);
 

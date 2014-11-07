@@ -15,6 +15,7 @@ class Render extends CI_Controller{
     private $fullPath = NULL;
     private $cssFiles = NULL;
     private $images = array();
+    private $simpleChapter = false;
 
     public function __construct()
     {

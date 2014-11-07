@@ -24,7 +24,10 @@
               ++$counter;?>
               <navPoint id="chapter<?php echo ++$counter;?>" playOrder="<?php echo $counter;?>">
                   <navLabel>
-                      <text><?php echo $chapter['title'];?></text>
+                      <text><?php
+                          $title = str_replace('&', '&amp;', $chapter['title']);
+
+                          echo $title;?></text>
                   </navLabel>
                   <content src="<?php echo $chapter['url'];?>"/>
               </navPoint>
