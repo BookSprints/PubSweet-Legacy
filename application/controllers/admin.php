@@ -106,6 +106,7 @@ class Admin extends CI_Controller{
     {
         $this->load->model('User_model','user');
         $this->user->set_role($this->input->post('user_id'), 3);
+        redirect('dashboard/profile', 'refresh');
     }
 
 }

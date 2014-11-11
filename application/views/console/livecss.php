@@ -82,7 +82,7 @@
 <?php if (isset($editablecss) && !!$editablecss): ?>
     <style contenteditable><?php echo $css; ?></style>
 <?php endif; ?>
-<a id="preview" href="/console/preview/<?php echo $url;?>">Preview</a>
+<a id="preview" href="console/preview/<?php echo $url;?>">Preview</a>
 <div id="lce">
 <!--    --><?php //echo $fullHTML; ?>
 </div>

@@ -41,13 +41,30 @@ class Importer extends CI_Controller {
             $this->load->model('sections_model', 'sectionModel');
             $this->load->model('chapters_model', 'chapterModel');
             $bookId = $this->bookModel->set_book($this->session->userdata('DX_user_id'));
-            $sectionId = $this->sectionModel->set_section(array('title'=>'Main Section', 'book_id'=>$bookId));
             $content = $epub->getCompactContent();
             $order = 1;
             foreach($content as $key=>$item){
-                $chapterId = $this->chapterModel->set_chapter(
-                    array('title'=>$key, 'section_id'=>$sectionId, 'book_id'=>$bookId,
-                          'content'=>$item, 'order'=>++$order, 'editor_id'=>2));
+                if(empty($item['children'])){
+                    if(empty($main)){
+                        $main = $this->sectionModel->set_section(array('title'=>'Main Section', 'book_id'=>$bookId));
+                    }
+                    $chapterId = $this->chapterModel->set_chapter(
+                        array('title'=>$key, 'section_id'=>$main, 'book_id'=>$bookId,
+                              'content'=>$item, 'order'=>++$order, 'editor_id'=>2));
+                }else{
+                    $sectionId = $this->sectionModel->set_section(array('title'=>$key, 'book_id'=>$bookId));
+                    foreach($item['children'] as $key2=>$item2){
+                        if(empty($item2['children'])){
+                            $chapterId = $this->chapterModel->set_chapter(
+                                array('title'=>$key2, 'section_id'=>$sectionId, 'book_id'=>$bookId,
+                                      'content'=>$item2, 'order'=>++$order, 'editor_id'=>2));
+                        }else{
+                            $sectionId = $this->sectionModel->set_section(array('title'=>$key, 'book_id'=>$bookId));
+                        }
+
+                    }
+                }
+
             }
 
             redirect('book/tocmanager/'+$bookId, 'refresh');

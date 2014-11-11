@@ -6,7 +6,7 @@
  * Time: 8:33 PM
  */
 ?>
-<form action="/admin/addFacilitator" method="post">
+<form action="admin/addFacilitator" method="post">
     <div class="control-group">
         <label class="control-label" for="inputEmail">Email</label>
         <div class="controls">

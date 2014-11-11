@@ -23,7 +23,7 @@
                 <td><a href="#" class="view-content">Click to view content</a>
                     <div class="hide"><?php echo $item['content'];?></div></td>
                 <td><?php echo $item['created'];?></td>
-                <td><a class="rollback" href="/chapter/rollback/<?php echo $item['id'];?>">Rollback</a></td>
+                <td><a class="rollback" href="chapter/rollback/<?php echo $item['id'];?>">Rollback</a></td>
             </tr>
             <?php endforeach;?>
         </table>

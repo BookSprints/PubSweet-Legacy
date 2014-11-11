@@ -416,12 +416,31 @@ class EPUB
     {
         if(empty($this->compactContent)){
             $toc = $this->getToc();
-            foreach($toc->navMap->navPoint as $item):
+//            var_dump($toc->navMap);die();
+            /*foreach($toc->navMap->navPoint as $item):
                 $file = simplexml_load_string($this->getFromName((string) $item->content['src']));
                 $this->compactContent[(string)$item->navLabel->text] = str_replace(array('<body>','</body>'), array(''), (string)$file->body->asXML());
-            endforeach;
+            endforeach;*/
+            $this->compactContent = $this->createStructure($toc->navMap);
         }
 
         return $this->compactContent;
+    }
+
+    public function createStructure($navParent)
+    {
+        $result = array();
+        foreach($navParent->navPoint as $item):
+            $file = str_get_html($this->getFromName((string) $item->content['src']));
+//            $this->compactContent[(string)$item->navLabel->text] = str_replace(array('<body>','</body>'), array(''), (string)$file->body->asXML());
+            if(empty($item->navPoint)){
+                $result[(string)$item->navLabel->text] = $file->find('body', 0)->outertext;
+            }else{
+                $result[(string)$item->navLabel->text] = array('content'=>$file->find('body', 0)->outertext,
+                    'children'=>$this->createStructure($item) );
+            }
+
+        endforeach;
+        return $result;
     }
 }
