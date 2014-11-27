@@ -354,8 +354,8 @@ class Auth extends CI_Controller
 
     private function log($username)
     {
-        $this->load->model('login_log_model','log');
-        $this->log->insert($username);
+        $this->load->model('login_log_model','log_model');
+        $this->log_model->insert($username);
     }
 
 }

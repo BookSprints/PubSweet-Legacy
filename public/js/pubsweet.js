@@ -1088,6 +1088,31 @@
                     }, 'json');
                     return false;
                 });
+
+                /* LOCK/UNLOCK CHAPTER */
+                $('body').on('click', '.lock', function(){
+                    var $this = $(this), lock = !!$this.data('lock');
+                    $.post($this.attr('href'), function(resp){
+                        if(resp.ok){
+                            lock = !lock;
+                            $this.data('lock', lock);
+                            var $parent = $this.parents('.options'),
+                                $edit = $parent.find('.edit'),
+                                $delete = $parent.find('.delete-chapter');
+                            if(lock){
+                                $this.text('Unlock');
+                                $edit.hide();
+                                $delete.hide();
+
+                            }else{
+                                $this.text('Lock');
+                                $edit.show();
+                                $delete.show();
+                            }
+                        }
+                    }, 'json');
+                    return false;
+                })
             },
             handleBroadcasting: function(){
 

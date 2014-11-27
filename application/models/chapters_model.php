@@ -20,7 +20,7 @@ class Chapters_model extends CI_Model
      */
     public function find($book)
     {
-        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content');
+        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content, c.locked');
         $this->db->from('chapters c');
         $this->db->join('sections s','s.id = c.section_id AND s.removed=0');
         $this->db->where(array('c.book_id'=>$book,'c.removed'=>0));
@@ -62,7 +62,7 @@ class Chapters_model extends CI_Model
 
     public function get($chapterId){
 
-       $this->db->select('chapters.id, chapters.title, chapters.content, editor_id, removed,
+       $this->db->select('chapters.id, chapters.title, chapters.content, chapters.locked, editor_id, removed,
             books.title as bookname, books.id as book_id, owner');
        $this->db->from('chapters');
        $this->db->join('books', 'books.id = chapters.book_id');
@@ -118,5 +118,12 @@ class Chapters_model extends CI_Model
         $this->db->where( array('id'=>$id));
         $query = $this->db->get();
         return $query->row_array();
+    }
+
+    public function toggleLock($chapterId)
+    {
+        $sql = "UPDATE chapters SET locked = 1 - locked WHERE id = ?";
+
+        return $this->db->query($sql, array($chapterId));
     }
 }

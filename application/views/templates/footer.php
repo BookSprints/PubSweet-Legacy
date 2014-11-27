@@ -243,7 +243,7 @@ $serverNodeJS = $this->config->item('nodejs');
 if(empty($serverNodeJS)){
     $host= gethostname();
     $ip = gethostbyname($host);
-    $serverNodeJS = '//'.$ip.':8080/';
+    $serverNodeJS = 'http://'.$ip.':8080/';
 }
 ?>
 <script>

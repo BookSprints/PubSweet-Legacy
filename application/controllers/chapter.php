@@ -160,4 +160,9 @@ class Chapter extends CI_Controller
                     array('content'=>$history['content']), $history['chapter_id'])));
     }
 
+    public function toggleLock($id)
+    {
+        echo json_encode(array('ok'=>$this->model->toggleLock($id)));
+    }
+
 }

@@ -67,7 +67,7 @@ class Importer extends CI_Controller {
 
             }
 
-            redirect('book/tocmanager/'+$bookId, 'refresh');
+            redirect('book/tocmanager/'.$bookId, 'refresh');
         }else{
             echo $this->upload->display_errors();
         }

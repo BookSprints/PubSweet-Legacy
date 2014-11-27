@@ -44,7 +44,8 @@ class Book extends CI_Controller
             $coauthors[$item['user_id']] = $item;
         }
 
-        $bookOwner = $bookname['owner']==$this->session->userdata('DX_user_id');
+        $isBookOwner = $bookname['owner']==$this->session->userdata('DX_user_id');
+        $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
 //        var_dump($bookOwner);die();
         $contributor = (isset($coauthors[$this->session->userdata('DX_user_id')])
                 && $coauthors[$this->session->userdata('DX_user_id')]['contributor']);
@@ -64,7 +65,8 @@ class Book extends CI_Controller
                     'settings'=>$this->book_settings_model->get($id),
                     'users'=>$users,
                     'coauthors'=>$coauthors,
-                    'bookOwner' => $bookOwner,
+                    'isBookOwner' => $isBookOwner,
+                    'isFacilitator' => $isFacilitator,
                     'contributor' => $contributor,
                     'reviewer' => $reviewer,
 //                    'editing_sections' => $this->getCurrentlyEditingSections()

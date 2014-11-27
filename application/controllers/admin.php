@@ -75,8 +75,8 @@ class Admin extends CI_Controller{
 
     public function stats($day = 7)
     {
-        $this->load->model('login_log_model','log');
-        $data['last'] = $this->log->last($day.' DAY');
+        $this->load->model('login_log_model','log_model');
+        $data['last'] = $this->log_model->last($day.' DAY');
 
         $data['days'] = $day;
 
@@ -88,8 +88,8 @@ class Admin extends CI_Controller{
 
     public function login_stats($day = 7)
     {
-        $this->load->model('login_log_model','log');
-        $data = $this->log->groupByDate($this->log->last($day.' DAY'));
+        $this->load->model('login_log_model','log_model');
+        $data = $this->log_model->groupByDate($this->log_model->last($day.' DAY'));
         echo json_encode(array_values($data));
     }
 
