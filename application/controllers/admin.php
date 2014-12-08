@@ -95,9 +95,11 @@ class Admin extends CI_Controller{
 
     public function facilitators(){
         $this->load->model('User_model');
+        $this->load->model('facilitators_model','facilitator');
 
         $this->load->view('templates/header');
-        $this->load->view('admin/facilitators',array('users'=>$this->user_model->get_all()));
+        $this->load->view('admin/facilitators', array('users'=>$this->user_model->get_all(),
+                                                      'facilitators'=>$this->facilitator->all()));
         $this->load->view('templates/footer');
 
     }
@@ -106,7 +108,7 @@ class Admin extends CI_Controller{
     {
         $this->load->model('User_model','user');
         $this->user->set_role($this->input->post('user_id'), 3);
-        redirect('dashboard/profile', 'refresh');
+        redirect('admin/facilitators', 'refresh');
     }
 
 }
