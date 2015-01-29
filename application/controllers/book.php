@@ -207,4 +207,23 @@ class Book extends CI_Controller
         echo json_encode(array('ok'=>1));
     }
 
+    public function copy($id)
+    {
+        $this->load->model('book_copy_model');
+        $result = $this->book_copy_model->doCopy($id, $this->input->post('title'));
+        echo json_encode(array('ok'=>$result));
+    }
+
+    public function updateOwner()
+    {
+        $this->load->model('books_model');
+        echo json_encode(array('ok'=>$this->books_model->updateOwner()));
+    }
+
+    public function updateName()
+    {
+        $this->load->model('books_model');
+        echo json_encode(array('ok'=>$this->books_model->updateName()));
+    }
+
 }

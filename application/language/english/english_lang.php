@@ -80,3 +80,4 @@ $lang['settings'] = 'Settings';
 $lang['history'] = 'History';
 $lang['lock'] = 'Lock';
 $lang['unlock'] = 'Unlock';
+$lang['copy'] = 'Copy';

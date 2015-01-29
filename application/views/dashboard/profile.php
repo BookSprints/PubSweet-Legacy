@@ -75,6 +75,11 @@
                                                 <a href="<?php echo base_url('book/settings/' . $item['id']); ?>">
                                                     <?php echo $this->lang->line('settings');?></a>
                                             </li>
+                                            <li>
+                                            <a class="copy-link" href="#copy-modal" data-href="<?php echo base_url('book/copy/' . $item['id']); ?>"
+                                               data-toggle="modal">
+                                                <?php echo $this->lang->line('copy');?></a>
+                                            </li>
                                         </ul>
                                     </span>
 
@@ -208,4 +213,25 @@
         <button type="button" class="btn change"> <?php echo $this->lang->line('pick-another');?></button>
         <button type="button" class="btn crop"><?php echo $this->lang->line('save');?></button>
     </div>
+</div>
+
+<div id="copy-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="copy-modal" aria-hidden="true">
+    <form id="copy-form" action="/" method="post" class="modal-form">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Copy book</h3>
+        </div>
+        <div class="modal-body">
+            <div class="control-group">
+                <label class="control-label" for="inputInfo"><?php echo $this->lang->line('new-book-name');?></label>
+                <div class="controls">
+                    <input class="validate[required]" type="text" name="title" autofocus="autofocus"/>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true" type="reset">Close</button>
+            <button class="btn btn-primary" type="submit">Save changes</button>
+        </div>
+    </form>
 </div>
