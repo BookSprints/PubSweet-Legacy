@@ -111,4 +111,23 @@ class Admin extends CI_Controller{
         redirect('admin/facilitators', 'refresh');
     }
 
+    public function books()
+    {
+        $this->load->library(array('pagination','arrayhelper'));
+
+        $config['base_url'] = 'http://example.com/index.php/test/page/';
+        $config['total_rows'] = 200;
+        $config['per_page'] = 20;
+
+        $this->pagination->initialize($config);
+
+        $this->load->model(array('books_model','user_model'));
+        $data['books'] = $this->books_model->all();
+        $data['users'] = $this->arrayhelper->indexedArray($this->user_model->get_all(), 'id');
+        $this->load->view('templates/header');
+        $this->load->view('admin/books', $data);
+        $this->load->view('templates/footer');
+
+    }
+
 }

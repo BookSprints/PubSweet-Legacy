@@ -340,6 +340,79 @@
                         .attr("class", "line")
                         .attr("d", line);
                 });
+            },
+            books: function () {
+                var $modalBookOwner = $('#modal-book-owner'),
+                    $formOwners = $modalBookOwner.find('#form-book-owner'),
+                    $owners = $formOwners.find('#owners'),
+                    $bookInput = $formOwners.find('#book-input'),
+                    $errorHandler = $modalBookOwner.find('.help-inline.error'),
+                    $currentOwner = null,
+                    $modalBookname = $('#modal-book-name'),
+                    $formBookname = $modalBookname.find('#form-book-name'),
+                    $bookNameInput = $formBookname.find('#book-name-id'),
+                    $errorHandlerBookname = $modalBookname.find('.help-inline.error'),
+                    $currentBookname = null;
+
+                $('.update-owner').on('click', function () {
+                    $currentOwner = $(this);
+                    $errorHandler.hide();
+                    $owners.val($currentOwner.data('value'));
+                    $bookInput.val($currentOwner.parents('tr').data('book-id'));
+                    $modalBookOwner.modal('show');
+                    return false;
+                });
+                $('.change-book-name').on('click', function () {
+                    $currentBookname = $(this);
+                    $errorHandlerBookname.hide();
+                    $bookNameInput.val($currentBookname.parents('tr').data('book-id'));
+                    $('[name=bookname]').val($currentBookname.siblings('.current-bookname').text());
+                    $modalBookname.modal('show');
+                    return false;
+
+                });
+                $formOwners.on('submit', function(){
+                    var $this = $(this),
+                        newOwnerId = $owners.val(),
+                        $submit = $this.find(":submit");
+                    $submit.button('loading');
+                    $.post($formOwners.attr('action'), $formOwners.serialize(), function(resp){
+                        if(resp.ok){
+                            $currentOwner.data('value', newOwnerId)
+                                .siblings('.owner-name').text($('option[value='+newOwnerId+']').text());
+                            $submit.button('reset');
+                            $modalBookOwner.modal('hide');
+                        }else{
+                            $submit.button('reset');
+                            $errorHandler.text('Unexpected error').show();
+                        }
+
+                    }, 'json').error(function(resp){
+                        $submit.button('reset');
+                        $errorHandler.text('Unexpected error').show();
+                    });
+                   return false;
+                });
+
+                $formBookname.on('submit', function(){
+                    var $submit = $formBookname.find(':submit');
+                    $submit.button('loading');
+                    $.post($formBookname.attr('action'), $formBookname.serialize(), function(resp){
+                        if(resp.ok){
+                            $currentBookname.siblings('.current-bookname').text($('[name=bookname]').val());
+                            $submit.button('reset');
+                            $modalBookname.modal('hide');
+                        }else{
+                            $submit.button('reset');
+                            $errorHandler.text('Unexpected error').show();
+                        }
+
+                    }, 'json').error(function(resp){
+                        $submit.button('reset');
+                        $errorHandler.text('Unexpected error').show();
+                    });
+                   return false;
+                });
             }
         },
         dashboard: {
@@ -381,6 +454,28 @@
                 driver.dashboard.handleImage();
                 $('#profile-img').on('click', function () {
                     $('#upload').trigger('click');
+                });
+
+                var $copyForm = $('#copy-form');
+                $('.copy-link').on('click', function(){
+                    $copyForm.get(0).reset();
+                    $copyForm.attr('action', $(this).data('href'));
+                    $('#copy-modal').modal('show');
+                    return false;
+                });
+                $copyForm.on('submit', function () {
+                    var $this = $(this);
+                    $this.find(":submit").button('loading');
+                    $.post($this.attr('action'), $this.serialize(), function(resp){
+                        if (resp.ok) {
+//                            window.location.href = driver.urlBase + 'book/tocmanager/' + resp.id;
+                            window.location.href = window.location.href;
+                        } else {
+                            $this.find(":submit").button('reset');
+                        }
+
+                    },'json');
+                    return false;
                 });
             },
             previewImg: function (evt) {
@@ -2081,7 +2176,7 @@
                                     items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Indent List',
                                         '-', /*'CreateDiv',*/ '-'/*,
                                          'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'*/, '-', 'BidiLtr', 'BidiRtl' ] },
-                                { name: 'insert', items: [ 'Image', /* 'Flash', */'Table', 'CreatePlaceholder','EqnEditor','SpecialChar']},
+                                { name: 'insert', items: [ 'InsertPre','Image', 'Link',/* 'Flash', */'Table', 'CreatePlaceholder','EqnEditor','SpecialChar']},
                                 { name: 'styles', items: [ 'Styles', 'Format'/*, 'Blockquote', 'Font', 'FontSize' */]},
                                 { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
                                 { name: 'tools', items: [  'ShowBlocks' ]}/*,
@@ -2094,7 +2189,7 @@
                             removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,contextmenu,liststyle,tabletools,lite,autosave,align,bidi',//elementspath',
                             //elementspath, is for bottom bar
                             // jqueryspellchecker,
-                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave'/*,customlanguage'*/,
+                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre'/*,customlanguage'*/,
                             resize_enabled: false,
                             contentsCss: "public/css/custom_ckeditor.css",
                             imageBrowser_listUrl: $('base').attr('href')+"book/images/"+driver.parameters[0],

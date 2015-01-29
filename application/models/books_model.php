@@ -45,11 +45,15 @@ class Books_model extends CI_Model
 
     }
 
+    /*
+     * TODO: change method name, it could collide with generic get method
+     */
     public function get($bookId){
         $this->db->select('id, title, owner');
         $query= $this->db->get_where('books', array('id'=>$bookId));
         return $query->row_array();
     }
+
     public function getUserConfig($bookId, $userId){
         $this->db->select('book_id, user_id, settings');
         $query= $this->db->get_where('book_user_settings', array('book_id'=>$bookId, 'user_id'=>$userId));
@@ -152,5 +156,30 @@ class Books_model extends CI_Model
         $this->db->where(array('c.id'=>$chapterId));
         $query = $this->db->get();
         return $query->row_array();
+    }
+
+    public function updateOwner()
+    {
+        $this->db->where('book_id', $this->input->post('book_id'));
+        return $this->db->update('books', array('owner'=>$this->input->post('owner')));
+
+    }
+
+    public function updateName()
+    {
+        $book = $this->get($this->input->post('book_id'));
+        $newTitle = $this->input->post('bookname');
+
+        $this->db->where('id', $this->input->post('book_id'));
+        if($this->db->update('books', array('title'=>$newTitle))){
+            $oldPath = BASEPATH.'../public/uploads/'.url_title($book['title']);
+            if(file_exists($oldPath)){
+                return rename($oldPath, BASEPATH.'../public/uploads/'.url_title($newTitle));
+            }
+            return true;
+        }else{
+            return false;
+        }
+
     }
 }

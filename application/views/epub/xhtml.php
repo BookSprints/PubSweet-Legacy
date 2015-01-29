@@ -10,4 +10,4 @@
     <?php endforeach;
         endif;?>
 </head>
-<body><?php echo $content;?></body></html>
+<body><?php print str_replace('&amp;#10;','&#10;',$content);?></body></html>
