@@ -1499,7 +1499,7 @@
                     }
                 });
             },
-            stats: function(){
+            stats: function() {
                 var margin = {top: 20, right: 20, bottom: 30, left: 40},
                     width = 960 - margin.left - margin.right,
                     height = 500 - margin.top - margin.bottom;
@@ -1525,10 +1525,14 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.json("review/data/"+driver.parameters[0], function(error, data) {
+                d3.json("review/data/" + driver.parameters[0], function (error, data) {
 
-                    x.domain(data.map(function(d) { return d.names; }));
-                    y.domain([0, d3.max(data, function(d) { return d.allComments; })]);
+                    x.domain(data.map(function (d) {
+                        return d.names;
+                    }));
+                    y.domain([0, d3.max(data, function (d) {
+                        return d.allComments;
+                    })]);
 
                     svg.append("g")
                         .attr("class", "y axis")
@@ -1544,10 +1548,16 @@
                         .data(data)
                         .enter().append("rect")
                         .attr("class", "bar")
-                        .attr("x", function(d) { return x(d.names); })
+                        .attr("x", function (d) {
+                            return x(d.names);
+                        })
                         .attr("width", x.rangeBand())
-                        .attr("y", function(d) { return y(d.allComments); })
-                        .attr("height", function(d) { return height - y(d.allComments); });
+                        .attr("y", function (d) {
+                            return y(d.allComments);
+                        })
+                        .attr("height", function (d) {
+                            return height - y(d.allComments);
+                        });
 
                     //Adding after bar so text will be above the bars
                     svg.append("g")
@@ -1558,18 +1568,18 @@
                         .style("text-anchor", "end")
                         .attr("dx", "-.8em")
                         .attr("dy", ".15em")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "translate(10, -5)"
                         });
 
                     createPieChart(data);
                 });
 
-                function createPieChart(data){
+                function createPieChart(data) {
                     var w = 960,                        //width
                         h = 500,                            //height
                         margin = 40,                    //
-                        r = (h/2) - margin,                            //radius
+                        r = (h / 2) - margin,                            //radius
                         color = d3.scale.category20c();     //builtin range of colors
 
 //                    data = [{"label":"one", "value":20},
@@ -1581,13 +1591,15 @@
                         .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
                         .attr("height", h)
                         .append("svg:g")                //make a group to hold our pie chart
-                        .attr("transform", "translate(" + w/2 + "," + h/2 + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+                        .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")")    //move the center of the pie chart from 0, 0 to radius, radius
 
                     var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
                         .outerRadius(r);
 
                     var pie = d3.layout.pie()           //this will create arc data for us given a list of values
-                        .value(function(d) { return d.allComments; });    //we must tell it out to access the value of each element in our data array
+                        .value(function (d) {
+                            return d.allComments;
+                        });    //we must tell it out to access the value of each element in our data array
 
                     var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
                         .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties)
@@ -1596,18 +1608,22 @@
                         .attr("class", "slice");    //allow us to style things in the slices (like text)
 
                     arcs.append("svg:path")
-                        .attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                        .attr("fill", function (d, i) {
+                            return color(i);
+                        }) //set the color for each slice to be chosen from the color function defined above
                         .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
 
                     arcs.append("svg:text")                                     //add a label to each slice
-                        .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                        .attr("transform", function (d) {                    //set the label's origin to the center of the arc
                             //we have to make sure to set these before calling arc.centroid
                             d.innerRadius = r + 100;
                             d.outerRadius = r + 200;
                             return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
                         })
                         .attr("text-anchor", "middle")                          //center the text on it's origin
-                        .text(function(d, i) { return data[i].names; });        //get the label from our original data array
+                        .text(function (d, i) {
+                            return data[i].names;
+                        });        //get the label from our original data array
 
                 }
 
@@ -2186,10 +2202,10 @@
                                  items: [ 'jQuerySpellChecker' ]
                                  }*/
                             ],
-                            removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,contextmenu,liststyle,tabletools,lite,autosave,align,bidi',//elementspath',
+                            removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,liststyleS,lite,autosave,align,bidi',//elementspath',
                             //elementspath, is for bottom bar
                             // jqueryspellchecker,
-                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre'/*,customlanguage'*/,
+                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre,tabletools'/*,customlanguage'*/,
                             resize_enabled: false,
                             contentsCss: "public/css/custom_ckeditor.css",
                             imageBrowser_listUrl: $('base').attr('href')+"book/images/"+driver.parameters[0],
@@ -2608,7 +2624,7 @@
                     $preview.modal('show')
                     return false;
                 });
-                $('.rollback').on('click', function(){
+                $('.rollback').on('click', function (){
                     var $this = $(this);
                     $.post($this.attr('href'), function(resp){
                         if(resp.ok){
@@ -2620,6 +2636,14 @@
                             }, 2000);
                         }
                     }, 'json');
+                    return false;
+                });
+                $('.compare').on('click', function (){
+                    var $this = $(this);
+                    var $content = $('#compare-modal').modal('show').find('.modal-body').text('fetching...');
+                    $.get($this.attr('href'), function(resp){
+                        $content.html(resp);
+                    });
                     return false;
                 });
             }

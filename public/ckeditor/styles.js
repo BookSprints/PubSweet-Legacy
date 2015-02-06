@@ -43,6 +43,33 @@ CKEDITOR.stylesSet.add( 'default', [
 		}
 	},
 
+
+
+    {
+        name: 'Tip',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#FFE56F'
+        }
+    }, {
+        name: 'Note',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#7E8C86'
+        }
+    }, {
+        name: 'caution',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#FF6C6F'
+
+        }
+    },
+
+
 	/* Inline Styles */
 
 	// These are core styles available as toolbar buttons. You may opt enabling
