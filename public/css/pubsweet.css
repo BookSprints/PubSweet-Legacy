@@ -872,3 +872,15 @@ rect{
 #edit-flags{
     padding: 20px;
 }
+
+/** book graphics **/
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.area {
+    fill: steelblue;
+}

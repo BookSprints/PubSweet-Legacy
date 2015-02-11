@@ -46,6 +46,7 @@ class Admin extends CI_Controller{
         $user=$this->user_model->get_all();
         $this->load->helper('form');
         $this->load->view('templates/header');
+        $this->load->view('templates/admin_navbar');
         $this->load->view('user/admin',array('user'=>$user));
         $this->load->view('templates/footer');
     }
@@ -81,9 +82,15 @@ class Admin extends CI_Controller{
         $data['days'] = $day;
 
         $this->load->view('templates/header');
-        $this->load->view('templates/navbar');
+        $this->load->view('templates/admin_navbar');
         $this->load->view('admin/stats', $data);
         $this->load->view('templates/footer');
+
+//        http://bl.ocks.org/mbostock/3885211
+        //mostrar las relaciones entre escritores y capítulos
+//        http://mbostock.github.io/d3/talk/20111116/bundle.html
+        //mostrar cantidad de palabras
+        //http://bl.ocks.org/mbostock/4063423
     }
 
     public function login_stats($day = 7)
@@ -98,6 +105,8 @@ class Admin extends CI_Controller{
         $this->load->model('facilitators_model','facilitator');
 
         $this->load->view('templates/header');
+        $this->load->view('templates/admin_navbar');
+
         $this->load->view('admin/facilitators', array('users'=>$this->user_model->get_all(),
                                                       'facilitators'=>$this->facilitator->all()));
         $this->load->view('templates/footer');
@@ -115,16 +124,17 @@ class Admin extends CI_Controller{
     {
         $this->load->library(array('pagination','arrayhelper'));
 
-        $config['base_url'] = 'http://example.com/index.php/test/page/';
+        /*$config['base_url'] = 'http://example.com/index.php/test/page/';
         $config['total_rows'] = 200;
         $config['per_page'] = 20;
 
-        $this->pagination->initialize($config);
+        $this->pagination->initialize($config);*/
 
         $this->load->model(array('books_model','user_model'));
         $data['books'] = $this->books_model->all();
         $data['users'] = $this->arrayhelper->indexedArray($this->user_model->get_all(), 'id');
         $this->load->view('templates/header');
+        $this->load->view('templates/admin_navbar');
         $this->load->view('admin/books', $data);
         $this->load->view('templates/footer');
 

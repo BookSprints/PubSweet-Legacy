@@ -44,7 +44,8 @@ class Chapters_model extends CI_Model
         $this->db->insert('chapters', $data);
         return $this->db->insert_id();
     }
-//Insert the update in database
+
+    //Insert the update in database
     public function update_position($id,$section,$order)
     {
         $this->db->where('id',$id);
@@ -72,16 +73,27 @@ class Chapters_model extends CI_Model
    }
 
     public function update($data, $id){
+        $oldChapter = $this->get($id);
         $this->db->where('id',$id);
         $result = $this->db->update('chapters', $data);
-        $this->addToHistory($id, $this->session->userdata('DX_user_id'), $data['content']);
-        return $result;
+        if($result && $oldChapter['content'] != $data['content']){
+            $this->addToHistory($id, $this->session->userdata('DX_user_id'),
+                $data['content'], strip_tags($oldChapter['content']));
+        }
+
+        return false;
     }
 
-    private function addToHistory($chapter_id, $user_id, $content)
+    private function addToHistory($chapter_id, $user_id, $newContent, $oldContent)
     {
+        $onlyText = strip_tags($newContent);
+        include APPPATH.'/libraries/finediff.php';
+        $diff = new FineDiff($oldContent, $newContent);
+
         $this->db->insert('normal_chapter_history', array('chapter_id'=>$chapter_id,
-            'user_id'=>$user_id, 'content'=>$content));
+            'user_id'=>$user_id, 'content'=>$newContent, 'words'=>str_word_count($onlyText),
+            'inserted'=>$diff->insertions_count, 'deleted'=>$diff->deletions_count));
+
     }
 
     public function selectchapter($book_id){
@@ -126,4 +138,32 @@ class Chapters_model extends CI_Model
 
         return $this->db->query($sql, array($chapterId));
     }
+
+    /**
+     * Prepares the data to be used by a graphic in stats section
+     *
+     * @param $bookId
+     * @return mixed Word count of chapters' content grouped by section
+     */
+    public function wordCount($bookId)
+    {
+        $all = $this->find($bookId);
+
+        $temp = array();
+        $sectionsTemp = array();
+        foreach($all as $chapter){
+
+            $temp[$chapter['section_id']][] = array('name'=>$chapter['title'],
+                'words'=>str_word_count(strip_tags($chapter['content']))
+            );
+            $sectionsTemp[$chapter['section_id']] = $chapter['section_title'];
+        }
+        $result = array();
+        foreach($sectionsTemp as $key=>$section){
+            $result[] = array('name'=>$section,
+                'children'=>$temp[$key]);
+        }
+        return $result;
+    }
+
 }

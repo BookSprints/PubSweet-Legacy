@@ -12,17 +12,20 @@
             <tr>
                 <th>User</th>
                 <th>Content</th>
+                <th>Compare to</th>
                 <th>Date</th>
                 <th></th>
             </tr>
             <?php foreach ($history as $item): ?>
 
-
             <tr data-id="<?php echo $item['id'];?>">
                 <td><?php echo $item['username'];?></td>
                 <td><a href="#" class="view-content">Click to view content</a>
                     <div class="hide"><?php echo $item['content'];?></div></td>
+                <td><a class="compare" href="chapter/compare/<?php echo $item['id']; ?>/previous">Previous entry</a>&nbsp;|&nbsp;
+                    <a class="compare" href="chapter/compare/<?php echo $item['id']; ?>/current">Current version</a></td>
                 <td><?php echo $item['created'];?></td>
+
                 <td><a class="rollback" href="chapter/rollback/<?php echo $item['id'];?>">Rollback</a></td>
             </tr>
             <?php endforeach;?>
@@ -35,6 +38,17 @@
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3>Preview</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" data-dismiss="modal" class="btn">Close</a>
+    </div>
+</div>
+<div class="modal hide" id="compare-modal">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Compare</h3>
     </div>
     <div class="modal-body">
     </div>

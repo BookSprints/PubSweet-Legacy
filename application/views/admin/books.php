@@ -99,6 +99,7 @@
                 <th></th>
                 <th>Books</th>
                 <th>Owner</th>
+                <th>Options</th>
             </tr>
             </thead>
             <?php //var_dump($users);die();?>
@@ -113,6 +114,7 @@
                         <span
                             class="owner-name"><?php echo $users[$item['owner']][empty($users[$item['owner']]['names']) ? 'username' : 'names']; ?></span>
                     </td>
+                    <td><a href="book/stats/<?php echo $item['id']; ?>">Stats</a></td>
                 </tr>
             <?php endforeach; ?>
         </table>

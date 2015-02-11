@@ -165,4 +165,23 @@ class Chapter extends CI_Controller
         echo json_encode(array('ok'=>$this->model->toggleLock($id)));
     }
 
+    /**
+     * Graphically compare an history entry to another
+     * @param $historyId
+     * @param string $option {'previous', 'last'}
+     */
+    public function compare($historyId, $option = 'previous')
+    {
+        echo "<style>ins {color: green;background: #dfd;text-decoration: none;}</style>";
+        echo "<style>del {color: red;background: #fdd;text-decoration: none;}</style>";
+        $this->load->model('normal_chapter_history_model', 'history_model');
+        $data = $this->history_model->compare($historyId, $option);
+
+        include APPPATH.'/libraries/finediff.php';
+        $opcodes = FineDiff::getDiffOpcodes($data['compare']['content'],
+            $data['original']['content'], FineDiff::$wordGranularity);
+
+        echo html_entity_decode(FineDiff::renderDiffToHTMLFromOpcodes($data['compare']['content'], $opcodes)) ;
+    }
+
 }

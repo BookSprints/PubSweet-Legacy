@@ -1631,7 +1631,276 @@
 //                    d.frequency = +d.frequency;
                     return d;
                 }
+
+                driver.book.wordCount();
+                driver.book.bubbleUsersWordCount();
+                driver.book.wordHistory();
+
+            },
+            wordCount: function () {
+                var width = 940,
+                    height = 660,
+                    radius = 300,
+                    color = d3.scale.category20c();
+
+                var svg = d3.select("#word-count").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
+
+                var partition = d3.layout.partition()
+                    .sort(null)
+                    .size([2 * Math.PI, radius * radius])
+                    .value(function(d) { return d.words; });
+
+                var arc = d3.svg.arc()
+                    .startAngle(function(d) { return d.x; })
+                    .endAngle(function(d) { return d.x + d.dx; })
+                    .innerRadius(function(d) { return Math.sqrt(d.y/2); })
+                    .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
+
+                d3.json("stats/bookWordCount/" + driver.parameters[0], function(error, root) {
+                    var path = svg.datum(root).selectAll("path")
+                        .data(partition.nodes)
+                        .enter().append("path")
+                        .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+                        .attr("d", arc)
+                        .style("stroke", "#fff")
+                        .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+                        .style("fill-rule", "evenodd")
+                        .each(stash);
+
+                    d3.selectAll("input").on("change", function change() {
+                        var self = this,
+                            value = function(d) { return d[self.value]; };
+
+                        path
+                            .data(partition.value(value).nodes)
+                            .transition()
+                            .duration(1500)
+                            .attrTween("d", arcTween);
+                    });
+
+                    var text = svg.datum(root).selectAll("text").data(partition.nodes);
+                    var textEnter = text.enter().append("text")
+                        .style("fill-opacity", 1)
+                        .attr("text-anchor", function(d) {
+                            return (d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                        })
+                        .attr("dy", ".2em")
+                        .attr("transform", function(d) {
+                            var multiline = (d.name || "").length > 16,
+                                angle = (d.x + d.dx / 2) * 180 / Math.PI - 90,
+                                rotate = angle + (multiline ? -.5 : 0);
+                            return "rotate(" + rotate + ")translate(" + (Math.sqrt(d.y/2) ) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                        })
+                        .on("mouseover", function(d){
+                            d3.select(this).selectAll('tspan').text(function(d){
+                                return "("+ d.value + ") " + d.name;
+                            });
+                        }).
+                        on('mouseout', function(d){
+                            d3.select(this).selectAll('tspan').text(function(d){
+                                return d.name!=undefined ? d.name.substr(0, 15)
+                                + (d.name.length > 15 ? '...' : '') : '';
+                            });
+                        });
+                    textEnter.append("tspan")
+                        .attr("x", 0)
+                        .text(function(d) { return d.name!=undefined ? d.name.substr(0, 15)
+                        + (d.name.length > 15 ? '...' : '') : ''});
+
+                    driver.book.bubbleWordCount(root);
+                });
+
+                // Stash the old values for transition.
+                function stash(d) {
+                    d.x0 = d.x;
+                    d.dx0 = d.dx;
+                }
+
+                // Interpolate the arcs in data space.
+                function arcTween(a) {
+                    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+                    return function(t) {
+                        var b = i(t);
+                        a.x0 = b.x;
+                        a.dx0 = b.dx;
+                        return arc(b);
+                    };
+                }
+
+                d3.select(self.frameElement).style("height", height + "px");
+            },
+            bubbleWordCount : function (root) {
+                var diameter = 940,
+                    format = d3.format(",d"),
+                    color = d3.scale.category20c();
+
+                var bubble = d3.layout.pack()
+                    .sort(null)
+                    .size([diameter, diameter])
+                    .padding(1.5);
+
+                var svg = d3.select("#bubble-words").append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("class", "bubble");
+
+                //d3.json("stats/bookWordCount/" + driver.parameters[0], function(error, root) {
+                    var node = svg.selectAll(".node")
+                        .data(bubble.nodes(classes(root))
+                            .filter(function(d) { return !d.children; }))
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+                    node.append("title")
+                        .text(function(d) { return d.packageName + ": " + format(d.value); });
+
+                    node.append("circle")
+                        .attr("r", function(d) { return d.r; })
+                        .style("fill", function(d) { return color(d.packageName); });
+
+                    node.append("text")
+                        .attr("dy", ".3em")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return d.className.substring(0, d.r / 3); });
+                //});
+
+                // Returns a flattened hierarchy containing all leaf nodes under the root.
+                function classes(root) {
+                    var classes = [];
+
+                    function recurse(name, node) {
+                        if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+                        else classes.push({packageName: name, className: node.name, value: node.words});
+                    }
+
+                    recurse(null, root);
+                    return {children: classes};
+                }
+
+                d3.select(self.frameElement).style("height", diameter + "px");
+            },
+            bubbleUsersWordCount : function (root) {
+                var diameter = 940,
+                    format = d3.format(",d"),
+                    color = d3.scale.category20c();
+
+                var bubble = d3.layout.pack()
+                    .sort(null)
+                    .size([diameter, diameter])
+                    .padding(1.5);
+
+                var svg = d3.select("#users-words").append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("class", "bubble");
+
+                d3.json("stats/usersWordCount/" + driver.parameters[0], function(error, root) {
+                    var node = svg.selectAll(".node")
+                        .data(bubble.nodes(classes(root))
+                            .filter(function(d) { return !d.children; }))
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+                    node.append("title")
+                        .text(function(d) { return d.packageName + ": " + format(d.value); });
+
+                    node.append("circle")
+                        .attr("r", function(d) { return d.r; })
+                        .style("fill", function(d) { return color(d.packageName); });
+
+                    node.append("text")
+                        .attr("dy", ".3em")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return d.className.substring(0, d.r / 3); });
+                });
+
+                // Returns a flattened hierarchy containing all leaf nodes under the root.
+                function classes(root) {
+                    var classes = [];
+
+                    function recurse(name, node) {
+                        if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+                        else classes.push({packageName: node.names, className: node.names, value: node.added});
+                    }
+
+                    recurse(null, root);
+                    return {children: classes};
+                }
+
+                d3.select(self.frameElement).style("height", diameter + "px");
+            },
+            wordHistory: function () {
+                var margin = {top: 20, right: 20, bottom: 100, left: 80},
+                    width = 940 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+                var parseDate = d3.time.format("%d-%b-%y").parse;
+
+                var x = d3.time.scale()
+                    .range([0, width]);
+
+                var y = d3.scale.linear()
+                    .range([height, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
+
+                var area = d3.svg.area()
+                    .x(function(d) { return x(d.date); })
+                    .y0(height)
+                    .y1(function(d) { return y(d.words); });
+
+                var svg = d3.select("#words-history").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                d3.csv("stats/wordHistory/" + driver.parameters[0], function(error, data) {
+                    data.forEach(function(d) {
+                        var date = d.date.split(" ")[0].split("-"),
+                            time = d.date.split(" ")[1].split(":");
+
+                        d.date = new Date(+date[0], +date[1]-1, +date[2], +time[0], +time[1], +time[2]);
+                        d.words = parseInt(d.words);
+                    });
+
+                    x.domain(d3.extent(data, function(d) { return d.date; }));
+                    y.domain([0, d3.max(data, function(d) { return +d.words; })]);
+
+                    svg.append("path")
+                        .datum(data)
+                        .attr("class", "area")
+                        .attr("d", area);
+
+                    svg.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(xAxis);
+
+                    svg.append("g")
+                        .attr("class", "y axis")
+                        .call(yAxis)
+                        .append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .style("text-anchor", "end")
+                        .text("Words ($)");
+                });
             }
+
         },
         register: {
             login: function () {
