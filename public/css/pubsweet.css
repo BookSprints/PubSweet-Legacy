@@ -160,7 +160,7 @@ h1.brand {
     margin: 15px;
 }
 
-.chapter-type a {
+.chapter-type a, small a{
     font-size: 8pt;
     color: #747474;
     font-family: "myriad";

@@ -292,17 +292,20 @@ class Render extends CI_Controller{
         return $result;
     }
 
-    public function chapter($id)
+    public function chapter($id, $data = null)
     {
-        $this->load->model('Chapters_model','chapters');
-        $item = $this->chapters->get($id);
-        switch($item['editor_id']){
+        if($data===null){
+            $this->load->model('Chapters_model','chapters');
+            $data = $this->chapters->get($id);
+        }
+
+        switch($data['editor_id']){
             case 1:
-                echo $this->renderLexiconChapter($item);
+                echo $this->renderLexiconChapter($data);
                 break;
             case 2:
                 $this->simpleChapter = true;
-                echo $this->renderNormalChapter($item);
+                echo $this->renderNormalChapter($data);
                 break;
             default:
                 echo 'Something is wrong';
@@ -406,6 +409,24 @@ class Render extends CI_Controller{
         ob_end_clean();
         $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
         $this->load->view('templates/simple/footer', array('draft'=>$draft));
+    }
+
+    public function section($id)
+    {
+        $this->load->model('Chapters_model','chapters');
+
+        ob_start();
+        $chapters = $this->chapters->getBySection($id);
+
+        echo '<h1 style="text-align: center; font-size: 5em; line-height: 1em;">'.$chapters[0]['section_title'].'</h1>';
+        foreach ($chapters as $item) {
+            $this->chapter($item['id'], $item);
+        }
+        $originalContent = ob_get_contents();
+        ob_end_clean();
+        $this->load->view('templates/simple/header', array('id'=>$id, 'content'=>$originalContent));
+        $this->load->view('templates/simple/footer');
+
     }
 }
 

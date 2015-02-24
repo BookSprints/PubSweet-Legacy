@@ -37,6 +37,9 @@
                                         <a href="<?php echo base_url('sections/delete_section/'); ?>"  class="delete-section" data-id="<?php echo $section['id']; ?>">&times;</a>
                                     </span>
                                     <?php endif;?>
+                                    <small class='pull-right section-preview'>
+                                        <a href="<?php echo 'render/section/' . $section['id']; ?>">Preview</a>
+                                    </small>
                                     <a data-toggle="collapse"
                                        data-target="#section-chapters-<?php echo $section['id'] ?>"
                                        class="accordion-toggle pull-left">&nbsp;</a>
@@ -346,38 +349,4 @@
         <div class="modal-footer"></div>
     </div>
 
-<!--    <div class="modals">
-        <div class="modal hide fade" id="invited-modal">
-            <form id="invited-email" action="<?php //echo base_url('invited/invite'); ?>" method="post" class="modal-form">
-                <input type="hidden" name="book_id" value="<?php //echo $id; ?>">
-                <input type="hidden" name="user_id" value="<?php //echo $this->session->userdata('DX_user_id'); ?>"/>
-
-                <div class="modal-header">
-                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                   <h3><?php //echo $this->lang->line('invite-a-user'); ?></h3>
-               </div>
-                <div class="modal-body">
-
-                    <div class="controls-group">
-                        <label for="">Email</label>
-                       <div class="controls">
-                       <input type="email" name="invited" required="required" autofocus="true">
-                       </div>
-                   </div>
-
-               </div>
-                <div class="modal-footer">
-
-                   <a href="#" class="btn" data-dismiss="modal"><?php //echo $this->lang->line('cancel'); ?></a>
-                   <button type="submit" class="btn btn-primary" data-loading-text="Inviting..." id="user-invited">
-                    <?php //echo $this->lang->line('invite'); ?>
-                    </button>
-               </div>
-
-            </form>
-     </div>
-   </div>-->
-
-
 </div>
-

@@ -166,4 +166,15 @@ class Chapters_model extends CI_Model
         return $result;
     }
 
+    public function getBySection($sectionId)
+    {
+        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content');
+        $this->db->from('chapters c');
+        $this->db->join('sections s','s.id = c.section_id AND s.removed=0');
+        $this->db->where(array('c.section_id'=>$sectionId,'c.removed'=>0));
+        $this->db->order_by('s.order, c.order');
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+
 }
