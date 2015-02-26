@@ -2889,8 +2889,11 @@
             history: function(){
                 var $preview = $('#preview-entry');
                 $('.view-content').on('click', function(){
-                    $preview.find('.modal-body').html($(this).siblings('.hide').html());
-                    $preview.modal('show')
+                    var $this = $(this);
+                    $.get($this.attr('href'), function(resp){
+                        $preview.find('.modal-body').html(resp);
+                        $preview.modal('show')
+                    });
                     return false;
                 });
                 $('.rollback').on('click', function (){

@@ -20,8 +20,7 @@
 
             <tr data-id="<?php echo $item['id'];?>">
                 <td><?php echo $item['username'];?></td>
-                <td><a href="#" class="view-content">Click to view content</a>
-                    <div class="hide"><?php echo $item['content'];?></div></td>
+                <td><a href="chapter/historyEntry/<?php echo $item['id'];?>" class="view-content">Click to view content</a></td>
                 <td><a class="compare" href="chapter/compare/<?php echo $item['id']; ?>/previous">Previous entry</a>&nbsp;|&nbsp;
                     <a class="compare" href="chapter/compare/<?php echo $item['id']; ?>/current">Current version</a></td>
                 <td><?php echo $item['created'];?></td>

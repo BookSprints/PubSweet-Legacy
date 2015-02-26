@@ -149,6 +149,12 @@ class Chapter extends CI_Controller
 
     }
 
+    public function historyEntry($id)
+    {
+        $history=$this->model->getHistoryEntry($id);
+        echo $history['content'];
+    }
+
     public function rollback($id)
     {
         $history=$this->model->getHistoryEntry($id);
