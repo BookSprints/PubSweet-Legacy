@@ -227,7 +227,7 @@
         <div class="pull-left">
         <div class="navbar">
             <div class="navbar-inner">
-                <div class="nav"><a class="brand" href="<?php echo base_url(); ?>">LEXICON</a></div>
+                <div class="nav"><a class="brand" href="<?php echo base_url(); ?>">PUBSWEET</a></div>
                 <form class="navbar-form pull-left">
                 <button class="btn btn-primary" data-target="#add-phase-modal" data-toggle="modal" type="button">Add Phase
                 </button>

@@ -25,6 +25,9 @@ class Importer extends CI_Controller {
         $this->load->view('templates/footer');
     }
 
+    /**
+     * Process and save the data from a epub file
+     */
     public function save()
     {
         $config['upload_path'] = APPPATH.'../public/uploads/';
@@ -41,6 +44,9 @@ class Importer extends CI_Controller {
             $this->load->model('sections_model', 'sectionModel');
             $this->load->model('chapters_model', 'chapterModel');
             $bookId = $this->bookModel->set_book($this->session->userdata('DX_user_id'));
+
+            $this->importImages($epub);
+
             $content = $epub->getCompactContent();
             $order = 1;
             foreach($content as $key=>$item){
@@ -50,14 +56,16 @@ class Importer extends CI_Controller {
                     }
                     $chapterId = $this->chapterModel->set_chapter(
                         array('title'=>$key, 'section_id'=>$main, 'book_id'=>$bookId,
-                              'content'=>$item, 'order'=>++$order, 'editor_id'=>2));
+                              'content'=>
+                                  $this->fixImagesSrc(empty($item['content']) ? $item : $item['content']),
+                              'order'=>++$order, 'editor_id'=>2));
                 }else{
                     $sectionId = $this->sectionModel->set_section(array('title'=>$key, 'book_id'=>$bookId));
                     foreach($item['children'] as $key2=>$item2){
                         if(empty($item2['children'])){
                             $chapterId = $this->chapterModel->set_chapter(
                                 array('title'=>$key2, 'section_id'=>$sectionId, 'book_id'=>$bookId,
-                                      'content'=>$item2, 'order'=>++$order, 'editor_id'=>2));
+                                      'content'=>$this->fixImagesSrc($item2), 'order'=>++$order, 'editor_id'=>2));
                         }else{
                             $sectionId = $this->sectionModel->set_section(array('title'=>$key, 'book_id'=>$bookId));
                         }
@@ -70,6 +78,31 @@ class Importer extends CI_Controller {
             redirect('book/tocmanager/'.$bookId, 'refresh');
         }else{
             echo $this->upload->display_errors();
+        }
+    }
+
+    private function fixImagesSrc($content)
+    {
+        return str_ireplace(array('images/','graphics//'), 'public/uploads/'.$this->bookModel->getFolderName($this->input->post('title')).'/',
+            $content);
+    }
+
+    /**
+     * @param $epub
+     */
+    private function importImages($epub)
+    {
+        $this->load->helper('file');
+        $images = $epub->getImages();
+        $imagePath = $this->bookModel->getImagesPath($this->input->post('title'));
+        foreach ($images as $item) {
+            $img = $epub->getFromName($item['href']);
+
+            if (!file_exists($imagePath)) {
+                @mkdir($imagePath);
+            }
+            $fileParts = pathinfo($item['href']);
+            write_file($imagePath . $fileParts['basename'], $img);
         }
     }
 } 

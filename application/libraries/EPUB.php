@@ -11,6 +11,7 @@ class EPUB
     private $epub, $localFile, $opf, $toc;
     public $noFileLinks=array(), $xhtmlFiles, $images;
     private static $shortedChapters;
+    private $extraLayer = '';
 
     public function __construct($file)
     {
@@ -18,8 +19,15 @@ class EPUB
         //Opens a Zip archive
         if($epub = $this->zip->open($file)){
             $this->localFile = $file;
-            $this->opf = simplexml_load_string($this->zip->getFromName('content.opf'));
-            $this->opf->registerXPathNamespace('opf', 'http://www.idpf.org/2007/opf');
+            /*if(($opfContent = $this->zip->getFromName('content.opf')) === false){
+                if(($opfContent = $this->zip->getFromName('OEBPS/content.opf')) === false){
+                    throw new Exception('OPF file not found');
+                }
+            }
+
+            $this->opf = simplexml_load_string($opfContent);
+            $this->opf->registerXPathNamespace('opf', 'http://www.idpf.org/2007/opf');*/
+            $this->opf();
         }else{
             echo 'Can not open: '.$file;
         }
@@ -42,6 +50,18 @@ class EPUB
     }
 
     public function opf(){
+        if(empty($this->opf)){
+            if(($opfContent = $this->zip->getFromName('content.opf')) === false){
+                if(($opfContent = $this->zip->getFromName('OEBPS/content.opf')) === false){
+                    throw new Exception('OPF file not found');
+                }else{
+                    $this->extraLayer = "OEBPS/";
+                }
+            }
+
+            $this->opf = simplexml_load_string($opfContent);
+            $this->opf->registerXPathNamespace('opf', 'http://www.idpf.org/2007/opf');
+        }
         return $this->opf;
     }
 
@@ -68,7 +88,15 @@ class EPUB
     public function getToc()
     {
         if($this->toc==null){
-            $this->toc = simplexml_load_string($this->zip->getFromName('toc.ncx'));
+            if(($tocContent = $this->zip->getFromName('toc.ncx')) === false){
+                if(($tocContent = $this->zip->getFromName('OEBPS/toc.ncx')) === false){
+                    throw new Exception('TOC file not found');
+                }else{
+
+                    $this->extraLayer = "OEBPS/";
+                }
+            }
+            $this->toc = simplexml_load_string($tocContent);
         }
 
         return $this->toc;
@@ -275,7 +303,7 @@ class EPUB
 
     private function setCoverReference($html, $jpg)
     {
-        $internalFile = 'content.opf';
+        $internalFile = 'content.opf';//TODO change for $this->opf
         $opf = $this->zip->getFromName($internalFile);
         $xml = new SimpleXMLElement($opf);
 
@@ -310,7 +338,12 @@ class EPUB
 //        $this->zip->close();
     }
 
-    public function getImages(){
+    /**
+     * Search images in the content.opf file with blank character in its name and change it for "_"
+     *
+     * @return bool
+     */
+    public function fixImagesReferencesInOPF(){
         $internalFile = 'content.opf';
         $opf = $this->zip->getFromName($internalFile);
         $xml = new SimpleXMLElement($opf);
@@ -343,6 +376,11 @@ class EPUB
         return true;
     }
 
+    /**
+     * Search image references in the xhtml files with blank character in its name and change it for "_"
+     *
+     * @return bool
+     */
     private function fixImageReferencesInFiles()
     {
         $xhtmlFiles = $this->getXhtmlFiles();
@@ -402,7 +440,7 @@ class EPUB
 
     public function getFromName($name)
     {
-        return $this->zip->getFromName($name);
+        return $this->zip->getFromName(str_ireplace('//','/',$this->extraLayer.$name));
     }
 
     public function getError(){
@@ -416,11 +454,6 @@ class EPUB
     {
         if(empty($this->compactContent)){
             $toc = $this->getToc();
-//            var_dump($toc->navMap);die();
-            /*foreach($toc->navMap->navPoint as $item):
-                $file = simplexml_load_string($this->getFromName((string) $item->content['src']));
-                $this->compactContent[(string)$item->navLabel->text] = str_replace(array('<body>','</body>'), array(''), (string)$file->body->asXML());
-            endforeach;*/
             $this->compactContent = $this->createStructure($toc->navMap);
         }
 
@@ -431,16 +464,26 @@ class EPUB
     {
         $result = array();
         foreach($navParent->navPoint as $item):
-            $file = str_get_html($this->getFromName((string) $item->content['src']));
-//            $this->compactContent[(string)$item->navLabel->text] = str_replace(array('<body>','</body>'), array(''), (string)$file->body->asXML());
+            if(($file = str_get_html($this->getFromName((string) $item->content['src'])))==false){
+                continue;
+            }
+
             if(empty($item->navPoint)){
                 $result[(string)$item->navLabel->text] = $file->find('body', 0)->outertext;
             }else{
-                $result[(string)$item->navLabel->text] = array('content'=>$file->find('body', 0)->outertext,
+                $content = $file->find('body', 0)->outertext;
+                $result[(string)$item->navLabel->text] = array('content'=>$content,
                     'children'=>$this->createStructure($item) );
             }
 
         endforeach;
         return $result;
+    }
+
+    public function getImages()
+    {
+        $result = $this->opf()->xpath('//opf:manifest/opf:item[@media-type="image/png"]');
+        $result1 = $this->opf()->xpath('//opf:manifest/opf:item[@media-type="image/jpeg"]');
+        return array_merge($result, $result1);
     }
 }

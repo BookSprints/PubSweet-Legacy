@@ -173,4 +173,17 @@ class Books_model extends CI_Model
         }
 
     }
+
+    public function getFolderName($bookTitle)
+    {
+        return url_title($bookTitle);
+        $this->load->helper('file');
+        $files = get_filenames(BASEPATH.'../public/uploads/'.$folderName);
+    }
+
+    public function getImagesPath($bookTitle)
+    {
+        $folderName = url_title($bookTitle);
+        return BASEPATH.'../public/uploads/'.$folderName.'/';
+    }
 }

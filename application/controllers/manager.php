@@ -267,7 +267,7 @@ class Manager extends CI_Controller
         if ($book) {
             $local = 'tmp/'.$book.'.epub';
             $epub = new EPUB($local);
-            $epub->getImages();
+            $epub->fixImagesReferencesInOPF();
             echo json_encode(array('ok' => 1, 'epub' => $local));
             return;
 

@@ -2497,7 +2497,8 @@
                             autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),
                             flags: window.myflags,
-                        }
+                            baseHref: $('base').attr('href')
+                        };
                         $('#editor').ckeditor(config);
                     }
                 });
