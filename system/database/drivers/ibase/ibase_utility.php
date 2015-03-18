@@ -32,44 +32,38 @@
  * @copyright	Copyright (c) 2014 - 2015, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
  * @link	http://codeigniter.com
- * @since	Version 1.0.0
+ * @since	Version 3.0.0
  * @filesource
  */
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * CodeIgniter Language Helpers
+ * Interbase/Firebird Utility Class
  *
- * @package		CodeIgniter
- * @subpackage	Helpers
- * @category	Helpers
+ * @category	Database
  * @author		EllisLab Dev Team
- * @link		http://codeigniter.com/user_guide/helpers/language_helper.html
+ * @link		http://codeigniter.com/user_guide/database/
  */
+class CI_DB_ibase_utility extends CI_DB_utility {
 
-// ------------------------------------------------------------------------
-
-if ( ! function_exists('lang'))
-{
 	/**
-	 * Lang
+	 * Export
 	 *
-	 * Fetches a language variable and optionally outputs a form label
-	 *
-	 * @param	string	$line		The language line
-	 * @param	string	$for		The "for" value (id of the form element)
-	 * @param	array	$attributes	Any additional HTML attributes
-	 * @return	string
+	 * @param	string	$filename
+	 * @return	mixed
 	 */
-	function lang($line, $for = '', $attributes = array())
+	protected function _backup($filename)
 	{
-		$line = get_instance()->lang->line($line);
-
-		if ($for !== '')
+		if ($service = ibase_service_attach($this->db->hostname, $this->db->username, $this->db->password))
 		{
-			$line = '<label for="'.$for.'"'._stringify_attributes($attributes).'>'.$line.'</label>';
+			$res = ibase_backup($service, $this->db->database, $filename.'.fbk');
+
+			// Close the service connection
+			ibase_service_detach($service);
+			return $res;
 		}
 
-		return $line;
+		return FALSE;
 	}
+
 }

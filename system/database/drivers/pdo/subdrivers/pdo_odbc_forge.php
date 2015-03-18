@@ -32,44 +32,39 @@
  * @copyright	Copyright (c) 2014 - 2015, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
  * @link	http://codeigniter.com
- * @since	Version 1.0.0
+ * @since	Version 3.0.0
  * @filesource
  */
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * CodeIgniter Language Helpers
+ * PDO ODBC Forge Class
  *
- * @package		CodeIgniter
- * @subpackage	Helpers
- * @category	Helpers
+ * @category	Database
  * @author		EllisLab Dev Team
- * @link		http://codeigniter.com/user_guide/helpers/language_helper.html
+ * @link		http://codeigniter.com/database/
  */
+class CI_DB_pdo_odbc_forge extends CI_DB_pdo_forge {
 
-// ------------------------------------------------------------------------
-
-if ( ! function_exists('lang'))
-{
 	/**
-	 * Lang
+	 * UNSIGNED support
 	 *
-	 * Fetches a language variable and optionally outputs a form label
-	 *
-	 * @param	string	$line		The language line
-	 * @param	string	$for		The "for" value (id of the form element)
-	 * @param	array	$attributes	Any additional HTML attributes
-	 * @return	string
+	 * @var	bool|array
 	 */
-	function lang($line, $for = '', $attributes = array())
+	protected $_unsigned		= FALSE;
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Field attribute AUTO_INCREMENT
+	 *
+	 * @param	array	&$attributes
+	 * @param	array	&$field
+	 * @return	void
+	 */
+	protected function _attr_auto_increment(&$attributes, &$field)
 	{
-		$line = get_instance()->lang->line($line);
-
-		if ($for !== '')
-		{
-			$line = '<label for="'.$for.'"'._stringify_attributes($attributes).'>'.$line.'</label>';
-		}
-
-		return $line;
+		// Not supported (in most databases at least)
 	}
+
 }
