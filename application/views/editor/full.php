@@ -87,7 +87,7 @@
                     top: 'top',
                     bottom: 'bottom'
                 },
-                imageBrowser_listUrl: "../../book/images",
+                imageBrowser_listUrl: "../../../../book/images",
                 on: {
                     'changeLanguage': function(event){
                         event.editor.destroy();

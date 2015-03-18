@@ -69,7 +69,7 @@
 
     <script type="text/javascript" src="<?php echo base_url();?>public/js/book.js"></script>
     <style>
-        @media print {
+        /*@media print {
             .pagination-page{
                 margin-right: 0;
                 margin-left: 0;
@@ -77,7 +77,7 @@
                 border: none;
                 margin-bottom: 0;
             }
-        }
+        }*/
     </style>
 </head>
 <body
