@@ -81,18 +81,18 @@ class Chapters_model extends CI_Model
                 $data['content'], strip_tags($oldChapter['content']));
         }
 
-        return false;
+        return true;
     }
 
     private function addToHistory($chapter_id, $user_id, $newContent, $oldContent)
     {
         $onlyText = strip_tags($newContent);
-        include APPPATH.'/libraries/finediff.php';
-        $diff = new FineDiff($oldContent, $newContent);
+//        include APPPATH.'/libraries/finediff.php';
+//        $diff = new FineDiff($oldContent, $newContent);
 
         $this->db->insert('normal_chapter_history', array('chapter_id'=>$chapter_id,
             'user_id'=>$user_id, 'content'=>$newContent, 'words'=>str_word_count($onlyText),
-            'inserted'=>$diff->insertions_count, 'deleted'=>$diff->deletions_count));
+            /*'inserted'=>$diff->insertions_count, 'deleted'=>$diff->deletions_count*/));
 
     }
 
