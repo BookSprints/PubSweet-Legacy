@@ -126,10 +126,16 @@ h1.brand {
     height: 100px;
 }
 
-#btncreatebook {
+.profile-button {
     padding: 20px;
     margin: 0;
     font-size: 14px;
+    margin-left: 20px;
+    margin-top: 10px;
+    width: 160px !important;
+    display: block;
+    box-sizing: content-box;
+    border: none;
 }
 
 #mybook {
