@@ -22,39 +22,47 @@ class Console extends CI_Controller
     {
         $this->load->model('books_model', 'book');
         $data['book'] = $this->book->get($id);
+        $data['defaultConfig'] =
+            "window.paginationConfig = {
+                    'sectionStartMarker': 'div.section',
+                    'sectionTitleMarker': 'h1.sectiontitle',
+                    'chapterStartMarker': 'div.chapter',
+                    'chapterTitleMarker': 'h1.chaptertitle',
+                    'flowElement': \"document.getElementById('flow')\",
+                    'alwaysEven': false,
+                    'enableFrontmatter': true,
+                    'bulkPagesToAdd': 50,
+                    'pagesToAddIncrementRatio': 1.4,
+                    'pageHeight': 9.68,
+                    'pageWidth': 7.44,
+                    'lengthUnit: ': 'in',
+                    'oddAndEvenMargins': false,
+                    'frontmatterContents': '".$data['book']['title']."</h1>'
+                        + '<div class=\"pagination-pagebreak\"></div>',
+                    'autoStart': true,
+
+                };";
         $this->load->view('console/wizard', $data);
     }
 
-    public function preview($book, $editablecss, $hyphen, $prettify)
+    public function saveSettings()
+    {
+        $token = $this->input->post('settings-token');
+        $bookJSConfig = $this->input->post('bookjs-config');
+        if(!empty($token)){
+            if(!file_exists(APPPATH.'/epub/profiles/')){
+                mkdir(APPPATH.'/epub/profiles/');
+            }
+            file_put_contents(APPPATH.'/epub/profiles/'.$token, $bookJSConfig);
+        }
+    }
+
+    public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false)
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
             $dir = dirname(__FILE__).'/../epub/' . $book.'/';
 
-            $dirFiles = scandir($dir);
-
-            $xhtmlFiles = array();
-
-            /*foreach($dirFiles as $file) {
-
-                if (!is_dir($dir . "/" . $file)) {
-                    $path_parts = pathinfo($dir . "/" . $file);
-
-                    $ext = strtolower(trim(isset ($path_parts['extension']) ? $path_parts['extension'] : ''));
-
-                    if ($ext == 'xhtml') {
-
-                        $xhtmlFiles[] = $file;
-
-                    }
-                }
-            }
-
-            asort($xhtmlFiles);*/
-
-//            $zip1 = new ZipArchive;
-            //Opens a Zip archive
-//            $epub = $zip1->open($file);
             if(file_exists($dir.'toc.ncx')){
                 $toc = file_get_contents($dir.'toc.ncx');
                 if($toc!==false){
@@ -80,7 +88,6 @@ class Console extends CI_Controller
                             $chapter = $navPoint->navPoint[$i];
                             $entry = (string) $chapter->content->attributes()->src[0];
 
-//                            foreach ($xhtmlFiles as $entry) {
                                 if ($entry == 'cover.xhtml') {
                                     continue;
                                 }
@@ -95,16 +102,20 @@ class Console extends CI_Controller
                                 }
 
                                 foreach ($dom->find('img') as $element) {
-                                    $uri = $element->src;
-                                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
-                                        $parts = pathinfo($uri);
-                                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
-                                            base64_encode(file_get_contents($dir.$uri));
+                                        $uri = $element->src;
+                                    if(file_exists($dir.$uri)){
+
+                                        if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
+                                            $parts = pathinfo($uri);
+                                            $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
+                                                base64_encode(file_get_contents($dir.$uri));
+                                        }
+                                        $parent = $element->parent();
+                                        if($parent->tag=='p'){
+                                            $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
+                                        }
                                     }
-                                    $parent = $element->parent();
-                                    if($parent->tag=='p'){
-                                        $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
-                                    }
+
 
                                 }
                                 foreach ($dom->find('h1') as $element) {
@@ -126,7 +137,6 @@ class Console extends CI_Controller
                                 $body = $dom->find('body', 0);
                                 $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
                                     . '<div class="chapter">' . $body->innertext . '</div>';
-//                            }
 
                             ++$i;
                         }
@@ -135,21 +145,63 @@ class Console extends CI_Controller
                 }
             }
 
-
-
-            /** CSS */
-            $css[] = file_exists($dir.'objavi.css')?file_get_contents($dir.'objavi.css'):'';
-            $css[] = file_exists($dir.'css/extra.css')?file_get_contents($dir.'css/extra.css'):'';
         }
 
-        $params = array('book' => $book, 'editablecss' => $editablecss,
+        $params = array('book' => $book, 'editablecss' =>$editablecss,
             'hyphen' => $hyphen, 'prettify' => $prettify,
-            'fullHTML' => $fullHTML, 'css' => $css);
+            'fullHTML' => $fullHTML, 'css' => $this->loadCss($dir),
+            'customConfig'=>$this->loadConfig($identifier, $xml->docTitle->text));
         if(isset($xml)){
             $params['bookTitle'] = $xml->docTitle->text;
         }
 
         $this->load->view('console/preview', $params);
+    }
+
+    /**
+     * Load extra css files
+     * @param $dir
+     * @return array
+     */
+    private function loadCss($dir)
+    {
+        $css = [];
+        if(file_exists($dir.'objavi.css')){
+            $css[] = file_get_contents($dir.'objavi.css');
+        }
+        if(file_exists($dir.'css/extra.css')){
+            $css[] = file_get_contents($dir.'css/extra.css');
+        }
+
+        return $css;
+    }
+
+    private function loadConfig($identifier, $bookTitle)
+    {
+        if(file_exists(APPPATH.'/epub/profiles/'.$identifier)){
+            return file_get_contents(APPPATH.'/epub/profiles/'.$identifier);
+        }else{
+            return "window.paginationConfig = {
+                'sectionStartMarker': 'div.section',
+                'sectionTitleMarker': 'h1.sectiontitle',
+                'chapterStartMarker': 'div.chapter',
+                'chapterTitleMarker': 'h1.chaptertitle',
+                'flowElement': \"document.getElementById('flow')\",
+                'alwaysEven': false,
+                'enableFrontmatter': true,
+                'bulkPagesToAdd': 50,
+                'pagesToAddIncrementRatio': 1.4,
+                'pageHeight': 9.68,
+                'pageWidth': 7.44,
+                'lengthUnit': 'in',
+                'oddAndEvenMargins': false,
+                'frontmatterContents': '<h1>".$bookTitle."</h1>'
+                    + '<div class=\"pagination-pagebreak\"></div>',
+                'autoStart': true,
+                'polyfill': true;
+
+            };";
+        }
     }
 
     public function livecss($book, $editablecss, $hyphen, $prettify)
