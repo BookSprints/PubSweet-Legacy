@@ -21,34 +21,35 @@
                 </a></div>
 
             </div>
-            <div class="" id="btncreatebook">
-                <div class="controls pull-right">
-                    <div></div>
-                    <input type="button" class="btn btn-primary btn-large validate[required] span12" value="<?php echo $this->lang->line('create-book');?>"
-                           data-target="#create-book-modal" data-toggle="modal"  id="btncreatebook">
-                    <br/>
-                    <br/>
+            <div class="controls pull-right">
+                <div></div>
+                <input type="button" class="btn btn-primary validate[required] profile-button"
+                       value="<?php echo $this->lang->line('create-book');?>"
+                       data-target="#create-book-modal" data-toggle="modal"  id="btncreatebook">
+                <a href="importer/form" class="btn btn-primary profile-button">Import from EPUB</a>
+                <br/>
+                <br/>
 
-                    <form action="<?php echo base_url('dashboard/updateLanguage/');?>" method="post" id="form-language" class="form-vertical">
-                        <div class="control-group"><label class="control-label" for="">LEXICON'S LANGUAGE:</label>
-                            <div class="controls"><select name="language" id="select-languages" onchange="$('#form-language').get(0).submit();" class="span12">
-                                    <?php
-                                    $selectedLanguage = $this->session->userdata('lang_iso_code');
-                                    if(empty($selectedLanguage)){
-                                        $selectedLanguage = 'en';
-                                    }
+                <form action="<?php echo base_url('dashboard/updateLanguage/');?>" method="post" id="form-language" class="form-vertical">
+                    <div class="control-group"><label class="control-label" for="">PUBSWEET'S LANGUAGE:</label>
+                        <div class="controls"><select name="language" id="select-languages" onchange="$('#form-language').get(0).submit();" class="span12">
+                                <?php
+                                $selectedLanguage = $this->session->userdata('lang_iso_code');
+                                if(empty($selectedLanguage)){
+                                    $selectedLanguage = 'en';
+                                }
 
-                                    foreach ($languages as $key => $item) :?>
-                                        <option value="<?php echo $key;?>"
-                                            <?php echo $key==$selectedLanguage?'selected="selected"':'';?>>
-                                            <?php echo $item;?></option>
-                                    <?php endforeach;?>
-                                </select></div>
-                        </div>
+                                foreach ($languages as $key => $item) :?>
+                                    <option value="<?php echo $key;?>"
+                                        <?php echo $key==$selectedLanguage?'selected="selected"':'';?>>
+                                        <?php echo $item;?></option>
+                                <?php endforeach;?>
+                            </select></div>
+                    </div>
 
-                    </form>
-                </div>
-            </div></div>
+                </form>
+            </div>
+        </div>
         <div class="span9"><div id="mybook">
                 <h3 class="text-center"><?php echo $this->lang->line('my-books');?></h3>
                 <table class="table table-striped table-bordered">

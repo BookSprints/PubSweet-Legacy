@@ -40,7 +40,6 @@
 
 $route['default_controller'] = "dashboard/profile";
 $route['404_override'] = '';
-$route['admin/importer'] = 'importer/form';
 $route['admin/import'] = 'importer/save';
 $route['console/(:num)'] = 'console/wizard/$1';
 $route['console/manager/(:any)'] = 'manager/$1';

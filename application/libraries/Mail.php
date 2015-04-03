@@ -43,8 +43,9 @@ class Mail{
         $this->ci->email->to($recipient);
         $this->ci->email->subject($subject);
         $this->ci->email->message($this->template($text));
-
-        $this->ci->email->send();
+        if(!$this->ci->email->send()){
+            die('Email was not sent');
+        }
         //echo $this->email->print_debugger();
 
     }

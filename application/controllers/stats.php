@@ -51,7 +51,7 @@ class Stats extends CI_Controller{
      */
     public function normalizeHistory($bookId)
     {
-        if($this->input->is_cli_request() && !empty($bookId)){
+        if(is_cli() && !empty($bookId)){
             include APPPATH.'/libraries/finediff.php';
 
             $this->load->model('normal_chapter_history_model','normal_chapter_history');
