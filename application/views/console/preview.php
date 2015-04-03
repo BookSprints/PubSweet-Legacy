@@ -36,26 +36,7 @@
     <?php endif;?>
 <!--    <script type="text/javascript" src="--><?php //echo base_url();?><!--public/js/cssregions.min.js"></script>-->
     <script type="text/javascript">
-        window.paginationConfig = {
-            'sectionStartMarker': 'div.section',
-            'sectionTitleMarker': 'h1.sectiontitle',
-            'chapterStartMarker': 'div.chapter',
-            'chapterTitleMarker': 'h1.chaptertitle',
-            'flowElement': "document.getElementById('flow')",
-            'alwaysEven': false,
-            'enableFrontmatter': true,
-            'bulkPagesToAdd': 50,
-            'pagesToAddIncrementRatio': 1.4,
-            'pageHeight': 9.68,
-            'pageWidth': 7.44,
-            'lengthUnit: ': 'in',
-            'oddAndEvenMargins': false,
-            'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
-                + '<div class="pagination-pagebreak"></div>',
-            'autoStart': true,
-            'polyfill': true
-
-        };
+        <?php echo $customConfig;?>
         <?php if(isset($_GET['h']) && !empty($_GET['h'])):?>
         paginationConfig.pageHeight = <?php echo sprintf('%f',$_GET['h']);?>;
         <?php endif;?>

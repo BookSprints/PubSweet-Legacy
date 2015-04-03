@@ -231,8 +231,13 @@ h1.brand {
 .section-name {
     margin: 0;
     font-size: 1.6em;
-
 }
+
+.section-preview{
+    line-height: 40px;
+    margin-right: 5px;
+}
+
 .contributor .section-name{
     cursor: move;
 }
