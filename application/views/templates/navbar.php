@@ -30,8 +30,6 @@ if (!empty($id)):  ?>
                 </li>
 
                     <?php if($id==$book['owner'] || $this->user_model->isFacilitator($id)):?>
-                    <li><a href="<?php echo base_url().'taskmanager/' . $book['id'] . '/'; ?>" >
-                            <?php echo $this->lang->line('task-manager');?></a></li>
                     <li><a href="<?php echo base_url().'console/' . $book['id'] . '/';?>" target="_blank">
                             <?php echo $this->lang->line('console');?></a></li>
 
