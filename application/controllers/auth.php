@@ -2,10 +2,10 @@
 class Auth extends CI_Controller
 {
 	// Used for registering and changing password form validation
-	var $min_username = 4;
-	var $max_username = 20;
-	var $min_password = 4;
-	var $max_password = 20;
+	public $min_username = 4;
+	public $max_username = 20;
+	public $min_password = 4;
+	public $max_password = 20;
 
 	function __construct()
 	{

@@ -18,7 +18,7 @@ if (!empty($id)):  ?>
                         <a href="<?php echo base_url('book/tocmanager/' . $book['id']);?>"><?php echo $book['title']; ?></a>
                     </li>
              <?php if (!($view == "profile" || empty($view))):?>
-                 <li class="<?php if($module=='book') echo 'active';?>">
+                 <li class="<?php if($module=='book' && $view!='imageManager') echo 'active';?>">
 
                     <a href="<?php echo base_url('book/tocmanager/' . $book['id']);?>"><?php echo $this->lang->line('contents');?></a>
                  </li>
@@ -32,6 +32,9 @@ if (!empty($id)):  ?>
                     <?php if($id==$book['owner'] || $this->user_model->isFacilitator($id)):?>
                     <li><a href="<?php echo base_url().'console/' . $book['id'] . '/';?>" target="_blank">
                             <?php echo $this->lang->line('console');?></a></li>
+                    <li <?php echo $view=='imageManager'?' class="active" ':''; ?>>
+                        <a href="<?php echo base_url().'book/imageManager/' . $book['id'];?>">
+                            <?php echo $this->lang->line('images');?></a></li>
 
                 <?php
                     endif;//user

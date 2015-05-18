@@ -69,7 +69,6 @@ class Book extends CI_Controller
                     'isFacilitator' => $isFacilitator,
                     'contributor' => $contributor,
                     'reviewer' => $reviewer,
-//                    'editing_sections' => $this->getCurrentlyEditingSections()
                 ));
 
         $this->load->view('templates/footer');
@@ -224,6 +223,43 @@ class Book extends CI_Controller
     {
         $this->load->model('books_model');
         echo json_encode(array('ok'=>$this->books_model->updateName()));
+    }
+
+    public function imageManager($id)
+    {
+        $this->load->model(array('books_model','sections_model','chapters_model'));
+        $bookname = $this->books_model->get($id);
+        $sections = $this->sections_model->find($id);
+        $chapters = $this->chapters_model->find($id);
+        foreach ($chapters as &$item) {
+            $item['images'] = $this->findImages($item['content']);
+        }
+        $this->load->view('templates/header');
+        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('book/image-manager',
+            array('id'=>$id,
+                  'sections'=>$sections,
+                  'chapters'=>$chapters,
+            ));
+
+        $this->load->view('templates/footer');
+    }
+
+    private function findImages($content)
+    {
+        if(!function_exists('str_get_html')){
+            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+        }
+
+        $dom = str_get_html($content);
+        if(empty($dom)){
+            return null;
+        }
+        $images = array();
+        foreach ($dom->find('img') as $element) {
+            $images[] = $element->src;
+        }
+        return $images;
     }
 
 }

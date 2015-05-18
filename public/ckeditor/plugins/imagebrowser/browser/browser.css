@@ -47,7 +47,8 @@ body {
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	overflow: hidden;
-	font-size: 0;
+	/*font-size: 0;*/
+    max-width: 200px;
 }
 
 .thumbnail:hover {

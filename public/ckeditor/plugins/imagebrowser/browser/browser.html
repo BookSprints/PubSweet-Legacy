@@ -8,7 +8,10 @@
 
 	<body>
 		<script type="text/x-template-html" id="js-template-image">
-			<a href="javascript://" class="thumbnail js-image-link" data-url="%imageUrl%"><img src="%thumbUrl%"></a>
+			<a href="javascript://" class="thumbnail js-image-link" data-url="%imageUrl%">
+                <img src="%thumbUrl%">
+                <span style="font-size: 12px;">%imageUrl%</span>
+            </a>
 		</script>
 
 		<ul class="folder-switcher" id="js-folder-switcher"></ul>
