@@ -565,3 +565,5 @@ CREATE TABLE IF NOT EXISTS `user_temp` (
 -- EDITIONS
 ------
 ALTER TABLE `chapters` ADD `locked` BOOLEAN NOT NULL DEFAULT FALSE ;
+ALTER TABLE `normal_chapter_history` ADD `words` INT NULL , ADD `inserted` INT NULL , ADD `deleted` INT NULL ;
+ALTER TABLE `chapters` CHANGE `content` `content` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;

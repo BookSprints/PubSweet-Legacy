@@ -12,6 +12,7 @@ class Books_model extends CI_Model
     {
         parent::__construct();
         $this->load->database();
+        $this->load->helper('url');
     }
 
     public function all($userId=null, $extended=false)
@@ -177,8 +178,8 @@ class Books_model extends CI_Model
     public function getFolderName($bookTitle)
     {
         return url_title($bookTitle);
-        $this->load->helper('file');
-        $files = get_filenames(BASEPATH.'../public/uploads/'.$folderName);
+        /*$this->load->helper('file');
+        $files = get_filenames(BASEPATH.'../public/uploads/'.$folderName);*/
     }
 
     public function getImagesPath($bookTitle)

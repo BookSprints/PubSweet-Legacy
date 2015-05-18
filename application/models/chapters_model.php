@@ -29,12 +29,25 @@ class Chapters_model extends CI_Model
         return $query->result_array();
     }
 
-    public function findGrouped($id)
+    /**
+     * TODO: create a general method to process an array and convert it into a grouped array, probably the best way is to add it to My_Model
+     *
+     * @param $id
+     * @return array - grouped by section id
+     */
+    public function findGrouped($id, $onlyContent=null)
     {
         $rows = $this->find($id);
         $result = array();
         foreach ($rows as $item) {
-            $result[$item['section_id']][] = $item;
+            if(empty($onlyContent) || in_array($item['section_id'], $onlyContent->sections)){
+                if(empty($onlyContent) || in_array($item['id'], $onlyContent->chapters)){
+                    $result[$item['section_id']][] = $item;
+
+                }
+
+            }
+
         }
         return $result;
     }

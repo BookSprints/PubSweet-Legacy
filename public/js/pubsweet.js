@@ -1220,8 +1220,9 @@
                                 return;
                             }
                             var $edit = $('li.chapter[data-id="'+item.chapter_id+'"]').find('.edit'),
-                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: item.user.names+' is editing',
-                                    'title': item.user.names+' is editing'});
+                                editorName = item.user.names=='' ? item.user.username : item.user.names,
+                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName+' is editing',
+                                    'title': editorName+' is editing'});
 
                             $edit.replaceWith($newEdit);
                         });
@@ -1229,8 +1230,9 @@
 
                     io.socket.on('lock-wysi', function(data){
                         var $edit = $('li.chapter[data-id="'+data.chapter_id+'"]').find('.edit'),
-                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: data.user.names+' is editing',
-                                'title': data.user.names+' is editing'});
+                            editorName = data.user.names==''?data.user.username:data.user.names,
+                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName + ' is editing',
+                                'title': editorName + ' is editing'});
 
                         $edit.replaceWith($newEdit);
                     });
@@ -1964,7 +1966,7 @@
                     }
                 });
                 $(function(){
-                    $.getJSON('user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo', function(response){
                         sessionStorage.username = response.username;
                     });
                     localStorage.removeItem('term');
@@ -2449,6 +2451,7 @@
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
+                            extraAllowedContent: '* [id]',
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
                                     items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
@@ -2621,8 +2624,7 @@
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             filebrowserImageUploadUrl : 'editor/uploadImage',
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote"
-
-                        }
+                        };
                         CKEDITOR.inline('editor', config);
 //                        $('#editor').ckeditor(config);
 

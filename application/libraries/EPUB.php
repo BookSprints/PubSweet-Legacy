@@ -74,7 +74,7 @@ class EPUB
             </platform>
             </display_options>');
     }
-
+    //TODO move to EpubFixer
     public function cleanXHTML(){
         $this->xhtmlFiles = $this->getXhtmlFiles();
         $this->setShortedChapters();
@@ -102,6 +102,7 @@ class EPUB
         return $this->toc;
     }
 
+    //TODO move to EpubFixer
     /**
      * Fix anchors linking to local files
      */
@@ -154,6 +155,8 @@ class EPUB
         return $xhtmlFiles;
     }
 
+    //TODO move to EpubFixer if necessary
+    //TODO write documentation
     private function fixContent($content, $file)
     {
         // Create DOM from string
@@ -186,6 +189,7 @@ class EPUB
 
     }
 
+    //TODO move to EpubWriter
     public function backToEpub($file, $content, $xml=false)
     {
         if($xml){
@@ -215,10 +219,10 @@ class EPUB
             }
             $this->zip->addFromString($internalFile, $dom->innertext);
         }
-        return array('ok'=>1);
+        return array('ok'=>1);//TODO check if this method is still necessary
     }
     
-    public function uploadCSS($content){
+    public function uploadCSS($content){//TODO check if this method is still necessary
         if (get_magic_quotes_gpc()) {
             $content = stripslashes($content);
         }
@@ -232,7 +236,7 @@ class EPUB
     }
 
     private function fixCSSInnerFilesReference($cssFile)
-    {
+    {//TODO check if this method is still necessary
         $zip = zip_open($this->localFile);
         while ($zip_entry = zip_read($zip)) {
             $entryName = zip_entry_name($zip_entry);
@@ -257,7 +261,7 @@ class EPUB
         zip_close($zip);
         return true;
     }
-
+    //TODO move to EpubFixer
     private function fixCSSReference($cssFile){
         $result = $this->opf->xpath('//opf:manifest/opf:item[@href="'.$cssFile.'"]');
         if(empty($result)){
@@ -268,7 +272,7 @@ class EPUB
         }
         return true;
     }
-
+    //TODO probably need to go to EpubWriter
     private function createCoverHtml($file)
     {
         $htmlCoverFile = 'cover.xhtml';
@@ -401,7 +405,7 @@ class EPUB
         }
 
     }
-
+    //TODO move to EpubWriter
     public function insertCSS($URI){
         $fileName = basename($URI);
         if(!$this->zip->addFile($URI, $fileName)){
@@ -419,7 +423,7 @@ class EPUB
         }
 
     }
-
+    //TODO move to EpubWriter
     public function insertJS($URI){
         $fileName = basename($URI);
         $this->zip->addFile($URI, $fileName);

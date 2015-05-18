@@ -85,6 +85,10 @@
         .brand{
             font-family: "libre-baskerville";
         }
+        .content-options li{
+            list-style: none;
+            margin-left: 20px;
+        }
 
     </style>
     <style type="text/css">
@@ -112,7 +116,6 @@ if (!empty($book['id'])):  ?>
                     </li>
                 <?php endif; ?>
                 <li>
-                <li><a href="<?php echo 'taskmanager/' . $book['id'] . '/'; ?>" target="_blank">Task Manager</a></li>
                 <li class="active"><a href="<?php echo 'console/' . $book['id'] . '/' ?>">Console</a>
                 </li>
 
@@ -136,51 +139,75 @@ if (!empty($book['id'])):  ?>
 
         <!--form:post#management-form.form-horizontal>(fieldset>legend+(div.control-group>label.control-label+div.controls>input:text))*3-->
         <form id="management-form" class="form-horizontal bootzard" action="#" method="post">
+            <input type="hidden" name="settings-token" id="settings-token" value="<?php echo substr(md5(microtime()),rand(0,26),6);?>"/>
+
             <fieldset id="metadata" class="bookable">
-                <input type="hidden" name="settings-token" id="settings-token" value="<?php echo substr(md5(microtime()),rand(0,26),6);?>"/>
-                <legend>Metadata</legend>
+                <div class="span6">
+                    <legend>Metadata</legend>
                     <input type="hidden" name="book_id" value="<?php echo $book['id'];?>" id="book_id"/>
                     <input type="hidden" name="bookname"
-                           value="<?php echo str_replace(' ', '_', strtolower($book['title']));?>" id="bookname"/>
-                <div class="control-group"><label class="control-label" for="book-title">Book title</label>
+                           value="<?php echo $bookName;?>" id="bookname"/>
+                    <div class="control-group"><label class="control-label" for="book-title">Book title</label>
 
-                    <div class="controls"><input type="text" name="title" id="book-title"
-                                                 value="<?php echo $book['title'];?>"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="author">Author</label>
+                        <div class="controls"><input type="text" name="title" id="book-title"
+                                                     value="<?php echo $book['title'];?>"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="author">Author</label>
 
-                    <div class="controls"><input type="text" name="author" id="author"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="publisher">Publisher</label>
+                        <div class="controls"><input type="text" name="author" id="author"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="publisher">Publisher</label>
 
-                    <div class="controls"><input type="text" name="publisher" id="publisher" value="PUBSWEET"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="published-date">Published Date</label>
+                        <div class="controls"><input type="text" name="publisher" id="publisher" value="PUBSWEET"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="published-date">Published Date</label>
 
-                    <div class="controls"><input type="text" name="date" id="published-date"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="license">License</label>
+                        <div class="controls"><input type="text" name="date" id="published-date"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="license">License</label>
 
-                    <div class="controls"><input type="text" name="rights" id="license" value="GPLv2+"></div>
+                        <div class="controls"><input type="text" name="rights" id="license" value="GPLv2+"></div>
+                    </div>
                 </div>
+                <div class="span6">
+                    <legend>Content</legend>
+                    <div>
+                        <label class="radio inline" for="full">
+                            <input type="radio" name="content" checked="checked"
+                                   id="full-content"/>Full</label>
+                        <label
+                            class="radio inline" for="customized"><input type="radio" name="content"
+                                                                         id="customized"/>Customized</label>
+                    </div>
+                    <div class="content-detail hide">
+                    <?php
+
+                    foreach ($sections as $id=>$chapters) {
+                        $options = sprintf('<ul class="content-options"><label class="checkbox" for="section%s">
+                            <input type="checkbox" name="sections[]" id="section%s" value="%s" checked/>%s</label>%%s</ul>',
+                            $chapters[0]['section_id'], $chapters[0]['section_id'], $chapters[0]['section_id'],
+                            $chapters[0]['section_title']);
+                        $chaptersInput = '';
+                        foreach ($chapters as $chapter) {
+                            $chaptersInput .= sprintf('<li><label for="chapter%s" class="checkbox">
+                                <input type="checkbox" name="chapters[]" value="%s" id="chapter%s" checked>%s</label></li>',
+                                $chapter['id'], $chapter['id'], $chapter['id'], $chapter['title']);
+                        }
+                        echo sprintf($options, $chaptersInput);
+                    }
+                    ?>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
                 </fieldset>
-<!--            </fieldset>-->
             <fieldset>
                 <div class="span6">
                 <legend>Custom CSS</legend>
-                <!--<div class="control-group">
-                    <div class="controls">
-                    <label class="checkbox" for="prettify-epub">
-                        <input type="checkbox" name="prettify-epub" id="prettify-epub"/> Inject Google Prettify into Epub</label>
-                    </div>
-                </div>-->
                 <div class="control-group"><label class="control-label" for="css">Custom CSS</label>
 
                     <div class="controls"><textarea name="css" id="css" rows="15"></textarea></div>
                 </div>
                 </div>
-            <!--</fieldset>
-            <fieldset>-->
                 <div class="span6">
                 <legend>Cover</legend>
                 <div class="control-group">
@@ -506,7 +533,7 @@ if (!empty($book['id'])):  ?>
                 }
                 selector.addClass('active').append(footer);
             };
-            self.activate(this.find('fieldset:first-child'));
+            self.activate(this.find('fieldset').first());
             self.addClass('bootzard');
             this.on('click', '.next',function () {
                 var fieldSet = $(this).parents('fieldset'), result = true;
@@ -560,6 +587,21 @@ if (!empty($book['id'])):  ?>
                     $basic.hide();
                     $bookjsconfig.removeAttr('disabled');
 
+                });
+                $('#customized').on('change', function(){
+                    $('.content-detail').show();
+                });
+                $('#full-content').on('change', function(){
+                    $('.content-detail').hide();
+                })
+                $('[name="sections[]"]').on('change', function(){
+                    var $this = $(this),
+                       $chapters = $this.parents('.content-options').find('[name="chapters[]"]');
+                    if($this.is(':checked')){
+                        $chapters.prop('checked','checked');
+                    }else{
+                        $chapters.removeAttr('checked');
+                    }
                 });
             },
             encodeImg:function (img) {
@@ -673,6 +715,7 @@ if (!empty($book['id'])):  ?>
                 $result.find('#epub').attr('href', driver.url).removeClass('hide');
                 $result.show();
                 if($('#download').is(':checked')){
+                    //because the xhtml files is always rendered, the generation is unuseful
                     document.location = 'render/epub/'+$('#book_id').val();
                 }
 
@@ -711,7 +754,7 @@ if (!empty($book['id'])):  ?>
                 }
             },
             generateXHTMLFiles: function(callback){
-                $.post('render/epub/'+$('#book_id').val(),
+                $.post('render/epub/'+$('#book_id').val()+'/'+$('#settings-token').val(),
                     {download: false},
                     function(data){
                         if(data.ok){
@@ -724,8 +767,14 @@ if (!empty($book['id'])):  ?>
                     });
             },
             uploadMetadata:function (callback) {
+                var content = '';
+                if($('#customized').is(':checked')){
+                    content = $('.content-detail').serialize();
+                }
                 $.post('console/manager/addMetadata/',
-                    $('#metadata').serialize()+'&book='+driver.bookname,
+                    $('#metadata').serialize() + content +
+                    '&book='+driver.bookname+
+                    '&token='+$('#settings-token').val(),
                     function(data){
                         if(data.ok){
                             if (!!callback) {

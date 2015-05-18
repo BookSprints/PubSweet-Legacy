@@ -68,8 +68,8 @@
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/pubsweet-libs.min.css"/>
 
-<link rel="stylesheet" href="<?php echo base_url(); ?>public/css/pubsweet.min.css"/>
-<!--<link rel="stylesheet" href="--><?php //echo base_url(); ?><!--public/css/pubsweet.css"/>-->
+<!--<link rel="stylesheet" href="--><?php //echo base_url(); ?><!--public/css/pubsweet.min.css"/>-->
+<link rel="stylesheet" href="<?php echo base_url(); ?>public/css/pubsweet.css"/>
 
 </head>
 <body>

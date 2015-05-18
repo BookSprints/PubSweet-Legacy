@@ -309,16 +309,23 @@
         /* Set style for the regions and pages used by BookJS and add it to the
          * head of the DOM.
          */
-        var stylesheet = document.createElement('style');
-        stylesheet.innerHTML =
-            ".pagination-main-contents-container {display: -webkit-flex; " +
-            "-webkit-flex-direction: column;}" +
+        var style = document.getElementById('flows');
+        if(style==null){
+
+            style = document.createElement('style');
+            style.setAttribute('id', 'flows');
+            document.head.appendChild(style);
+        }
+        style.innerHTML +=
+            ".pagination-main-contents-container {display: -webkit-flex; display: flex; " +
+            "-webkit-flex-direction: column; flex-direction: column;}" +
             "\n.pagination-contents-container {position: absolute;}" +
-            "\n.pagination-contents {display: -webkit-flex; -webkit-flex: 1;}"
+            "\n.pagination-contents {display: -webkit-flex; -webkit-flex: 1; display: flex; flex: 1;}"
         /* There seems to be a bug in the new flexbox model code which requires the
          * height to be set to an arbitrary value (which is ignored).
          */ + "\n.pagination-contents {height: 0px;}" +
-            "\n.pagination-contents-column {-webkit-flex: 1;}" + "\nbody {" +
+            "\n.pagination-contents-column {-webkit-flex: 1; flex: 1;}" +
+                "\nbody {" +
             "counter-reset: pagination-footnote pagination-footnote-reference;}" +
             "\n.pagination-footnote::before {" +
             "counter-increment: pagination-footnote-reference; " +
@@ -328,15 +335,15 @@
             "content: counter(pagination-footnote);}" +
             "\n.pagination-footnote > * > * {display: block;}" +
             "\n.pagination-page {page-break-after: always; position: relative;}" +
-            "\nimg {-webkit-region-break-before: always; " +
-            "-webkit-region-break-after: always;}" +
+            "\nimg {-webkit-region-break-before: always; break-before: always; " +
+            "-webkit-region-break-after: always; break-after: always;}" +
             "\n.pagination-pagenumber, .pagination-header {position: absolute;}" +
-            "\n.pagination-pagebreak {-webkit-region-break-after: always;}" +
-            "\n.pagination-simple {height: auto; position-relative;}" +
+            "\n.pagination-pagebreak {-webkit-region-break-after: always; break-after: always;}" +
+            "\n.pagination-simple {height: auto; position: relative;}" +
             "\n.pagination-page {margin-left:auto; margin-right:auto;}" +
             "\n.pagination-marginnote-item {position:absolute;}" +
             "\n.pagination-marginnote > * {display: block;}";
-        document.head.appendChild(stylesheet);
+//        document.head.appendChild(stylesheet);
     };
 
     pagination.setPageStyle = function () {
@@ -381,7 +388,8 @@
         + "\n@media screen{.pagination-page {border:solid 1px #000; " +
             "margin-bottom:.2in;}}" +
             "\n.pagination-main-contents-container {width:" + contentsWidth + ";}" + 
-            "\n.pagination-contents-container {bottom:" + contentsBottomMargin + "; height:" + contentsHeight + "; display: -webkit-flex;}"
+            "\n.pagination-contents-container {bottom:" + contentsBottomMargin + "; height:" + contentsHeight + "; " +
+                "display: -webkit-flex; display: flex;}"
         // Images should at max size be slightly smaller than the contentsWidth.
         + "\nimg {max-height: " + imageMaxHeight + ";max-width: " +
             imageMaxWidth + ";}" + "\n.pagination-pagenumber {bottom:" +
@@ -667,11 +675,12 @@
                 if (image && image.alt !== '') {
                     title = image.alt;
                 } else if (caption) {
-                    title = caption.innerText;
+                    title = pagination.getInnerText(caption);
                 } else {
                     title = 'Figure '+ i + '.' + j;
                 }
-                pagenumber = pagination.findPage(figure).querySelector('.pagination-pagenumber').innerText;
+                pagenumber = pagination.getInnerText(pagination.findPage(figure)
+                    .querySelector('.pagination-pagenumber'));
                 tofItemDiv = document.createElement('div');
                 tofItemDiv.classList.add('pagination-tof-entry');
                 tofItemTextSpan = document.createElement('span');
@@ -697,7 +706,7 @@
     }
     
     pagination.closest = function(element, searchedFor) {
-        if (element.webkitMatchesSelector(searchedFor)) {
+        if (pagination.matchesSelector(element, searchedFor)) {
             return element;
         } else {
             return pagination.closest(element.parentNode, searchedFor);
@@ -725,11 +734,12 @@
                 figure = pagination.closest(tables[j], 'figure');
                     caption = figure.querySelector('figcaption');
                     if (caption) {
-                        title = caption.innerText;
+                        title = pagination.getInnerText(caption);
                     } else {
                         title = 'Table '+ i + '.' + j;
                     }
-                    pagenumber = pagination.findPage(figure).querySelector('.pagination-pagenumber').innerText;
+                    pagenumber = pagination.getInnerText(pagination.findPage(figure)
+                        .querySelector('.pagination-pagenumber'));
                     totItemDiv = document.createElement('div');
                     totItemDiv.classList.add('pagination-tot-entry');
                     totItemTextSpan = document.createElement('span');
@@ -853,10 +863,11 @@
         
         return true;
     };
-    
+
+    /** Add margin notes for the entire document
+     */
     pagination.adjustAllMarginNotesPositions = function () {
-        /* Add margin notes for the entire document
-         */
+
         var allMarginNoteContainers = document.querySelectorAll('.pagination-marginnotes'), i;
         
         for (i=0; i < allMarginNoteContainers.length; i++) {
@@ -864,13 +875,17 @@
         }
     };
 
+    /**
+     * Go through all pages of all flowObjects and add page headers and
+     * calculate the table fo contents (TOC) for the frontmatter. This has to
+     * be done after all pages representing the body of the text have been
+     * flown and has to redone when there are changes to the body contents that
+     * can influence the TOC (such as page creation or deletion).
+     * @param bodyObjects
+     * @returns {*}
+     */
     pagination.headersAndToc = function (bodyObjects) {
-        /* Go through all pages of all flowObjects and add page headers and
-         * calculate the table fo contents (TOC) for the frontmatter. This has to
-         * be done after all pages representing the body of the text have been
-         * flown and has to redone when there are changes to the body contents that
-         * can influence the TOC (such as page creation or deletion).
-         */
+    //TODO: make private this method
         var currentChapterTitle = '', currentSectionTitle = '', pages, chapterHeader, sectionHeader, tocDiv, tocItemDiv, tocItemPnText, tocTitleH1, tocItemPnSpan, tocItemTextSpan, 
      i, j;
 
@@ -940,12 +955,13 @@
         return tocDiv;
     };
 
+    /** Go through the entire body contents and look for chapterStartMarker and
+     * sectionStartMarker to divide it up. We will then float these elements
+     * individually, as CSS Regions has problems flowing material that requires
+     * 100+ regions.
+     */
     pagination.createBodyObjects = function () {
-        /* Go through the entire body contents and look for chapterStartMarker and
-         * sectionStartMarker to divide it up. We will then float these elements
-         * individually, as CSS Regions has problems flowing material that requires
-         * 100+ regions. 
-         */
+
         var bodyObjects = [], chapterCounter = 0, bodyContainer, bodyContents, i;
 
         bodyObjects.push(
@@ -961,8 +977,8 @@
 
             if (bodyContents[0].nodeType === 1) {
                 if (
-                    bodyContents[0].webkitMatchesSelector(
-                    pagination.config('chapterStartMarker'))) {
+                    pagination.matchesSelector(bodyContents[0], pagination.config('chapterStartMarker'))
+                    ) {
                     bodyObjects.push(
                         new pagination.flowObject(
                         'pagination-body-' + chapterCounter++,
@@ -970,8 +986,7 @@
                     bodyObjects[chapterCounter].setType('chapter');
 
                 } else if (
-                    bodyContents[0].webkitMatchesSelector(
-                    pagination.config('sectionStartMarker'))) {
+                    pagination.matchesSelector(bodyContents[0], pagination.config('sectionStartMarker'))) {
                     bodyObjects.push(
                         new pagination.flowObject(
                         'pagination-body-' + chapterCounter++,
@@ -986,6 +1001,20 @@
         return bodyObjects;
 
     };
+
+    /**
+     * Facade method, to use the right function depending on the browser
+     * @param element
+     * @param compare
+     * @returns {*}
+     */
+    pagination.matchesSelector = function(element, compare){
+        if(element.webkitMatchesSelector!=undefined){
+            return element.webkitMatchesSelector(compare);
+        }else if(element.mozMatchesSelector!=undefined){
+            return element.mozMatchesSelector(compare);
+        }
+    }
 
     pagination.applyBookLayoutNonDestructive = function () {
         // Apply layout without changing the original DOM.
@@ -1022,11 +1051,13 @@
         document.dispatchEvent(pagination.events.layoutFlowFinished);
     };
 
+    /**
+     * Apply this layout if CSS Regions are present.
+     * Will first divide the original DOM up into individual chapters and
+     * sections.
+     */
     pagination.applyBookLayout = function () {
-        /* Apply this layout if CSS Regions are present.
-         * Will first divide the original DOM up into individual chapters and 
-         * sections.
-         */
+
         var bodyObjects, layoutDiv, contentsDiv, toc, tof, tot, redoToc, fmObject, i;
         
         bodyObjects = pagination.createBodyObjects();
@@ -1095,11 +1126,14 @@
                 setTimeout(redoToc, 0);
                 
             });
-            document.fontloader.addEventListener('loadingdone', function() {
-                // When fonts have been loaded, update the body layout.
-                // TODO: This does not seem to work at all times. 
-                document.body.dispatchEvent(pagination.events.bodyLayoutUpdated);
-            });
+            if(document.fontloader!=undefined){
+                document.fontloader.addEventListener('loadingdone', function() {
+                    // When fonts have been loaded, update the body layout.
+                    // TODO: This does not seem to work at all times.
+                    document.body.dispatchEvent(pagination.events.bodyLayoutUpdated);
+                });
+            }
+
         }
         document.dispatchEvent(pagination.events.layoutFlowFinished);
     };
@@ -1141,15 +1175,29 @@
     pagination._cssRegionsCheck = function () {
         // Check whether CSS Regions are present in Chrome 23+ version
         var returnValue;
-        if (
-        (
-            document.webkitGetNamedFlows) && (
-            document.webkitGetNamedFlows() !== null)) {
-            returnValue = true;
-        } else {
-            returnValue = false;
+        if(document.webkitGetNamedFlows!=undefined){
+
+            if (
+                (
+                    document.webkitGetNamedFlows) && (
+                    document.webkitGetNamedFlows() !== null)
+                ) {
+                returnValue = true;
+            } else {
+                returnValue = false;
+            }
+        }else if(document.getNamedFlows!=undefined){
+            if (
+                (
+                    document.getNamedFlows) && (
+                    document.getNamedFlows() !== null)
+                ) {
+                returnValue = true;
+            } else {
+                returnValue = false;
+            }
         }
-        
+
         return returnValue;
     };
 
@@ -1167,12 +1215,27 @@
         }
     };
 
+    /**
+     * Facade method to use innerText or textContent depending on browser
+     *
+     * @param element
+     * @returns {*}
+     */
+    pagination.getInnerText = function(element){
+        if(element.innerText!=undefined){
+            return element.innerText;
+        }else if(element.textContent){
+            return element.textContent;
+        }else{
+            return '';//empty string because it will use .length
+        }
+    }
 
-
+    /** Hook pagination.autoStartInitiator to document loading stage if
+     * autoStart is set to true.
+     */
     if (pagination.config('autoStart') === true) {
-        /* Hook pagination.autoStartInitiator to document loading stage if
-         * autoStart is set to true.
-         */
+
         document.addEventListener(
             "readystatechange",
             pagination.autoStartInitiator);
@@ -1243,7 +1306,12 @@
          * have been set and rawdiv has been filled with initial contents.
          */
         this.setStyle();
-        this.namedFlow = document.webkitGetNamedFlows()[this.name];
+        if(document.webkitGetNamedFlows!=undefined){
+            this.namedFlow = document.webkitGetNamedFlows()[this.name];
+        }else if(document.getNamedFlow!=undefined){
+            this.namedFlow = document.getNamedFlow(this.name);
+        }
+
         this.addOrRemovePages();
         this.setupReflow();
         this.findAllTopfloats();
@@ -1258,17 +1326,40 @@
         }
     };
 
-    flowObject.prototype.setStyle = function () {
-        /* Create a style element for this flowObject and add it to the header in
+    /*flowObject.prototype.setStyle = function () {
+        *//* Create a style element for this flowObject and add it to the header in
          * the DOM. That way it will not be mixing with the DOM of the
          * contents.
-         */
+         *//*
         var stylesheet = document.createElement('style');
         stylesheet.innerHTML = "." + this.name + "-layout" +
-            " .pagination-contents-column {-webkit-flow-from: " + this.name +
-            ";}" + "\n." + this.name + "-contents " + "{-webkit-flow-into: " +
-            this.name + ";}";
+            " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
+
+            "\n." + this.name + "-contents " + "{" +
+            "-webkit-flow-into: " + this.name + "; " +
+            "flow-into: " + this.name + "; }";
         document.head.appendChild(stylesheet);
+    };*/
+
+    flowObject.prototype.setStyle = function () {
+        /* Create a style element for this flowObject and add it to the header in
+        * the DOM. That way it will not be mixing with the DOM of the
+        * contents.
+            */
+        var style = document.getElementById('flows');
+        if(style==null){
+
+            style = document.createElement('style');
+            style.setAttribute('id', 'flows');
+            document.head.appendChild(style);
+        }
+        style.innerHTML += "." + this.name + "-layout" +
+            " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
+
+            "\n." + this.name + "-contents " + "{" +
+            "-webkit-flow-into: " + this.name + "; " +
+            "flow-into: " + this.name + "; }";
+//        document.head.appendChild(stylesheet);
     };
 
     flowObject.prototype.setType = function (type) {
@@ -1303,11 +1394,12 @@
         // Find the first page number used in this flowObject.
         var startpageNumberField;
         
-        if (this.rawdiv.innerText.length > 0 && pagination.config('numberPages')) {
+        if (pagination.getInnerText(this.rawdiv).length > 0
+            && pagination.config('numberPages')) {
             startpageNumberField =
                 this.div.querySelector('.pagination-pagenumber');
             if (startpageNumberField) {    
-                this.startpageNumber = startpageNumberField.innerText;
+                this.startpageNumber = pagination.getInnerText(startpageNumberField);
             }
         }
     };
@@ -1547,9 +1639,10 @@
             escapeId = allEscapes[i].id;
 
             this.escapeStylesheets[escapeType].innerHTML +=
-                '\n#' + escapeId + ' > * {-webkit-flow-into: ' + escapeId +
-                ';}' + '\n#' + escapeId + '-flow-into {-webkit-flow-from: ' +
-                escapeId + ';}';
+                '\n#' + escapeId + ' > * {-webkit-flow-into: ' + escapeId +'; ' +
+                    'flow-into: ' + escapeId +'; }' +
+                '\n#' + escapeId + '-flow-into {-webkit-flow-from: ' + escapeId + '; ' +
+                    'flow-from: ' + escapeId + ';}';
 
 
             escapeObject = {};
@@ -1853,7 +1946,7 @@
     flowObject.prototype.addOrRemovePages = function (pages) {
         // This loop is called when we believe pages have to added or removed. 
 
-        if ((this.namedFlow.overset) && (this.rawdiv.innerText.length > 0)) {
+        if (this.namedFlow.overset && pagination.getInnerText(this.rawdiv).length > 0) {
             /* If there are too few regions (overset==True) and the contents of
              * rawdiv are at least 1 character long, pages need to be added.
              */

@@ -13,7 +13,7 @@ class Console extends CI_Controller
         parent::__construct();
         $this->load->library('DX_Auth');
         $this->load->helper('url');
-        if (!$this->session->userdata('DX_user_id')){
+        if (!$_SESSION['DX_user_id']){
             redirect('register/login', 'refresh');
         }
     }
@@ -21,7 +21,9 @@ class Console extends CI_Controller
     public function wizard($id)
     {
         $this->load->model('books_model', 'book');
+        $this->load->model('chapters_model', 'chapters');
         $data['book'] = $this->book->get($id);
+        $data['sections'] = $this->chapters->findGrouped($id);
         $data['defaultConfig'] =
             "window.paginationConfig = {
                     'sectionStartMarker': 'div.section',
@@ -42,6 +44,7 @@ class Console extends CI_Controller
                     'autoStart': true,
 
                 };";
+        $data['bookName'] = $this->book->getFolderName($data['book']['title']);
         $this->load->view('console/wizard', $data);
     }
 
@@ -92,9 +95,11 @@ class Console extends CI_Controller
                                     continue;
                                 }
                                 $xhtml = file_get_contents($dir.$entry);
-                                $dom = str_get_html($xhtml);
+                                $globalDom = str_get_html($xhtml);
+                                $dom = $globalDom->find('body', 0);
 
-                                if (isset($_GET['prettify']) && $_GET['prettify']) {
+
+                            if (isset($_GET['prettify']) && $_GET['prettify']) {
                                     foreach ($dom->find('pre, code') as $element) {
                                         $element->class = 'prettyprint linenums';
                                         $element->outertext = '<div class="no-page-break">' . $element->outertext . '</div>';
@@ -134,9 +139,20 @@ class Console extends CI_Controller
                                     $element->outertext = '<div>' . $element->outertext . '</div>';
                                 }
 
-                                $body = $dom->find('body', 0);
+                                foreach($dom->find('a') as $element){
+
+                                    if(strpos($element->href, '.xhtml')!==false){
+
+                                        $parts = explode('.xhtml', $element->href);
+
+                                        $element->href = $parts[1];
+
+                                    }
+
+                                }
+
                                 $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
-                                    . '<div class="chapter">' . $body->innertext . '</div>';
+                                    . '<div class="chapter">' . $dom->innertext . '</div>';
 
                             ++$i;
                         }
@@ -306,3 +322,11 @@ class Console extends CI_Controller
             'url'=>$book.'/'.$editablecss.'/'.$hyphen.'/'.$prettify));
     }
 }
+
+/*var as = document.getElementsByTagName('a');
+for(var i=0;i<as.length;i++){
+    if(as[i].href.indexOf('xhtml')!==-1){
+        var parts = as[i].href.split('xhtml');
+as[i].href=parts[1];
+    }
+}*/

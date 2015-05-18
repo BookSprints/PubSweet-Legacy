@@ -90,7 +90,7 @@ class Manager extends CI_Controller
             $this->load->helper(array('file','inflector'));
             $this->load->model('Books_model','books');
             $bookData = $this->books->get($book);
-            $path = $this->getPath($bookData['title'],'css');
+            $path = $this->getPath($this->books->getFolderName($bookData['title']), 'css');
             $file = 'extra.css';
             if(write_file($path.$file, $this->input->post('css'), 'w+')){
                 echo json_encode(array('ok'=>1));
@@ -174,9 +174,9 @@ class Manager extends CI_Controller
         }
     }
 
-    private function getPath($bookTitle, $folder)
+    private function getPath($bookFolderName, $folder)
     {
-        $path = dirname(__FILE__).'/../epub/'.underscore($bookTitle);
+        $path = dirname(__FILE__).'/../epub/'.$bookFolderName;
         @mkdir($path);
         @mkdir($path=$path.'/'.$folder.'/');
         return $path;
@@ -213,6 +213,7 @@ class Manager extends CI_Controller
 
     public function addMetadata()
     {
+        //TODO: move to console
         $this->load->model('metadata_model','metadata');
         $this->metadata->save($this->input->post('title'), 'title', $this->input->post('book_id'));
         $this->metadata->save($this->input->post('author'), 'creator', $this->input->post('book_id'));
@@ -220,44 +221,15 @@ class Manager extends CI_Controller
         $this->metadata->save($this->input->post('rights'), 'rights', $this->input->post('book_id'));
 //        $this->metadata->save('title', $this->input->post('title'), $this->input->post('book_id'));
 
-
-        /*$book='tmp/'.$_POST['book'].'.epub';
-        $zip1 = new ZipArchive;
-            //Opens a Zip archive
-        $epub = $zip1->open($book);
-        if( $epub !== true ){
-            die("cannot open for writing.".$epub);
+        $token = $this->input->post('token');
+        $sections = $this->input->post('sections[]');
+        $chapters = $this->input->post('chapters[]');
+        if(!empty($token)){
+            if(!file_exists(APPPATH.'/epub/profiles/')){
+                mkdir(APPPATH.'/epub/profiles/');
+            }
+            file_put_contents(APPPATH.'/epub/profiles/'.$token.'-content', json_encode(array('sections'=>$sections, 'chapters'=>$chapters)));
         }
-        $internalFile = 'content.opf';
-        $opf = $zip1->getFromName($internalFile);
-
-        $xml = new SimpleXMLElement($opf);
-        //Use that namespace
-        $namespaces = $xml->getNameSpaces(true);
-        //Now we don't have the URL hard-coded
-        $dc = $xml->metadata->children($namespaces['dc']);
-
-        if(!empty($_POST['title'])){
-            $dc->title = $_POST['title'];
-        }
-        if(!empty($_POST['author'])){
-            $dc->creator=$_POST['author'];
-        }
-
-        if(!empty($_POST['publisher'])){
-            $dc->publisher= $_POST['publisher'];
-        }
-
-        if(!empty($_POST['date'])){
-            $dc->date[2]= $_POST['date'];
-        }
-
-        if(!empty($_POST['rights'])){
-            $dc->rights= $_POST['rights'];
-        }
-
-        $zip1->addFromString($internalFile, $xml->asXML());
-        $zip1->close();*/
 
         echo json_encode(array('ok'=>1));
     }

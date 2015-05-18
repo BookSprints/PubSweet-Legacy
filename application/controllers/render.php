@@ -28,18 +28,33 @@ class Render extends CI_Controller{
         }
     }
 
+    private function readContentOptions($token)
+    {
+        $file = APPPATH.'epub/profiles/'.$token.'-content';
+        if(file_exists($file)){
+            $content = file_get_contents($file);
+            if(empty($content)){
+                return null;
+            }
+            return json_decode($content);
+        }else{
+            return null;
+        }
+
+    }
+
     /**
      * @param $id Book ID
      */
-    public function epub($id)
+    public function epub($id, $token = null)
     {
         $this->bookId = $id;
         $this->load->helper(array('file','inflector'));
         $this->load->model('Books_model','books');
         $this->load->model('Chapters_model','chapters');
         $this->book = $this->books->get($id);
-        $this->bookname = underscore($this->book['title']);
-        $full = $this->chapters->findGrouped($id);
+        $this->bookname = $this->books->getFolderName($this->book['title']);
+        $full = $this->chapters->findGrouped($id, $this->readContentOptions($token));
         $this->fullPath = $this->path.$this->bookname.'/';
         @mkdir($this->fullPath);
 
@@ -200,8 +215,12 @@ class Render extends CI_Controller{
      */
     private function renderNormalChapter($item)
     {
+        if(!function_exists('str_get_html')){
+            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+        }
         if(isset($this->html) && $this->html){
             $content = $this->fixImageLinks($item['content']);
+            $content = $this->fixLocalLinks($content);
 //            var_dump($content);
             return empty($content)?'<h1>'.$item['title'].'</h1>':$content;
         }elseif(isset($this->structure) && $this->structure){
@@ -220,10 +239,6 @@ class Render extends CI_Controller{
      */
     public function fixImageLinks($content)
     {
-        if(!function_exists('str_get_html')){
-            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
-        }
-
         $dom = str_get_html($content);
         if(empty($dom)){
             return '';
@@ -251,6 +266,33 @@ class Render extends CI_Controller{
             }
 
         }
+        return $dom->innertext;
+    }
+
+    /**
+     * Change chapter-name[id].xhtml#anchor-name for #anchor-name
+     * @param $content
+     */
+    public function fixLocalLinks($content)
+    {
+
+        $dom = str_get_html($content);
+        if(empty($dom)){
+            return '';
+        }
+
+        foreach($dom->find('a') as $element){
+
+            if(strpos($element->href, '.xhtml')!==false){
+
+                $parts = explode('.xhtml', $element->href);
+
+                $element->href = $parts[1];
+
+            }
+
+        }
+
         return $dom->innertext;
     }
 
@@ -292,6 +334,10 @@ class Render extends CI_Controller{
         return $result;
     }
 
+    /**
+     * @param $id
+     * @param null $data, pass chapter content, or query the database
+     */
     public function chapter($id, $data = null)
     {
         if($data===null){
