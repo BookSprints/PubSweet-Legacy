@@ -892,6 +892,7 @@
                         },
                         success:function(response){
                             var data = JSON.parse(response);
+                            $(this).attr('title', data.title);
                             broadcast.emit('updateTitleChapter',data);
                         }
                     });
@@ -935,10 +936,10 @@
                             $('#StatusList').empty();
                             for(var item in response){
                                 var data ={
-                                    id:response[item].id,
-                                    title:response[item].title,
-                                    status:response[item].status === "1"?'checked':'',
-                                    user_id:response[item].user_id
+                                    id: response[item].id,
+                                    title: response[item].title,
+                                    status: response[item].status === "1"?'checked':'',
+                                    user_id: response[item].user_id
                                 };
                                 $('#StatusList').append(addStatus(data));
                             }
@@ -1405,7 +1406,7 @@
                 $('.section[data-id="'+data.id+'"]').find('.name').text(data.title);
             },
             updateTitleChapter:function(data){
-                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title);
+                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title).attr('title', title);
             },
             drawSection: function (data) {
                 if(driver.book.id==data.book_id){
