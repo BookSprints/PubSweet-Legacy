@@ -30,9 +30,9 @@ class Chapters_model extends CI_Model
     }
 
     /**
-     * TODO: create a general method to process an array and convert it into a grouped array, probably the best way is to add it to My_Model
      *
      * @param $id
+     * @param $onlyContent
      * @return array - grouped by section id
      */
     public function findGrouped($id, $onlyContent=null)

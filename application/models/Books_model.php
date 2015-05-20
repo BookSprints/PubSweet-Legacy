@@ -30,6 +30,7 @@ class Books_model extends CI_Model
         $this->db->where(array('status'=>1));
         $this->db->group_by('books.id');
         $this->db->order_by('books.id','DESC');
+        $this->db->order_by('books.timestamp','DESC');
         $query = $this->db->get();
         return $query->result_array();
 

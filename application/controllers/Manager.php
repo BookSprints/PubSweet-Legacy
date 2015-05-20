@@ -63,25 +63,28 @@ class Manager extends CI_Controller
         $epub->fixOrphanLinks($_POST);
         echo json_encode(array('ok'=>1));
     }
-    
-    /*public function injectCSS(){
-        if(isset($_POST['book'])){
-            $epub = new EPUB('tmp/'.$_POST['book'].'.epub');
-            if(isset($_POST['prettify-epub'])){
-                $resultPrettify=self::insertPrettify($epub);
-            }
-            if(isset($_POST['css']) && !empty($_POST['css'])){
-                $epub->reopen();
-                $epub->uploadCSS($_POST['css']);
-            }
 
+    public function addMetadata()
+    {
+        $this->load->model('metadata_model','metadata');
+        $this->metadata->save($this->input->post('title'), 'title', $this->input->post('book_id'));
+        $this->metadata->save($this->input->post('author'), 'creator', $this->input->post('book_id'));
+        $this->metadata->save($this->input->post('publisher'), 'publisher', $this->input->post('book_id'));
+        $this->metadata->save($this->input->post('rights'), 'rights', $this->input->post('book_id'));
+//        $this->metadata->save('title', $this->input->post('title'), $this->input->post('book_id'));
 
-            $epub->backToEpub('content.opf', $epub->opf(), true);
-            echo json_encode(array('ok'=>1,'resultPrettify'=>$resultPrettify));
-        }else{
-            echo json_encode(array('ok'=>false, 'error'=>'Some parameters are missing'));
+        $token = $this->input->post('token');
+        $sections = $this->input->post('sections[]');
+        $chapters = $this->input->post('chapters[]');
+        if(!empty($token)){
+            if(!file_exists(APPPATH.'/epub/profiles/')){
+                mkdir(APPPATH.'/epub/profiles/');
+            }
+            file_put_contents(APPPATH.'/epub/profiles/'.$token.'-content', json_encode(array('sections'=>$sections, 'chapters'=>$chapters)));
         }
-    }*/
+
+        echo json_encode(array('ok'=>1));
+    }
 
     public function injectCSS(){
         $book = $this->input->post('book');
@@ -97,16 +100,6 @@ class Manager extends CI_Controller
             }else{
                 echo json_encode(array('ok'=>false, 'error'=>'No writable '.$path.$file));
             }
-            /*$epub = new EPUB('tmp/'.$_POST['book'].'.epub');
-            if(isset($_POST['prettify-epub'])){
-                $resultPrettify=self::insertPrettify($epub);
-            }
-            if(isset($_POST['css']) && !empty($_POST['css'])){
-                $epub->reopen();
-                $epub->uploadCSS($_POST['css']);
-            }
-
-            $epub->backToEpub('content.opf', $epub->opf(), true);*/
 
         }else{
             echo json_encode(array('ok'=>false, 'error'=>'Some parameters are missing'));
@@ -163,14 +156,9 @@ class Manager extends CI_Controller
         if ($_FILES[$filename]["error"] > 0) {
             echo "Error: " . $_FILES[$filename]["error"] . "<br>";
         } else {
-            /*echo "Upload: " . $_FILES["resume"]["name"] . "<br>";
-            echo "Type: " . $_FILES["resume"]["type"] . "<br>";
-            echo "Size: " . ($_FILES["resume"]["size"] / 1024) . " kB<br>";
-            echo "Stored temporarily in: " . $_FILES["resume"]["tmp_name"];*/
 
             move_uploaded_file($_FILES[$filename]["tmp_name"],$path.$_FILES[$filename]["name"]);
             return $path.$_FILES[$filename]["name"];
-            //echo "Stored in: " . $storePath . $filePath;
         }
     }
 
@@ -190,12 +178,6 @@ class Manager extends CI_Controller
             $this->load->helper(array('file','inflector'));
 
             $this->store('cover', $this->getPath($bookData['title'], 'static'));
-            /*$coverJpg = self::decodeImg($_POST['cover']);
-            $epub = new EPUB('tmp/'.$_POST['book'].'.epub');
-            if($coverJpg===false){
-                return array('error'=>'Error en la codificacion');
-            }*/
-//            $epub->setCover($coverJpg);
             echo json_encode(array('ok'=>1));
 
         }else{
@@ -209,29 +191,6 @@ class Manager extends CI_Controller
         }
 
         return base64_decode(chunk_split($matches[2]));
-    }
-
-    public function addMetadata()
-    {
-        //TODO: move to console
-        $this->load->model('metadata_model','metadata');
-        $this->metadata->save($this->input->post('title'), 'title', $this->input->post('book_id'));
-        $this->metadata->save($this->input->post('author'), 'creator', $this->input->post('book_id'));
-        $this->metadata->save($this->input->post('publisher'), 'publisher', $this->input->post('book_id'));
-        $this->metadata->save($this->input->post('rights'), 'rights', $this->input->post('book_id'));
-//        $this->metadata->save('title', $this->input->post('title'), $this->input->post('book_id'));
-
-        $token = $this->input->post('token');
-        $sections = $this->input->post('sections[]');
-        $chapters = $this->input->post('chapters[]');
-        if(!empty($token)){
-            if(!file_exists(APPPATH.'/epub/profiles/')){
-                mkdir(APPPATH.'/epub/profiles/');
-            }
-            file_put_contents(APPPATH.'/epub/profiles/'.$token.'-content', json_encode(array('sections'=>$sections, 'chapters'=>$chapters)));
-        }
-
-        echo json_encode(array('ok'=>1));
     }
 
     public function fixImages($book){
@@ -255,13 +214,13 @@ class Manager extends CI_Controller
     }
     
     private static function getFileEpub($book, $url){
-    ini_set('max_execution_time', 180);
-    $localLink = 'tmp/'.$book.'.epub';
-    if(copy(trim($url), $localLink)){
-        return $localLink;
-    }else{
-        echo 'error';
-        return false;
+        ini_set('max_execution_time', 180);
+        $localLink = 'tmp/'.$book.'.epub';
+        if(copy(trim($url), $localLink)){
+            return $localLink;
+        }else{
+            echo 'error';
+            return false;
+        }
     }
-}
 }

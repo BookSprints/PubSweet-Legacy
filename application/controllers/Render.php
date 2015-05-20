@@ -11,7 +11,7 @@
 class Render extends CI_Controller{
     private $path = 'application/epub/';
     private $book = NULL;
-    private $bookname = NULL;
+    private $bookName = NULL;
     private $fullPath = NULL;
     private $cssFiles = NULL;
     private $images = array();
@@ -44,19 +44,25 @@ class Render extends CI_Controller{
     }
 
     /**
-     * @param $id Book ID
+     * @param $id
+     * @param null $token
      */
     public function epub($id, $token = null)
     {
         $this->bookId = $id;
-        $this->load->helper(array('file','inflector'));
-        $this->load->model('Books_model','books');
+        $this->load->helper(array('file', 'inflector'));
+        $this->load->model('Books_model', 'books');
         $this->load->model('Chapters_model','chapters');
         $this->book = $this->books->get($id);
-        $this->bookname = $this->books->getFolderName($this->book['title']);
+        $this->bookName = $this->books->getFolderName($this->book['title']);
+
         $full = $this->chapters->findGrouped($id, $this->readContentOptions($token));
-        $this->fullPath = $this->path.$this->bookname.'/';
-        @mkdir($this->fullPath);
+        $this->fullPath = $this->path.$this->bookName.'/';
+        if(file_exists($this->fullPath)){
+            $this->emptyFolder($this->fullPath);
+        }else{
+            @mkdir($this->fullPath);
+        }
 
         $this->cssFiles = $this->getCSSFiles();
 
@@ -102,7 +108,7 @@ class Render extends CI_Controller{
         $this->createContainerXML(null);
 
         if($this->input->post('download')!=="false"){
-            $this->export($this->bookname);
+            $this->export($this->bookName);
         }else{
             echo json_encode(array('ok'=>1));
         }
@@ -123,15 +129,13 @@ class Render extends CI_Controller{
     }
 
     /**
-     * @param $path
-     * @param $bookname
+     * @param $bookName
      */
-    private function export($bookname)
+    private function export($bookName)
     {
         $this->load->library('zip');
         $this->zip->read_dir($this->fullPath, FALSE, $this->fullPath);
-        //$this->zip->archive('application/epub/'.$bookname.'.epub');
-        $this->zip->download($bookname.'.epub');
+        $this->zip->download($bookName.'.epub');
 
     }
 
@@ -187,7 +191,6 @@ class Render extends CI_Controller{
             $definitions[$item['term_id']][$item['language_id']] = $item;
         }
         $data['definitions'] = $definitions;
-//        echo '<pre>';print_r($data['definitions']);echo '</pre>';
         return $this->load->view('epub/dictionary-html', $data, true);
     }
 
@@ -221,7 +224,6 @@ class Render extends CI_Controller{
         if(isset($this->html) && $this->html){
             $content = $this->fixImageLinks($item['content']);
             $content = $this->fixLocalLinks($content);
-//            var_dump($content);
             return empty($content)?'<h1>'.$item['title'].'</h1>':$content;
         }elseif(isset($this->structure) && $this->structure){
             return $this->getStructure($item);
@@ -244,17 +246,20 @@ class Render extends CI_Controller{
             return '';
         }
         if(!$this->simpleChapter){
+            $path = base_url() . 'public/uploads/';
+            $bookPath = $path .url_title($this->book['title']);
 
             foreach($dom->find('img') as $element){
 
                 if(strpos($element->src, base_url())!==false){
-                    if(strpos($element->src, base_url().'public/uploads/'.url_title($this->book['title']).'/')!==false){
-                        $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'), 'graphics/', $element->src);
-                    }else if(strpos($element->src, base_url().'public/uploads/')!==false){
-                        $element->src = str_replace(base_url().'public/uploads/','graphics/', $element->src);
+
+                    if(strpos($element->src, $bookPath)!==false){
+                        $element->src = str_replace($bookPath, 'graphics', $element->src);
+                    }else if(strpos($element->src, $path)!==false){
+                        $element->src = str_replace($path,'graphics', $element->src);
                     }
 
-                    $css = $this->BreakCSS('image{'.$element->style.'}');
+                    $css = $this->breakCSS('image{'.$element->style.'}');
                     $this->images[str_replace('graphics/','', $element->src)] = array(
                         'src'=>$element->src,
                         'height'=>$css['image']['height'],
@@ -272,6 +277,7 @@ class Render extends CI_Controller{
     /**
      * Change chapter-name[id].xhtml#anchor-name for #anchor-name
      * @param $content
+     * @return string
      */
     public function fixLocalLinks($content)
     {
@@ -296,7 +302,7 @@ class Render extends CI_Controller{
         return $dom->innertext;
     }
 
-    function BreakCSS($css)
+    private function breakCSS($css)
     {
 
         $results = array();
@@ -312,13 +318,8 @@ class Render extends CI_Controller{
         return $results;
     }
 
-
     public function getStructure($item)
     {
-        if(!function_exists('str_get_html')){
-            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
-        }
-
         $dom = str_get_html($item['content']);
         if(empty($dom)){
             return '';
@@ -370,27 +371,23 @@ class Render extends CI_Controller{
     }
 
     private function getImages(){
-//        $this->load->helper('directory');
         $uploadsFolder = BASEPATH.'../public/uploads/';
         if(!file_exists($this->fullPath.'/graphics')){
             mkdir($this->fullPath.'/graphics');
         }
-//        directory_copy(BASEPATH.'../public/uploads/'.$folderName, $this->fullPath.'/graphics');
-//        $this->load->helper('file');
-//        $files = get_filenames($this->fullPath.'/graphics');
-//        return $files;
+
         $config['image_library'] = 'gd2';
         $config['maintain_ratio'] = TRUE;
         foreach ($this->images as $key=>$image) {
-            if(file_exists($uploadsFolder.url_title($this->book['title']).'/'.$key)){
-                copy($uploadsFolder.url_title($this->book['title']).'/'.$key, $this->fullPath.'/graphics/'.$key);
+            $file = $uploadsFolder.url_title($this->book['title']).'/'.$key;
+            if(file_exists($file)){
+                copy($file, $this->fullPath.'/graphics/'.$key);
             }else if(file_exists($uploadsFolder.$key)){
                 copy($uploadsFolder.$key, $this->fullPath.'/graphics/'.$key);
             }
 
             if(extension_loaded($config['image_library'])){
                 $config['source_image'] = $this->fullPath.'/graphics/'.$key;
-    //            $config['create_thumb'] = TRUE;
 
                 $config['width'] = str_replace('px','',$image['width']);
                 $config['height'] = str_replace('px','',$image['height']);
@@ -410,51 +407,22 @@ class Render extends CI_Controller{
     /**
      * Will render the book's content as plain html
      * @param $id
+     * @param bool $draft
      */
     public function html($id, $draft = false)
     {
         $this->html = true;
-        $this->load->model('Chapters_model', 'chapters');
-        $chapters = $this->chapters->find($id);
-
-        ob_start();
-        $currentSection = null;
-        foreach ($chapters as $item) {
-            if($currentSection != $item['section_id']){
-                echo '<h1 class="section">'.$item['section_title'].'</h1>';
-            }
-            $this->chapter($item['id']);
-            $currentSection = $item['section_id'];
-        }
-        $originalContent = ob_get_contents();
-        ob_end_clean();
-        $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
-        $this->load->view('templates/simple/footer', array('draft'=>$draft));
+        $this->createContent($id, $draft);
     }
 
     /**
-     * Will render the book's chapter name and first paragraph
      * @param $id
+     * @param bool $draft
      */
     public function structure($id, $draft = false)
     {
         $this->structure = true;
-        $this->load->model('Chapters_model', 'chapters');
-        $chapters = $this->chapters->find($id);
-
-        ob_start();
-        $currentSection = null;
-        foreach ($chapters as $item) {
-            if($currentSection != $item['section_id']){
-                echo '<h1 class="section">'.$item['section_title'].'</h1>';
-            }
-            $this->chapter($item['id']);
-            $currentSection = $item['section_id'];
-        }
-        $originalContent = ob_get_contents();
-        ob_end_clean();
-        $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
-        $this->load->view('templates/simple/footer', array('draft'=>$draft));
+        $this->createContent($id, $draft);
     }
 
     public function section($id)
@@ -473,6 +441,39 @@ class Render extends CI_Controller{
         $this->load->view('templates/simple/header', array('id'=>$id, 'content'=>$originalContent));
         $this->load->view('templates/simple/footer');
 
+    }
+
+    /**
+     * @param $id
+     * @param $draft
+     */
+    protected function createContent($id, $draft)
+    {
+        $this->load->model('Chapters_model', 'chapters');
+        $chapters = $this->chapters->find($id);
+
+        ob_start();
+        $currentSection = null;
+        foreach ($chapters as $item) {
+            if ($currentSection != $item['section_id']) {
+                echo '<h1 class="section">' . $item['section_title'] . '</h1>';
+            }
+            $this->chapter($item['id']);
+            $currentSection = $item['section_id'];
+        }
+        $originalContent = ob_get_contents();
+        ob_end_clean();
+        $this->load->view('templates/simple/header',
+            array('id' => $id, 'draft' => $draft, 'content' => $originalContent));
+        $this->load->view('templates/simple/footer', array('draft' => $draft));
+    }
+
+    private function emptyFolder($path){
+        $files = glob($path.'*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
     }
 }
 

@@ -91,68 +91,69 @@ class Console extends CI_Controller
                             $chapter = $navPoint->navPoint[$i];
                             $entry = (string) $chapter->content->attributes()->src[0];
 
-                                if ($entry == 'cover.xhtml') {
-                                    continue;
-                                }
-                                $xhtml = file_get_contents($dir.$entry);
-                                $globalDom = str_get_html($xhtml);
-                                $dom = $globalDom->find('body', 0);
+                            if ($entry == 'cover.xhtml') {
+                                continue;
+                            }
+
+                            $xhtml = file_get_contents($dir.$entry);
+                            $globalDom = str_get_html($xhtml);
+                            $dom = $globalDom->find('body', 0);
 
 
                             if (isset($_GET['prettify']) && $_GET['prettify']) {
-                                    foreach ($dom->find('pre, code') as $element) {
-                                        $element->class = 'prettyprint linenums';
-                                        $element->outertext = '<div class="no-page-break">' . $element->outertext . '</div>';
+                                foreach ($dom->find('pre, code') as $element) {
+                                    $element->class = 'prettyprint linenums';
+                                    $element->outertext = '<div class="no-page-break">' . $element->outertext . '</div>';
+                                }
+                            }
+
+                            foreach ($dom->find('img') as $element) {
+                                    $uri = $element->src;
+                                if(file_exists($dir.$uri)){
+
+                                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
+                                        $parts = pathinfo($uri);
+                                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
+                                            base64_encode(file_get_contents($dir.$uri));
+                                    }
+                                    $parent = $element->parent();
+                                    if($parent->tag=='p'){
+                                        $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
                                     }
                                 }
 
-                                foreach ($dom->find('img') as $element) {
-                                        $uri = $element->src;
-                                    if(file_exists($dir.$uri)){
 
-                                        if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
-                                            $parts = pathinfo($uri);
-                                            $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
-                                                base64_encode(file_get_contents($dir.$uri));
-                                        }
-                                        $parent = $element->parent();
-                                        if($parent->tag=='p'){
-                                            $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
-                                        }
-                                    }
+                            }
+                            foreach ($dom->find('h1') as $element) {
+                                $element->class = 'chaptertitle';
+                            }
 
-
+                            foreach ($dom->find('h2,h3') as $element) {
+                                $next = $element->next_sibling();
+                                if (!empty($next)) {
+                                    $element->outertext = '<div class="no-page-break">' . $element->outertext . $next->outertext . '</div>';
+                                    $next->outertext = '';
                                 }
-                                foreach ($dom->find('h1') as $element) {
-                                    $element->class = 'chaptertitle';
-                                }
+                            }
 
-                                foreach ($dom->find('h2,h3') as $element) {
-                                    $next = $element->next_sibling();
-                                    if (!empty($next)) {
-                                        $element->outertext = '<div class="no-page-break">' . $element->outertext . $next->outertext . '</div>';
-                                        $next->outertext = '';
-                                    }
-                                }
+                            foreach ($dom->find('table#bluebox') as $element) {
+                                $element->outertext = '<div>' . $element->outertext . '</div>';
+                            }
 
-                                foreach ($dom->find('table#bluebox') as $element) {
-                                    $element->outertext = '<div>' . $element->outertext . '</div>';
-                                }
+                            foreach($dom->find('a') as $element){
 
-                                foreach($dom->find('a') as $element){
+                                if(strpos($element->href, '.xhtml')!==false){
 
-                                    if(strpos($element->href, '.xhtml')!==false){
+                                    $parts = explode('.xhtml', $element->href);
 
-                                        $parts = explode('.xhtml', $element->href);
-
-                                        $element->href = $parts[1];
-
-                                    }
+                                    $element->href = $parts[1];
 
                                 }
 
-                                $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
-                                    . '<div class="chapter">' . $dom->innertext . '</div>';
+                            }
+
+                            $fullHTML .= (isset($sections[$entry]) ? $sections[$entry] : '')
+                                . '<div class="chapter">' . $dom->innertext . '</div>';
 
                             ++$i;
                         }
@@ -214,7 +215,7 @@ class Console extends CI_Controller
                 'frontmatterContents': '<h1>".$bookTitle."</h1>'
                     + '<div class=\"pagination-pagebreak\"></div>',
                 'autoStart': true,
-                'polyfill': true;
+                'polyfill': true
 
             };";
         }
@@ -288,7 +289,7 @@ class Console extends CI_Controller
                     if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
                         $parts = pathinfo($uri);
                         $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,'
-                            . base64_encode(file_get_contents($dir.$uri));
+                            . base64_encode(file_get_contents($dir.'/'.$uri));
                     }
 
                 }
@@ -322,11 +323,3 @@ class Console extends CI_Controller
             'url'=>$book.'/'.$editablecss.'/'.$hyphen.'/'.$prettify));
     }
 }
-
-/*var as = document.getElementsByTagName('a');
-for(var i=0;i<as.length;i++){
-    if(as[i].href.indexOf('xhtml')!==-1){
-        var parts = as[i].href.split('xhtml');
-as[i].href=parts[1];
-    }
-}*/
