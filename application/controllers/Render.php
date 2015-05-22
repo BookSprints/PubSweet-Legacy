@@ -399,7 +399,7 @@ class Render extends CI_Controller{
                 copy($uploadsFolder.$key, $this->fullPath.'/graphics/'.$key);
             }
 
-            if(extension_loaded($config['image_library'])){
+            if(extension_loaded('gd')){
                 $config['source_image'] = $this->fullPath.'/graphics/'.$key;
 
                 $config['width'] = str_replace('px','',$image['width']);

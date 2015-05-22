@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Preview - <?php echo $bookTitle;?></title>
+    <base href="<?php echo base_url();?>">
     <!--    <link rel="stylesheet" href="https://raw.github.com/sourcefabric/BookJS/0.25.0/book.css">-->
     <?php if(isset($prettify) && $prettify):?>
         <link rel="stylesheet" href="<?php echo base_url();?>public/js/prettifier/prettify.css"/>
@@ -62,14 +63,10 @@
     </style>
     <?php
 
-    foreach ($js as $key=>$item) :
-        ?>
-        <script><?php echo $item['content'];?></script>
+    foreach ($js as $key=>$item) :?>
+        <script src="console/js/<?php echo $book;?>/<?php echo $key;?>"></script>
 
-    <?php
-    endforeach;
-
-    ?>
+    <?php endforeach;?>
 </head>
 <body
     <?php if(isset($prettify) && $prettify):?>

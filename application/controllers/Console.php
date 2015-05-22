@@ -198,9 +198,6 @@ class Console extends CI_Controller
     {
         $this->load->helper('file');
         $files = get_dir_file_info($dir.'/js', FALSE);
-        foreach ($files as &$item) {
-            $item['content'] = file_get_contents($item['server_path']);
-        }
         return $files;
 
     }
@@ -333,5 +330,16 @@ class Console extends CI_Controller
             'hyphen' => $hyphen, 'prettify' => $prettify,
             'fullHTML' => $fullHTML, 'css' => $css, 'bookTitle' => $xml->docTitle->text,
             'url'=>$book.'/'.$editablecss.'/'.$hyphen.'/'.$prettify));
+    }
+
+    /**
+     * Read a file content and dumps it back
+     * @param $book
+     * @param $file
+     */
+    public function js($book, $file)
+    {
+        $file = dirname(__FILE__) . '/../epub/' . $book.'/js/'.$file;
+        echo file_get_contents($file);
     }
 }
