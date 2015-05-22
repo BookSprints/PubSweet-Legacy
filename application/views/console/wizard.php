@@ -98,6 +98,14 @@
 
         .bootzard > fieldset {
             display: none;
+            position: relative;
+            min-height: 80vh;
+        }
+
+        .pager{
+            bottom: 0;
+            position: absolute;
+            right: 0;
         }
     </style>
 </head>
@@ -202,6 +210,14 @@ if (!empty($book['id'])):  ?>
                 </fieldset>
             <fieldset>
                 <div class="span6">
+                <legend>Extra JS</legend>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="file" accept="application/javascript, text/javascript" name="jsfile" id="jsfile"
+                            multiple>
+                    <ul id="fileList"></ul>
+                    </div>
+                </div>
                 <legend>Custom CSS</legend>
                 <div class="control-group"><label class="control-label" for="css">Custom CSS</label>
 
@@ -447,8 +463,9 @@ if (!empty($book['id'])):  ?>
         <!--<div id="downloading">Getting download link</div>-->
         <div id="metadating"><h1>Setting metadata</h1></div>
         <div id="epubing"><h1>Generating XHTML files</h1></div>
+        <div id="jsing"><h1>Uploading JS</h1></div>
         <div id="cssing"><h1>Uploading CSS</h1></div>
-                <div id="covering"><h1>Uploading Cover</h1></div>
+        <div id="covering"><h1>Uploading Cover</h1></div>
 <!--        <div id="fetching"><h1>Fetching EPUB</h1></div>-->
 <!--        <div id="fixing"><h1>Fixing links</h1></div>-->
 <!--        <div id="fixingImages"><h1>Fixing Images</h1></div>-->

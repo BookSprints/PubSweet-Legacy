@@ -95,7 +95,7 @@ class Manager extends CI_Controller
             $bookData = $this->books->get($book);
             $path = $this->getPath($this->books->getFolderName($bookData['title']), 'css');
             $file = 'extra.css';
-            if(write_file($path.$file, $this->input->post('css'), 'w+')){
+            if(write_file($path.$file, $css, 'w+')){
                 echo json_encode(array('ok'=>1));
             }else{
                 echo json_encode(array('ok'=>false, 'error'=>'No writable '.$path.$file));
@@ -103,6 +103,22 @@ class Manager extends CI_Controller
 
         }else{
             echo json_encode(array('ok'=>false, 'error'=>'Some parameters are missing'));
+        }
+    }
+
+    public function injectJS(){
+        $book = $this->input->post('book');
+        if(isset($book) && isset($_FILES['jsfile'])){
+            $this->load->model('Books_model','books');
+            $bookData = $this->books->get($book);
+            $this->load->helper(array('file','inflector'));
+            $bookPath = $this->getPath($bookData['title'], 'js');
+            $this->store($_FILES['jsfile'], $bookPath);
+
+            echo json_encode(array('ok'=>1));
+
+        }else{
+            echo json_encode(array('ok'=>false, 'error'=>'Missing data'));
         }
     }
 
@@ -148,17 +164,22 @@ class Manager extends CI_Controller
         return  false;
     }
 
-    private function store($filename, $path)
+    private function store($file, $path)
     {
-        if (empty($_FILES[$filename]) || $_FILES[$filename]["error"] == 4) {
+        if (empty($file) || $file["error"][0] == 4) {
             return; //return silently because no file was uploaded
         }
-        if ($_FILES[$filename]["error"] > 0) {
-            echo "Error: " . $_FILES[$filename]["error"] . "<br>";
+        if ($file["error"][0] > 0) {
+            echo "Error: " . $file["error"] . "<br>";
+            exit;
         } else {
+            $files = [];
+            foreach ($file["tmp_name"] as $key=>$tmp) {
+                move_uploaded_file($file["tmp_name"][$key], $path.$file["name"][$key]);
+                $files[] = $path.$file["name"][$key];
+            }
 
-            move_uploaded_file($_FILES[$filename]["tmp_name"],$path.$_FILES[$filename]["name"]);
-            return $path.$_FILES[$filename]["name"];
+            return $files;
         }
     }
 
@@ -177,7 +198,7 @@ class Manager extends CI_Controller
             $bookData = $this->books->get($book);
             $this->load->helper(array('file','inflector'));
 
-            $this->store('cover', $this->getPath($bookData['title'], 'static'));
+            $this->store($_FILES['cover'], $this->getPath($bookData['title'], 'static'));
             echo json_encode(array('ok'=>1));
 
         }else{

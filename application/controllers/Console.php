@@ -167,6 +167,7 @@ class Console extends CI_Controller
         $params = array('book' => $book, 'editablecss' =>$editablecss,
             'hyphen' => $hyphen, 'prettify' => $prettify,
             'fullHTML' => $fullHTML, 'css' => $this->loadCss($dir),
+            'js'=>$this->loadExtraJs($dir),
             'customConfig'=>$this->loadConfig($identifier, $xml->docTitle->text));
         if(isset($xml)){
             $params['bookTitle'] = $xml->docTitle->text;
@@ -191,6 +192,17 @@ class Console extends CI_Controller
         }
 
         return $css;
+    }
+
+    private function loadExtraJs($dir)
+    {
+        $this->load->helper('file');
+        $files = get_dir_file_info($dir.'/js', FALSE);
+        foreach ($files as &$item) {
+            $item['content'] = file_get_contents($item['server_path']);
+        }
+        return $files;
+
     }
 
     private function loadConfig($identifier, $bookTitle)

@@ -5,23 +5,25 @@
     var driver = {
         init:function () {
             driver.handleCoverPreview();
+            driver.handleMultipleFilesSelected();
             $('#management-form').bootzard({'done': function () {
                 driver.process();
                 return false;
             }});
             localStorage.setItem('bookHistory', localStorage.getItem('bookHistory')||JSON.stringify([]));
-            var $bookname =$('#bookname');
-            $bookname.typeahead({'source': function(){
+            var $bookName = $('#bookname'),
+                $advanced = $('#advanced'),
+                $basic = $('#basic'),
+                $bookjsconfig = $advanced.find('textarea');
+            $bookName.typeahead({'source': function(){
                 return JSON.parse(localStorage.getItem('bookHistory'));
             }, 'minLength': 3});
             if($('#load').is(':checked')){
-                $bookname.on('blur', function(){
+                $bookName.on('blur', function(){
                     $.get('getFileInfo')
                 });
             }
-            var $advanced = $('#advanced'),
-                $basic = $('#basic'),
-                $bookjsconfig = $advanced.find('textarea');
+
             $('#set-basic').on('click', function(){
                 $basic.show();
                 $advanced.hide();
@@ -50,11 +52,11 @@
             });
         },
         encodeImg:function (img) {
-            var canvas = document.createElement("canvas");
-            var MAX_WIDTH = 350;
+            var canvas = document.createElement("canvas"),
+                MAX_WIDTH = 350,
             //var MAX_HEIGHT = 800;
-            var width = img.width;
-            var height = img.height;
+                width = img.width,
+                height = img.height, ctx;
 
             //if (width > height) {
             if (width > MAX_WIDTH) {
@@ -69,7 +71,7 @@
              }*/
             canvas.width = width;
             canvas.height = height;
-            var ctx = canvas.getContext("2d");
+            ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
             // Copy the image contents to the canvas
             /*var ctx = canvas.getContext("2d");
@@ -95,6 +97,19 @@
                 }
             });
         },
+        handleMultipleFilesSelected: function(){
+            $('#jsfile').change(
+                function(e){
+                    console.log(e.currentTarget.files);
+                    var numFiles = e.currentTarget.files.length;
+                    for (i=0;i<numFiles;i++){
+                        fileSize = parseInt(e.currentTarget.files[i].size, 10)/1024;
+                        filesize = fileSize < 1 ? fileSize : Math.round(fileSize);
+                        $('<li />').text(e.currentTarget.files[i].name).appendTo($('#fileList'));
+                        $('<span />').addClass('filesize').text('(' + filesize + 'kb)').appendTo($('#fileList li:last'));
+                    }
+                });
+        },
         process:function () {
             var steps;
             /*
@@ -109,6 +124,7 @@
                 {element:$('#metadating'), method:driver.uploadMetadata,
                     enabled: $('#metadata').find('input').filter(function() { return !!this.value }).length>0},
                 {element:$('#epubing'), method:driver.generateXHTMLFiles, enabled:true},
+                {element:$('#jsing'), method:driver.uploadJS, enabled: $('#jsfile').get(0).files.length>0},
                 {element:$('#cssing'), method:driver.uploadCSS, enabled:true},
                 {element:$('#covering'), method:driver.uploadCover, enabled:!!$('#cover').val()}
 
@@ -160,7 +176,7 @@
             $result.find('#epub').attr('href', driver.url).removeClass('hide');
             $result.show();
             if($('#download').is(':checked')){
-                //because the xhtml files is always rendered, the generation is unuseful
+                //because the xhtml files is always rendered, the generation is not useful
                 document.location = 'render/epub/'+$('#book_id').val()+'/'+$('#settings-token').val();
             }
 
@@ -172,7 +188,7 @@
         createPreviewURL: function($link){
             if($('#create-bookjs').is(':checked')){
                 var token = $('#settings-token').val();
-                $.post('console/saveSettings', {'bookjs-config': $('#bookjs-config').val(), 'settings-token': token}, function(resp){
+                $.post('console/saveSettings', {'bookjs-config': $('#bookjs-config').val(), 'settings-token': token}, function(){
                     $link.attr('href', 'console/preview/'+driver.bookname+'/'
                     + token + '/'
                     +($('#editablecss').is(':checked')?1:0)+'/'
@@ -257,12 +273,13 @@
             //TODO: improve this
             $('#orphan-modal').remove();
             driver.xhtmlFiles = driver.optionsTemplate(data.xhtmlFiles);
-            $('body').append(driver.modalTemplate(data));//.modal('show');
+            var $body = $('body');
+            $body.append(driver.modalTemplate(data));//.modal('show');
             $('#orphan-modal').modal('show');
             $('#orphan-modal').on('hidden', function(){
                 driver.silence=false;
             });
-            $('body').on('submit', '#orphan-form', function(){
+            $body.on('submit', '#orphan-form', function(){
                 var $this =$(this);
                 $.post($this.attr('action'), $this.serialize(), function(data){
                     if(data.ok){
@@ -286,8 +303,8 @@
                 }, 'json');
         },
         uploadCover:function (callback) {
-            var $cover = $('#cover');
-            var fd = new FormData();
+            var $cover = $('#cover'),
+                fd = new FormData();
             fd.append('book', $('#book_id').val());
             fd.append("cover", $cover.get(0).files!=undefined?$cover.get(0).files[0]:null);
 
@@ -299,7 +316,7 @@
                 url: "console/manager/injectCover/",
                 dataType:'json',
                 data:fd,
-                success:function (data, textStatus, jqXHR) {
+                success:function (data) {
                     if (data.ok) {
                         if (!!callback) {
                             callback(data.ok);
@@ -312,6 +329,43 @@
                 statusCode:{
                     413:function () {
                         alert("Image too big");
+                    }
+                }
+
+            });
+
+            return false;
+        },
+        uploadJS: function (callback) {
+            var $js = $('#jsfile'),
+                fd = new FormData();
+            fd.append('book', $('#book_id').val());
+            for(var i = 0; i < $js.get(0).files.length; i++){
+                fd.append("jsfile[]", $js.get(0).files[i] == undefined ? null : $js.get(0).files[i]);
+            }
+
+
+            $.ajax({
+                cache:false,
+                contentType:false,
+                processData:false,
+                type:"POST",
+                url: "console/manager/injectJS/",
+                dataType:'json',
+                data:fd,
+                success:function (data) {
+                    if (data.ok) {
+                        if (!!callback) {
+                            callback(data.ok);
+                        }
+                    }
+                },
+                error:function () {
+                    console.log('We got a problem');
+                },
+                statusCode:{
+                    413: function () {
+                        alert("Error");
                     }
                 }
 

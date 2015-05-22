@@ -60,6 +60,16 @@
             }
         }*/
     </style>
+    <?php
+
+    foreach ($js as $key=>$item) :
+        ?>
+        <script><?php echo $item['content'];?></script>
+
+    <?php
+    endforeach;
+
+    ?>
 </head>
 <body
     <?php if(isset($prettify) && $prettify):?>

@@ -9,5 +9,11 @@
             <link rel="stylesheet" href="css/<?php echo $item['name'];?>"/>
     <?php endforeach;
         endif;?>
+
+    <?php if(isset($js) && $js && count($css)>0):
+        foreach ($js as $item) :?>
+            <script src="js/<?php echo $item['name'];?>"/>
+    <?php endforeach;
+        endif;?>
 </head>
 <body><?php print str_replace('&amp;#10;','&#10;',$content);?></body></html>

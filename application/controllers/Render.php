@@ -14,6 +14,7 @@ class Render extends CI_Controller{
     private $bookName = NULL;
     private $fullPath = NULL;
     private $cssFiles = NULL;
+    private $jsFiles = NULL;
     private $images = array();
     private $simpleChapter = false;
 
@@ -65,6 +66,7 @@ class Render extends CI_Controller{
         }
 
         $this->cssFiles = $this->getCSSFiles();
+        $this->jsFiles = $this->getJSFiles();
 
         $toc = array();
         $temp = array();
@@ -102,6 +104,7 @@ class Render extends CI_Controller{
             array('toc'=>$toc,
                 'book_name'=>$this->book['title'],
                 'css'=>$this->getCSSFiles(),
+                'js'=>$this->getJSFiles(),
                 'metadata'=>$this->getMetadata(),
                 'images'=>$this->getImages()));
         $this->createMimetype();
@@ -146,6 +149,15 @@ class Render extends CI_Controller{
             $this->cssFiles = $files;
         }
         return $this->cssFiles;
+    }
+
+    private function getJSFiles()
+    {
+        if($this->jsFiles==null){
+            $files = get_dir_file_info($this->fullPath.'/js', FALSE);
+            $this->jsFiles = $files;
+        }
+        return $this->jsFiles;
     }
 
     private function getMetadata()
@@ -208,6 +220,7 @@ class Render extends CI_Controller{
 
     private function getXhtml($data){
         $data['css']=$this->cssFiles;
+        $data['js']=$this->jsFiles;
         return $this->load->view('epub/xhtml', $data, true);
     }
 
@@ -474,6 +487,17 @@ class Render extends CI_Controller{
             if(is_file($file))
                 unlink($file); // delete file
         }
+        $files = glob($path.'/js/*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
+        $files = glob($path.'/css/*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
+
     }
 }
 
