@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-class Sections extends CI_Controller{
+class Section extends CI_Controller{
     public function __construct(){
         parent:: __construct();
         $this->load->model('sections_model');
@@ -52,6 +52,12 @@ class Sections extends CI_Controller{
         'removed'=> 1
         );
         $this->sections_model-> delete($id,$data);
+        echo json_encode(array('ok'=>1, 'id'=>$id));
+    }
+
+    public function undo($id)
+    {
+        $this->sections_model->undelete($id);
         echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 }

@@ -461,6 +461,27 @@ html[dir="RTL"] .pull-right{
 
 /* ****** END TOCMANAGER ****** */
 
+/* ******* FULL TOC ********* */
+#full-content .row-fluid{
+    margin: 20px;
+    width: auto;
+}
+.deleted, .deleted a{
+    color: darkgray;
+}
+.section-row{
+    background-color: #f9f9f9;
+}
+.section-row a{
+    line-height: 40px;
+    margin: 10px 0;
+    display: block;
+}
+.deleted a.undo{
+    color: #08c;
+}
+/* ******* END FULL TOC ********* */
+
 
 /* ******  DICTIONARY/CREATE ****** */
 .span6 {

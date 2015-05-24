@@ -864,7 +864,7 @@
 //                                driver.book.reorder();
                         });
 
-                        $.post("sections/update", data, function (response) {
+                        $.post("section/update", data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-section', newPositions);
                         });
@@ -903,7 +903,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: 'sections/changeName',
+                        url: 'section/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -1124,9 +1124,18 @@
                                 $('.modal').modal('hide');
                                 $(".chapters").sortable('refresh');
                                 $this.get(0).reset();
+                                $('.alert').hide();
+                            }else{
+                                $('.alert').text('An error has occurred');
                             }
+
+                        }, 'json')
+                        .always(function(resp){
                             $this.find(":submit").button('reset');
-                        }, 'json');
+                        })
+                        .error(function(resp){
+                            $('.alert').text('An error has occurred').show();
+                        });
                     }
 
                     return false;
@@ -1158,7 +1167,7 @@
                 $('body').on('click','.delete-section', function(){
                     var $this = $(this);
                     if(confirm('Are you sure?')){
-                        $.post('sections/delete_section', {section_id: $this.data('id')}, function(response){
+                        $.post('section/delete_section', {section_id: $this.data('id')}, function(response){
                             if(response.ok)
                             {
                                 driver.book.deleteSection(response);
@@ -1902,6 +1911,21 @@
                         .style("text-anchor", "end")
                         .text("Words ($)");
                 });
+            },
+            /**
+             * Controller
+             */
+            full: function(){
+                $('.undo').on('click', function(){
+                    var $this = $(this);
+                    $.post($this.attr('href'), function(resp){
+                       if(resp.ok){
+                           $this.parents('.deleted').removeClass('deleted');
+                           $this.remove();
+                       }
+                    }, 'json');
+                    return false;
+                })
             }
 
         },

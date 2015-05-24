@@ -262,4 +262,29 @@ class Book extends CI_Controller
         return $images;
     }
 
+    /**
+     * Will print all the chapters and section ever created in the book, including those soft deleted,
+     * then the user can undo the deletion
+     * @param $bookId
+     */
+    public function full($bookId)
+    {
+        $this->load->model(array('books_model','sections_model','chapters_model'));
+        $bookname = $this->books_model->get($bookId);
+        $sections = $this->sections_model->find($bookId, true);
+        $chapters = $this->chapters_model->find($bookId, true);
+        foreach ($chapters as &$item) {
+            $item['images'] = $this->findImages($item['content']);
+        }
+        $this->load->view('templates/header');
+        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('book/full',
+            array('id'=>$bookId,
+                  'sections'=>$sections,
+                  'chapters'=>$chapters,
+            ));
+
+        $this->load->view('templates/footer');
+    }
+
 }

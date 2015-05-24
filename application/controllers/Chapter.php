@@ -21,9 +21,10 @@ class Chapter extends CI_Controller
 
     public function save()
     {
-        $this->load->model(array('sections_model','status_model'));
+        $this->load->model(array('sections_model', 'status_model'));
         $book_id = $this->input->post('book_id');
-        $section = end($this->sections_model->find($book_id));
+        $sections = $this->sections_model->find($book_id);
+        $section = end($sections);
         $chapters = $this->model->find($book_id);
         $editor_id =$this->input->post('editor_id');
 
@@ -126,10 +127,7 @@ class Chapter extends CI_Controller
     }
     public function delete_chapter(){
         $id = $this->input->post('chapter_id');
-        $data = array(
-            'removed'=> 1
-        );
-        $this->model-> delete($id,$data);
+        $this->model->delete($id);
         echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 
@@ -188,6 +186,12 @@ class Chapter extends CI_Controller
             $data['original']['content'], FineDiff::$wordGranularity);
 
         echo html_entity_decode(FineDiff::renderDiffToHTMLFromOpcodes($data['compare']['content'], $opcodes)) ;
+    }
+
+    public function undo($id)
+    {
+        $this->model->undelete($id);
+        echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 
 }

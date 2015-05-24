@@ -34,7 +34,6 @@
 | 				 multi-byte character set and are running versions lower than these.
 | 				 Sites using Latin-1 or UTF-8 database character set and collation are unaffected.
 |	['swap_pre'] A default table prefix that should be swapped with the dbprefix
-|	['autoinit'] Whether or not to automatically initialize the database.
 |	['stricton'] TRUE/FALSE - forces 'Strict Mode' connections
 |							- good for ensuring strict SQL while developing
 |
@@ -65,7 +64,6 @@ $db['default']['cachedir'] = '';
 $db['default']['char_set'] = 'utf8';
 $db['default']['dbcollat'] = 'utf8_general_ci';
 $db['default']['swap_pre'] = '';
-$db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
 
 
@@ -82,7 +80,6 @@ $db['default_test']['cachedir'] = '';
 $db['default_test']['char_set'] = 'utf8';
 $db['default_test']['dbcollat'] = 'utf8_general_ci';
 $db['default_test']['swap_pre'] = '';
-$db['default_test']['autoinit'] = TRUE;
 $db['default_test']['stricton'] = FALSE;
 
 /* End of file database.php */

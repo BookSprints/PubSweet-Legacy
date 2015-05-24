@@ -13,7 +13,7 @@
     });
 
 </script>
-<?php if($draft):?>
+<?php if(!empty($draft) && $draft):?>
 
     <script src="<?php echo base_url();?>public/js/annotator-full.min.js"></script>
     <script>

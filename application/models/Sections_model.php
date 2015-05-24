@@ -7,17 +7,21 @@
  * To change this template use File | Settings | File Templates.
  */
 
-class Sections_model extends CI_Model {
+class Sections_model extends MY_Model {
     public function __construct()
     {
         parent::__construct();
-        $this->load->database();
+        $this->table = 'sections';
     }
 
-    public function find($book_id){
-        $this->db->select('id, title,order');
+    public function find($book_id, $all = false){
+        $this->db->select('id, title, order, removed');
         $this->db->order_by('order');
-        $query = $this->db->get_where('sections', array('book_id'=>$book_id, 'sections.removed'=>0));
+        $filters['book_id'] = $book_id;
+        if(!$all){
+            $filters['sections.removed'] = 0;
+        }
+        $query = $this->db->get_where('sections', $filters);
         return $query->result_array();
     }
 
@@ -37,11 +41,28 @@ class Sections_model extends CI_Model {
         $this->db->where('id',$id);
         $this->db->update('sections',$data);
     }
-    public function delete($id,$data){
 
-     $this->db->where('id', $id);
-     $this->db->update(
-       'sections',$data);
-      }
+    /*public function delete($id){
+
+        $this->softUpdate($id,
+            $data = array(
+                'removed'=> 1
+            ));
+    }
+
+    public function undelete($id){
+
+        $this->softUpdate($id,
+            $data = array(
+                'removed'=> 0
+            ));
+    }
+
+    public function softUpdate($id, $data){
+
+        $this->db->where('id', $id);
+        $this->db->update(
+            'sections', $data);
+    }*/
 
 }

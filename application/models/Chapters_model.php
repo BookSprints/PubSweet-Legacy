@@ -6,24 +6,29 @@
  * Time: 12:38 AM
  */
 
-class Chapters_model extends CI_Model
+class Chapters_model extends MY_Model
 {
     public function __construct()
     {
         parent::__construct();
-        $this->load->database();
+        $this->table = 'chapters';
     }
 
     /** find all chapter at the  book
      * @param $book
      * @return mixed
      */
-    public function find($book)
+    public function find($book, $all = false)
     {
-        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content, c.locked');
+        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content,
+                            c.locked, c.removed');
         $this->db->from('chapters c');
-        $this->db->join('sections s','s.id = c.section_id AND s.removed=0');
-        $this->db->where(array('c.book_id'=>$book,'c.removed'=>0));
+        $this->db->join('sections s','s.id = c.section_id '.($all ? '' : 'AND s.removed=0'));
+        $filters = array('c.book_id'=>$book);
+        if(!$all){
+            $filters['c.removed'] = 0;
+        }
+        $this->db->where($filters);
         $this->db->order_by('s.order, c.order');
         $query = $this->db->get();
         return $query->result_array();
@@ -116,13 +121,6 @@ class Chapters_model extends CI_Model
          $query = $this->db->get();
          return $query->result_array();
 
-    }
-
-    public function delete($id,$data){
-
-            $this->db->where('id', $id);
-            $this->db->update(
-                'chapters',$data);
     }
 
     public function getHistory($id)

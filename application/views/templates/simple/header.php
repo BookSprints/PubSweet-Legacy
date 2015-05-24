@@ -53,11 +53,11 @@
         }
     </style>
     <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/bootstrap.min.css"/>
-    <?php if($draft):?>
-    <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/annotator.min.css"/>
+    <?php if(!empty($draft) && $draft):?>
+        <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/annotator.min.css"/>
     <?php endif;?>
 </head>
 <body data-book-id="<?php echo $id;?>">
     <div class="container">
-<?php echo $content;?>
+        <?php echo $content;?>
     </div>
