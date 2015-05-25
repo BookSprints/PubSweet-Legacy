@@ -58,13 +58,6 @@
         font-style: italic;
     }*/
 </style>
-<!--<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap.min.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap-wysihtml5.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/chosen.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/jquery-ui-1.10.3.custom.min.css">
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/validationEngine.jquery.css">
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap-editable.css"/>-->
-
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/pubsweet-libs.min.css"/>
 

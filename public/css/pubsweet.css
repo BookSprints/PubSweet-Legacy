@@ -126,10 +126,16 @@ h1.brand {
     height: 100px;
 }
 
-#btncreatebook {
+.profile-button {
     padding: 20px;
     margin: 0;
     font-size: 14px;
+    margin-left: 20px;
+    margin-top: 10px;
+    width: 160px !important;
+    display: block;
+    box-sizing: content-box;
+    border: none;
 }
 
 #mybook {
@@ -225,8 +231,13 @@ h1.brand {
 .section-name {
     margin: 0;
     font-size: 1.6em;
-
 }
+
+.section-preview{
+    line-height: 40px;
+    margin-right: 5px;
+}
+
 .contributor .section-name{
     cursor: move;
 }
@@ -449,6 +460,27 @@ html[dir="RTL"] .pull-right{
 }
 
 /* ****** END TOCMANAGER ****** */
+
+/* ******* FULL TOC ********* */
+#full-content .row-fluid{
+    margin: 20px;
+    width: auto;
+}
+.deleted, .deleted a{
+    color: darkgray;
+}
+.section-row{
+    background-color: #f9f9f9;
+}
+.section-row a{
+    line-height: 40px;
+    margin: 10px 0;
+    display: block;
+}
+.deleted a.undo{
+    color: #08c;
+}
+/* ******* END FULL TOC ********* */
 
 
 /* ******  DICTIONARY/CREATE ****** */

@@ -42,6 +42,15 @@
       <?php endforeach;
             endif;
       ?>
+
+      <?php
+      if(!!$js):
+      foreach ($js as $key => $item) :?>
+        <item href="js/<?php echo $item['name'];?>" media-type="text/javascript" id="<?php echo str_replace('.','-', $item['name'])?>"/>
+      <?php endforeach;
+            endif;
+      ?>
+
       <?php foreach ($toc as $key => $section) :?>
           <item href="<?php echo $section['url'];?>" media-type="application/xhtml+xml"
                 id="<?php echo str_replace('.xhtml','', $section['url'])?>"/>

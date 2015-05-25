@@ -85,6 +85,10 @@
         .brand{
             font-family: "libre-baskerville";
         }
+        .content-options li{
+            list-style: none;
+            margin-left: 20px;
+        }
 
     </style>
     <style type="text/css">
@@ -94,6 +98,14 @@
 
         .bootzard > fieldset {
             display: none;
+            position: relative;
+            min-height: 80vh;
+        }
+
+        .pager{
+            bottom: 0;
+            position: absolute;
+            right: 0;
         }
     </style>
 </head>
@@ -112,7 +124,6 @@ if (!empty($book['id'])):  ?>
                     </li>
                 <?php endif; ?>
                 <li>
-                <li><a href="<?php echo 'taskmanager/' . $book['id'] . '/'; ?>" target="_blank">Task Manager</a></li>
                 <li class="active"><a href="<?php echo 'console/' . $book['id'] . '/' ?>">Console</a>
                 </li>
 
@@ -136,58 +147,83 @@ if (!empty($book['id'])):  ?>
 
         <!--form:post#management-form.form-horizontal>(fieldset>legend+(div.control-group>label.control-label+div.controls>input:text))*3-->
         <form id="management-form" class="form-horizontal bootzard" action="#" method="post">
-            <!--<fieldset>
-                <legend>Please enter the Book Name</legend>
-                <div class="control-group"><label class="control-label" for="bookname">Book</label>
+            <input type="hidden" name="settings-token" id="settings-token" value="<?php echo substr(md5(microtime()),rand(0,26),6);?>"/>
 
-                    <div class="controls">
-                        <input type="text" name="bookname" id="bookname" required="required">
-                    </div>
-                </div>-->
             <fieldset id="metadata" class="bookable">
-                <legend>Metadata</legend>
+                <div class="span6">
+                    <legend>Metadata</legend>
                     <input type="hidden" name="book_id" value="<?php echo $book['id'];?>" id="book_id"/>
                     <input type="hidden" name="bookname"
-                           value="<?php echo str_replace(' ', '_', strtolower($book['title']));?>" id="bookname"/>
-                <div class="control-group"><label class="control-label" for="book-title">Book title</label>
+                           value="<?php echo $bookName;?>" id="bookname"/>
+                    <div class="control-group"><label class="control-label" for="book-title">Book title</label>
 
-                    <div class="controls"><input type="text" name="title" id="book-title"
-                                                 value="<?php echo $book['title'];?>"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="author">Author</label>
+                        <div class="controls"><input type="text" name="title" id="book-title"
+                                                     value="<?php echo $book['title'];?>"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="author">Author</label>
 
-                    <div class="controls"><input type="text" name="author" id="author"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="publisher">Publisher</label>
+                        <div class="controls"><input type="text" name="author" id="author"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="publisher">Publisher</label>
 
-                    <div class="controls"><input type="text" name="publisher" id="publisher" value="PUBSWEET"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="published-date">Published Date</label>
+                        <div class="controls"><input type="text" name="publisher" id="publisher" value="PUBSWEET"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="published-date">Published Date</label>
 
-                    <div class="controls"><input type="text" name="date" id="published-date"></div>
-                </div>
-                <div class="control-group"><label class="control-label" for="license">License</label>
+                        <div class="controls"><input type="text" name="date" id="published-date"></div>
+                    </div>
+                    <div class="control-group"><label class="control-label" for="license">License</label>
 
-                    <div class="controls"><input type="text" name="rights" id="license" value="GPLv2+"></div>
+                        <div class="controls"><input type="text" name="rights" id="license" value="GPLv2+"></div>
+                    </div>
                 </div>
+                <div class="span6">
+                    <legend>Content</legend>
+                    <div>
+                        <label class="radio inline" for="full">
+                            <input type="radio" name="content" checked="checked"
+                                   id="full-content"/>Full</label>
+                        <label
+                            class="radio inline" for="customized"><input type="radio" name="content"
+                                                                         id="customized"/>Customized</label>
+                    </div>
+                    <div class="content-detail hide">
+                    <?php
+
+                    foreach ($sections as $id=>$chapters) {
+                        $options = sprintf('<ul class="content-options"><label class="checkbox" for="section%s">
+                            <input type="checkbox" name="sections[]" id="section%s" value="%s" checked/>%s</label>%%s</ul>',
+                            $chapters[0]['section_id'], $chapters[0]['section_id'], $chapters[0]['section_id'],
+                            $chapters[0]['section_title']);
+                        $chaptersInput = '';
+                        foreach ($chapters as $chapter) {
+                            $chaptersInput .= sprintf('<li><label for="chapter%s" class="checkbox">
+                                <input type="checkbox" name="chapters[]" value="%s" id="chapter%s" checked>%s</label></li>',
+                                $chapter['id'], $chapter['id'], $chapter['id'], $chapter['title']);
+                        }
+                        echo sprintf($options, $chaptersInput);
+                    }
+                    ?>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
                 </fieldset>
-<!--            </fieldset>-->
             <fieldset>
                 <div class="span6">
-                <legend>Custom CSS</legend>
-                <!--<div class="control-group">
+                <legend>Extra JS</legend>
+                <div class="control-group">
                     <div class="controls">
-                    <label class="checkbox" for="prettify-epub">
-                        <input type="checkbox" name="prettify-epub" id="prettify-epub"/> Inject Google Prettify into Epub</label>
+                        <input type="file" accept="application/javascript, text/javascript" name="jsfile" id="jsfile"
+                            multiple>
+                    <ul id="fileList"></ul>
                     </div>
-                </div>-->
+                </div>
+                <legend>Custom CSS</legend>
                 <div class="control-group"><label class="control-label" for="css">Custom CSS</label>
 
                     <div class="controls"><textarea name="css" id="css" rows="15"></textarea></div>
                 </div>
                 </div>
-            <!--</fieldset>
-            <fieldset>-->
                 <div class="span6">
                 <legend>Cover</legend>
                 <div class="control-group">
@@ -199,91 +235,237 @@ if (!empty($book['id'])):  ?>
                 </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox" for="download">
-                            <input type="checkbox" name="download" id="download">Create EPUB</label>
+            </fieldset>
+            <fieldset>
+                <div class="span6">
+                    <legend>EPUB options</legend>
+                    <div class="control-group">
+                        <div class="controls">
+                            <label class="checkbox" for="download">
+                                <input type="checkbox" name="download" id="download">Create EPUB</label>
+                        </div>
                     </div>
                 </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox" for="create-bookjs">
-                        <input type="checkbox" name="create-bookjs" id="create-bookjs"
-                           data-toggle="collapse" data-target="#bookjs-option">Create Book PDF</label>
+                <div class="span6">
+                    <div class="control-group">
+                        <legend>PDF options</legend>
+                        <div class="controls">
+                            <label class="checkbox" for="create-bookjs">
+                                <input type="checkbox" name="create-bookjs" id="create-bookjs"
+                                       data-toggle="collapse" data-target="#bookjs-option">Create Book PDF</label>
+
+                        </div>
+
                         <div id="bookjs-option" class="collapse">
-                            <div class="control-group"><label class="control-label" for="language">Language</label>
-
-                                <div class="controls"><input type="text" value="en-US" id="language" name="language"></div>
-                            </div>
-                            <div class="control-group"><label class="control-label" for="pageHeight">Page Height</label>
-
-                                <div class="controls"><input type="text" value="9.68" id="pageHeight" name="pageHeight"></div>
-                            </div>
-                            <div class="control-group"><label class="control-label" for="pageWidth">Page Width</label>
-
-                                <div class="controls"><input type="text" value="7.44" id="pageWidth" name="pageWidth"></div>
-                            </div>
-                            <div class="control-group"><label class="control-label" for="lengthUnit">Length Unit</label>
-
-                                <div class="controls"><input type="text" value="in" id="lengthUnit" name="lengthUnit"></div>
-                            </div>
                             <div class="control-group ">
                                 <div class="controls">
                                     <label class="checkbox" for="hyphen"><input type="checkbox" name="hyphen" id="hyphen"/>Hyphenate</label>
                                 </div>
                             </div>
+                            <div class="btn-group" data-toggle="buttons-radio">
+                                <button type="button" class="btn btn-primary active" id="set-basic">Basic</button>
+                                <button type="button" class="btn btn-primary" id="set-advanced">Advanced</button>
+                            </div>
+                            <div id="basic">
+
+                                <div class="control-group"><label class="control-label" for="language">Language</label>
+
+                                    <div class="controls"><input type="text" value="en-US" id="language" name="language"></div>
+                                </div>
+                                <div class="control-group"><label class="control-label" for="pageHeight">Page Height</label>
+
+                                    <div class="controls"><input type="text" value="9.68" id="pageHeight" name="pageHeight"></div>
+                                </div>
+                                <div class="control-group"><label class="control-label" for="pageWidth">Page Width</label>
+
+                                    <div class="controls"><input type="text" value="7.44" id="pageWidth" name="pageWidth"></div>
+                                </div>
+                                <div class="control-group"><label class="control-label" for="lengthUnit">Length Unit</label>
+
+                                    <div class="controls"><input type="text" value="in" id="lengthUnit" name="lengthUnit"></div>
+                                </div>
+                            </div>
+                            <div id="advanced" class="hide">
+                            <div class="control-group">
+                                <div class="">
+                                    <label class="" for="epub-config">Bookjs config
+                                        <a data-toggle="modal" href="#modal-help" class="pull-right"><i class="icon-info-sign"></i></a></label>
+                                    <textarea name="bookjs-config" id="bookjs-config" cols="60" rows="15" class="span12"><?php echo $defaultConfig;?>
+                                    </textarea>
+                                </div>
+
+                                <div class="modal fade hide" id="modal-help">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">OPTIONS</h4>
+                                            </div>
+                                            <div class="modal-body">
+
+                                                <p>The following options are available to customize the pagination behavior. In
+                                                    the descriptions below you can see the default values for these options. You
+                                                    only need to specify the options if you want to deviate from the default
+                                                    value.</p>
+
+                                                <p><code>sectionStartMarker: 'h1'</code> -- This is the HTML element we look for to find where
+                                                    a new section starts.</p>
+
+                                                <p><code>sectionTitleMarker: 'h1'</code> -- Within the newly found section, we look for the
+                                                    first instance of this element to determine the title of the section.</p>
+
+                                                <p><code>chapterStartMarker: 'h2'</code> -- This is the HTML element we look for to find where
+                                                    a new chapter starts.</p>
+
+                                                <p><code>chapterTitleMarker: 'h2'</code> -- Within the newly found chapter, we look for the
+                                                    first instance of this element to determine the title of the chapter.</p>
+
+                                                <p><code>flowElement: 'document.body'</code> -- This specifies element the container element
+                                                    of the content we will flow into pages. You can use any javascript selector
+                                                    here, such as "document.getElementById('contents')" .</p>
+
+                                                <p><code>alwaysEven: false</code> -- This determines whether each section and chapter should
+                                                    have an even number of pages (2, 4, 6, 8, ...).</p>
+
+                                                <p><code>columns: 1</code> -- This specifies the number of number of columns used for the
+                                                    body text.</p>
+
+                                                <p><code>enableFrontmatter: true</code> -- This resolves whether a table of contents, page\
+                                                    headers and other frontmatter contents should be added upon page creation.
+                                                    Note: divideContents has to be true if one wants the frontmatter to render.</p>
+
+                                                <p><code>enableTableOfFigures: false</code> -- This creates a table of figures in the front.
+                                                    Figures are expected to be in the HTML5 format:</p>
+
+                                                <code>&lt;figure&gt;...&lt;figcaption&gt;&lt;/figcaption&gt;&lt;/figure&gt;</code>
+
+                                                <p>If an <code>&lt;img&gt;</code> element is present in the figure, its alt-attribute text will be
+                                                    used as the reference text. If no <code>&lt;img&gt;</code> element is present, or one is
+                                                    present, but it has no alt-attribute, the contents of the <code>&lt;figcaption&gt;</code>
+                                                    element will be usd instead. If no <code>&lt;figcaption&gt;</code> element is present, a
+                                                    description text is generated of the following format:</p>
+
+                                                <p>"Figure chapter.number"</p>
+
+                                                <p><code>enableTableOfTables: false</code> -- This creates a table of <code>&lt;table&gt;</code>s within
+                                                    <code>&lt;figure&gt;</code>s, similarly to enableTableOfFigures. If this option is enabled,
+                                                    tables will not additionally be listed in the table of figures. If no
+                                                    <code>&lt;figcaption&gt;</code> element is present, the description text will be in the
+                                                    following format:</p>
+
+                                                <p>"Table chapter.number"</p>
+
+                                                <p><code>bulkPagesToAdd: 50</code> -- This is the initial number of pages of each flowable
+                                                    part (section, chapter). After this number is added, adjustments are made by
+                                                    adding another bulk of pages or deleting pages individually. It takes much
+                                                    less time to delete pages than to add them individually, so it is a point to
+                                                    overshoot the target value. For larger chapters add many pages at a time so
+                                                    there is less time spent reflowing text.</p>
+
+                                                <p><code>pagesToAddIncrementRatio: 1.4</code> -- This is the ratio of how the bulk of pages
+                                                    incremented. If the initial bulkPagestoAdd is 50 and those initial 50 pages
+                                                    were not enough space to fit the contents of that chapter, then next
+                                                    1.4 * 50 = 70 are pages, for a total of 50+70 = 120 pages, etc. .  1.4 seems
+                                                    to be the fastest in most situations.</p>
+
+                                                <p><code>frontmatterContents: none</code> -- These are the HTML contents that are added to
+                                                    the frontmatter before the table of contents. This would usually be a title
+                                                    page and a copyright page, including page breaks.</p>
+
+                                                <p><code>autoStart: true</code> -- This controls whether pagination should be executed
+                                                    automatically upon page load. If it is set to false, pagination has to be
+                                                    initiated manually. See below under "methods."</p>
+
+                                                <p><code>numberPages: true</code> -- This controls whether page numbers should be used. If
+                                                    page numbers are not used, the table of contents is automatically left out.</p>
+
+                                                <p><code>divideContents: true</code> -- This controls whether the contents are divided up
+                                                    according to sections and chapters before flowing. CSS Regions take a long
+                                                    time when more than 20-30 pages are involved, which is why it usually makes
+                                                    sense to divide the contents up. However, if the contents to be flown takes
+                                                    up less space than this, there is no need to do this division. The added
+                                                    benefit of not doing it is that the original DOM of the part that contains
+                                                    the contents will not be modified. Only the container element that holds the
+                                                    contents will be assigned another CSS class. Note: divideContents has to be
+                                                    true if one wants the frontmatter to render.</p>
+
+                                                <p><code>maxPageNumber: 10000</code> -- This controls the maximum amount of pages. If more
+                                                    pages than this are added, BookJS will die. Notice that pages are added
+                                                    incrementally, so you won't be able to control the exact number of pages.
+                                                    You should always set this to something much larger than what you will ever
+                                                    expect that you book will need.</p>
+
+                                                <p><code>topfloatSelector: '.pagination-topfloat'</code> -- This is the CSS selector used
+                                                    for finding top floats within the HTML code. Top floats are placed on the
+                                                    page either of the reference or the one following it. In editing
+                                                    environments, the top float should be inserted inside two additional
+                                                    elements, like this:</p>
+
+                                                <code>&lt;span class='pagination-topfloat'&gt;&lt;span&gt;&lt;span&gt;This is the top float contents&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;</code>
+
+                                                <p><code>footnoteSelector: '.pagination-footnote'</code> -- This is the CSS selector used
+                                                    for finding footnotes within the HTML code. Footnotes are automatically
+                                                    moved if the page of their reference changes. In editing environments, the
+                                                    footnote should be inserted inside two additional elements, like this:</p>
+
+                                                <code>&lt;span class='pagination-footnote'&gt;&lt;span&gt;&lt;span&gt;This is a footnote&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;</code>
+
+                                                <h3>Page style options</h3>
+
+                                                <p>These settings provide a way to do simple styling of the page. These
+                                                    settings are different from the above ones in that they can be overriden
+                                                    through CSS to provide more advanced designs (see the above note on
+                                                    pagination.css).</p>
+
+                                                <p><code>outerMargin: .5</code> (inch)-- This controls the margin on the outer part of the
+                                                    page.</p>
+
+                                                <p><code>innerMargin: .8</code> (inch)-- This controls the margin on the inenr part of the
+                                                    page.</p>
+
+                                                <p><code>contentsTopMargin: .8</code> (inch)-- This controls the margin between the top of
+                                                    the page and the top of the contents.</p>
+
+                                                <p><code>headerTopMargin: .3</code> (inch) -- This controls the margin between the top of
+                                                    the page and the top of the page headers.</p>
+
+                                                <p><code>contentsBottomMargin: .8</code> (inch) -- This controls the margin between the
+                                                    bottom of the page and the bottom of the contents.</p>
+
+                                                <p><code>pagenumberBottomMargin: .3</code> (inch) -- This controls the margin between the
+                                                    bottom of the page and the bottom of the page number.</p>
+
+                                                <p><code>pageHeight: 8.3</code> (inch) -- This controls the height of the page.</p>
+
+                                                <p><code>pageWidth: 5.8</code> (inch) -- This controls the width of the page.</p>
+
+                                                <p><code>columnSeparatorWidth: .09</code> (inch) -- This is the space between columns.</p>
+
+                                                <p><code>lengthUnit: 'in'</code> (inch) -- Use this to specify the unit used in all the page
+                                                    style options. It can be any unit supported by CSS.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div><!-- /.modal-content -->
+                                    </div><!-- /.modal-dialog -->
+                                </div><!-- /.modal -->
+                            </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </fieldset>
-            <!--<fieldset>
-                <legend>Make changes</legend>
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox" for="fix">
-                            <input type="checkbox" name="fix" id="fix">Fix internal links</label>
-                        <label class="checkbox" for="download">
-                            <input type="checkbox" name="download" id="download">Download EPUB</label>
-                        <label class="checkbox" for="create-bookjs">
-                            <input type="checkbox" name="create-bookjs" id="create-bookjs"
-                                   data-toggle="collapse" data-target="#bookjs-option">Create BookJS</label>
-                        <div id="bookjs-option" class="collapse offset1">
-                            <label class="checkbox" for="prettify"><input type="checkbox" name="prettify"
-                                                                          id="prettify"/>Inject Google Prettify</label>
-                            <label class="checkbox" for="editablecss">
-                                <input type="checkbox" name="editable" id="editablecss">Make editable CSS</label>
-                            <label class="checkbox" for="hyphen"><input type="checkbox" name="hyphen" id="hyphen"/>Hyphenate</label>
-                            <fieldset id="bookjs-config">
-                                <legend>BookJS Config</legend>
-                                <div class="control-group"><label class="control-label" for="page-height">Page Height</label>
-
-                                    <div class="controls"><input type="text" value="9.68" id="page-height" name="pageHeight"></div>
-                                </div>
-                                <div class="control-group"><label class="control-label" for="page-width">Page Width</label>
-
-                                    <div class="controls"><input type="text" value="7.44" id="page-width" name="pageWidth"></div>
-                                </div>
-                                <div class="control-group"><label class="control-label" for="length-unit">Length Unit</label>
-
-                                    <div class="controls"><input type="text" value="in" id="length-unit" name="lengthUnit"></div>
-                                </div>
-                            </fieldset>
-                        </div>
-
-                    </div>
-                </div>
-            </fieldset>-->
-
-            <!--<div class="form-actions"><input class="btn" type="submit" value="Submit"><input class="btn" type="reset"
-                                                                                       value="Reset"></div>-->
         </form>
     </div>
     <div class="row hide" id="advance">
         <!--<div id="downloading">Getting download link</div>-->
-        <div id="epubing"><h1>Generating XHTML files</h1></div>
         <div id="metadating"><h1>Setting metadata</h1></div>
+        <div id="epubing"><h1>Generating XHTML files</h1></div>
+        <div id="jsing"><h1>Uploading JS</h1></div>
         <div id="cssing"><h1>Uploading CSS</h1></div>
-                <div id="covering"><h1>Uploading Cover</h1></div>
+        <div id="covering"><h1>Uploading Cover</h1></div>
 <!--        <div id="fetching"><h1>Fetching EPUB</h1></div>-->
 <!--        <div id="fixing"><h1>Fixing links</h1></div>-->
 <!--        <div id="fixingImages"><h1>Fixing Images</h1></div>-->
@@ -368,7 +550,7 @@ if (!empty($book['id'])):  ?>
                 }
                 selector.addClass('active').append(footer);
             };
-            self.activate(this.find('fieldset:first-child'));
+            self.activate(this.find('fieldset').first());
             self.addClass('bootzard');
             this.on('click', '.next',function () {
                 var fieldSet = $(this).parents('fieldset'), result = true;
@@ -390,323 +572,6 @@ if (!empty($book['id'])):  ?>
         };
     })(window.jQuery);
 </script>
-<script type="text/javascript">
-    (function ($) {
-        var driver = {
-            init:function () {
-                driver.handleCoverPreview();
-                $('#management-form').bootzard({'done':function () {
-                    driver.process();
-                    return false;
-                }});
-                localStorage.setItem('bookHistory', localStorage.getItem('bookHistory')||JSON.stringify([]));
-                var $bookname =$('#bookname');
-                $bookname.typeahead({'source': function(){
-                    return JSON.parse(localStorage.getItem('bookHistory'));
-                }, 'minLength': 3});
-                if($('#load').is(':checked')){
-                    $bookname.on('blur', function(){
-                        $.get('getFileInfo')
-                    });
-                }
-            },
-            encodeImg:function (img) {
-                var canvas = document.createElement("canvas");
-                var MAX_WIDTH = 350;
-                //var MAX_HEIGHT = 800;
-                var width = img.width;
-                var height = img.height;
-
-                //if (width > height) {
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-                /*} else {
-                 if (height > MAX_HEIGHT) {
-                 width *= MAX_HEIGHT / height;
-                 height = MAX_HEIGHT;
-                 }
-                 }*/
-                canvas.width = width;
-                canvas.height = height;
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, width, height);
-                // Copy the image contents to the canvas
-                /*var ctx = canvas.getContext("2d");
-                 ctx.drawImage(img, 0, 0, );*/
-
-                // Get the data-URL formatted image
-                // Firefox supports PNG and JPEG. You could check img.src to
-                // guess the original format, but be aware the using "image/jpg"
-                // will re-encode the image.
-                return canvas.toDataURL("image/jpeg");
-            },
-            handleCoverPreview:function () {
-                $('#cover').on('change', function () {
-                    var input = this;
-                    if (input.files && input.files[0]) {
-                        var reader = new FileReader();
-
-                        reader.onload = function (e) {
-                            $('#preview').attr('src', e.target.result).show();
-                        };
-                        reader.readAsDataURL(input.files[0]);
-                        $(input).show();
-                    }
-                });
-            },
-            process:function () {
-                var steps;
-                /*
-                 steps = [
-                    element: html element, holding the text info about the procedure,
-                    method: function to be executed,
-                    enabled: true if the step is going to be executed |false or custom sentence returning a boolean
-                 ]*/
-
-                steps = [
-//                    {element: $('#downloading'), method: management.getDownloadURL},
-                    {element:$('#epubing'), method:driver.generateXHTMLFiles, enabled:true},
-                    {element:$('#metadating'), method:driver.uploadMetadata,
-                        enabled: $('#metadata').find('input').filter(function() { return !!this.value }).length>0},
-                    {element:$('#cssing'), method:driver.uploadCSS, enabled:true},
-                    {element:$('#covering'), method:driver.uploadCover, enabled:!!$('#cover').val()}
-                    /*{element:$('#fetching'), method:management.downloadEpub, enabled:true},
-                    {element:$('#fixing'), method:management.fixLinks, enabled:$('#fix').is(':checked')},
-                    {element:$('#cssing'), method:management.uploadCSS, enabled:(!!$('#css').val())||$('#prettify-epub').is(':checked')},
-
-                    {element:$('#fixinImages'), method:management.fixImages, enabled:true}*/
-                ];
-                $('#advance').show();
-                driver.bookname = $('#bookname').val();
-                driver.work(steps, 0);
-            },
-            /**
-             * recursive function
-             *
-             * @param steps
-             * @param index
-             */
-            work:function (steps, index) {
-                var item = steps[index];
-                if(!item.enabled){
-                    item.element.addClass('muted').find('h1').append('<small></small>', {'class':'pull-right', text: '...skipped'});
-                    if(steps[index+1]!=undefined){
-                        driver.work(steps, index + 1);
-                        return;
-                    }else{
-                        driver.end();
-                        return;
-                    }
-
-                }
-                item.element.addClass('alert alert-info').prepend($('<div></div>', { 'class':"ajax-loader pull-right"}));
-                item.method(function (result) {
-                    if(result){
-                        item.element.addClass('alert-success').find('h1').append($('<span></span>', {html: '&#x2714;', 'class':'pull-right'}));//append check mark
-                    }else{
-                        item.element.addClass('alert-error');
-                    }
-                    item.element.removeClass('alert-info');
-                    item.element.find('.ajax-loader').remove();
-                    if(steps.length==index+1){
-                        driver.end();
-                    }
-                    if(result && steps[index+1]!=undefined){
-                        driver.work(steps, index + 1)
-                    }
-                });
-            },
-            end: function(){
-                var $result = $('#result');
-                driver.createPreviewURL($result.find('#bookjs'));
-                driver.createLiveCSSURL($result.find('#livecss'));
-                $result.find('#epub').attr('href', driver.url).removeClass('hide');
-                $result.show();
-                if($('#download').is(':checked')){
-                    document.location = 'render/epub/'+$('#book_id').val();
-                }
-
-            },
-            createPreviewURL: function($link){
-                if($('#create-bookjs').is(':checked')){
-                    $link.attr('href', 'console/preview/'+driver.bookname+'/'+
-                                    +($('#editablecss').is(':checked')?true:false)+'/'+
-                                    +($('#hyphen').is(':checked')?true:false)+'/'+
-                                    +($('#prettify').is(':checked')?true:false)
-                                    +'/?a=1'//only a placeholder
-                                    +($('#pageWidth').val()!=7.44?'&w='+$('#pageWidth').val():'')
-                                    +($('#pageHeight').val()!=9.68?'&h='+$('#pageHeight').val():'')
-                                    +($('#lengthUnit').val()!='in'?'&u='+$('#lengthUnit').val():'')
-                                    +($('#language').val()!='en-US'?'&l='+$('#language').val():''))
-                            .removeClass('hide');
-
-                }
-            },
-            createLiveCSSURL: function($link){
-                if($('#create-bookjs').is(':checked')){
-                    $link.attr('href', 'console/livecss/'+driver.bookname+'/'+
-                                    +($('#editablecss').is(':checked')?true:false)+'/'+
-                                    +($('#hyphen').is(':checked')?true:false)+'/'+
-                                    +($('#prettify').is(':checked')?true:false))
-                            .removeClass('hide');
-
-                }
-            },
-            /*downloadEpub:function (callback) {
-                $.get('manager/getFromObjavi/'+driver.bookname, function (data) {
-                    if (data.ok) {
-                        driver.url = data.link;
-                        var bookHistory = JSON.parse(localStorage.getItem('bookHistory'));
-                        if(Object.prototype.toString.call( bookHistory ) === '[object Array]'){
-                            if(bookHistory.indexOf(driver.bookname)==-1){
-                                bookHistory.push(driver.bookname);
-                                localStorage.setItem('bookHistory', JSON.stringify(bookHistory));
-                            }else{
-                                //do nothing, it already exists
-                            }
-                        }else{
-                            localStorage.setItem('bookHistory', JSON.stringify([driver.bookname]));
-                        }
-                    }
-                    if (!!callback) {
-                        callback(data.ok);
-                    }
-                }, 'json').error(function(){
-                            callback(false);
-                        });
-            },*/
-            generateXHTMLFiles: function(callback){
-                $.post('render/epub/'+$('#book_id').val(),
-                    {download: false},
-                    function(data){
-                        if(data.ok){
-                            if (!!callback) {
-                                callback(data.ok);
-                            }
-                        }
-                    }, 'json').error(function(){
-                        callback(false);
-                    });
-            },
-            uploadMetadata:function (callback) {
-                $.post('console/manager/addMetadata/',
-                    $('#metadata').serialize()+'&book='+driver.bookname,
-                    function(data){
-                        if(data.ok){
-                            if (!!callback) {
-                                callback(data.ok);
-                            }
-                        }
-                    }, 'json').error(function(){
-                            callback(false);
-                        });
-            },
-            fixLinks:function (callback) {
-                $.getJSON('manager/fixLinks/'+driver.bookname, function(data){
-                    if(!!data.orphanLinks){
-                        driver.fixManuallyLinks(data, callback);
-                    }else{
-                        if (!!callback) {
-                            callback(data.ok);
-                        }
-                    }
-
-                }).error(function(){
-                        callback(false);
-                    });
-            },
-            fixManuallyLinks:function (data, callback) {
-                Handlebars.registerHelper('select', function(item){
-
-                    return '<select name="'+item.file.replace('.', '&')+'['+item.class+']">' +
-                            driver.xhtmlFiles+
-                            '</select>'
-                });
-                driver.modalTemplate = Handlebars.compile($('#orphan-links-template').html());
-                driver.optionsTemplate = Handlebars.compile($('#select-template').html());
-//                management.silence=true;
-                //TODO: improve this
-                $('#orphan-modal').remove();
-                driver.xhtmlFiles = driver.optionsTemplate(data.xhtmlFiles);
-                $('body').append(driver.modalTemplate(data));//.modal('show');
-                $('#orphan-modal').modal('show');
-                $('#orphan-modal').on('hidden', function(){
-                    driver.silence=false;
-                });
-                $('body').on('submit', '#orphan-form', function(){
-                    var $this =$(this);
-                    $.post($this.attr('action'), $this.serialize(), function(data){
-                        if(data.ok){
-                            driver.silence=false;
-                            $('#orphan-modal').modal('hide');
-                            if (!!callback) {
-                                callback(data.ok);
-                            }
-                        }
-                    }, 'json');
-                    return false;
-                });
-            },
-            uploadCSS:function (callback) {
-                $.post('console/manager/injectCSS/',
-                {css:$('#css').val(), 'prettify-epub': $('#prettify-epub').is(':checked'),
-                    book:$('#book_id').val()}, function (data) {
-                    if (!!callback) {
-                        callback(data.ok);
-                    }
-                }, 'json');
-            },
-            uploadCover:function (callback) {
-                var $cover = $('#cover');
-                var fd = new FormData();
-                fd.append('book', $('#book_id').val());
-                fd.append("cover", $cover.get(0).files!=undefined?$cover.get(0).files[0]:null);
-
-                $.ajax({
-                    cache:false,
-                    contentType:false,
-                    processData:false,
-                    type:"POST",
-                    url: "console/manager/injectCover/",
-                    dataType:'json',
-                    data:fd,
-                    success:function (data, textStatus, jqXHR) {
-                        if (data.ok) {
-                            if (!!callback) {
-                                callback(data.ok);
-                            }
-                        }
-                    },
-                    error:function () {
-                        console.log('We got a problem');
-                    },
-                    statusCode:{
-                        413:function () {
-                            alert("Image too big");
-                        }
-                    }
-
-                });
-
-                return false;
-            },
-            fixImages: function(callback){
-                $.getJSON('manager/fixImages/'+driver.bookname, function(data){
-
-                    if (!!callback) {
-                        callback(data.ok);
-                    }
-
-
-                }).error(function(){
-                        callback(false);
-                    });
-            }
-        };
-        driver.init();
-    })(window.jQuery);
-</script>
+<script type="text/javascript" src="public/js/console.js"></script>
 </body>
 </html>

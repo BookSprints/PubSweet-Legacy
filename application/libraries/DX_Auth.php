@@ -170,7 +170,7 @@ class DX_Auth
 	
 	function _email($to, $from, $subject, $message)
 	{
-		$this->ci->load->library('Mail');
+		$this->ci->load->library('Email');
 		/*$email = $this->ci->email;
 
 		$email->from($from);
@@ -178,7 +178,7 @@ class DX_Auth
 		$email->subject($subject);
 		$email->message($message);*/
 
-        $this->ci->mail->send($to, $message, $subject);
+        $this->ci->email->deliver($to, $message, $subject);
 
 		//return $email->send();
 	}
@@ -971,8 +971,8 @@ class DX_Auth
 		
 		if ($insert)
 		{
-			// Replace password with plain for email
-			$new_user['password'] = $password;
+            // Replace password with blank text for email.
+            $new_user['password'] = '**********(you should know it)';
 			
 			$result = $new_user;
 			
@@ -1036,7 +1036,7 @@ class DX_Auth
 				// Check if there is already new password created but waiting to be activated for this login
 				if ( ! $row->newpass_key)
 				{
-					// Appearantly there is no password created yet for this login, so we create new password
+					// Apparently there is no password created yet for this login, so we create new password
 					$data['password'] = $this->_gen_pass();
 					
 					// Encode & Crypt password
@@ -1060,7 +1060,6 @@ class DX_Auth
 
 					// Send instruction email
 					$this->_email($row->email, $from, $subject, $message);
-					
 					$result = TRUE;
 				}
 				else
@@ -1415,5 +1414,3 @@ class DX_Auth
 	}
 
 }
-
-?>
