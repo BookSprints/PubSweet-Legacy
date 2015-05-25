@@ -83,6 +83,10 @@ class Chapter extends CI_Controller
             $this->model->update(array('content'=>$this->input->post('content')), $this->input->post('id'))));
     }
 
+    /**
+     * Only available for lexicon chapters
+     * @param $id
+     */
     public function review($id)
     {
         $data['id'] = $id;
@@ -125,6 +129,7 @@ class Chapter extends CI_Controller
         $this->load->view('chapter/review', $data);
         $this->load->view('templates/footer');
     }
+
     public function delete_chapter(){
         $id = $this->input->post('chapter_id');
         $this->model->delete($id);

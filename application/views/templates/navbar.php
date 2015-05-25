@@ -1,5 +1,7 @@
 <?php
-$this->load->model('user_model');
+//TODO: move all the logic out of the view, implement a $ci->load->template method
+$ci =&get_instance();
+$ci->load->model('user_model');
 
 $id = $this->session->userdata('DX_user_id');
 $module = $this->uri->segment(1);
@@ -31,7 +33,7 @@ if (!empty($id)): ?>
 
                         </li>
 
-                        <?php if ($id == $book['owner'] || $this->user_model->isFacilitator($id)): ?>
+                        <?php if ($id == $book['owner'] || $ci->user_model->isFacilitator($id)): ?>
                             <li><a href="<?php echo base_url() . 'console/' . $book['id'] . '/'; ?>" target="_blank">
                                     <?php echo $this->lang->line('console'); ?></a></li>
                             <li <?php echo $view == 'imageManager' ? ' class="active" ' : ''; ?>>

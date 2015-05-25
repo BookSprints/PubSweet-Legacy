@@ -115,7 +115,7 @@
                                                         <?php
                                                         endif;
 
-                                                        if ($isBookOwner || $reviewer):?>
+                                                        if (($isBookOwner || $reviewer) && $item['editor_id']==1 /*lexicon*/):?>
                                                             <a href="<?php echo base_url('chapter/review/' . $item['id']); ?>"><?php echo $this->lang->line('review'); ?></a>
                                                         <?php endif; ?>
 
@@ -349,4 +349,5 @@
         <div class="modal-footer"></div>
     </div>
 
+</div>
 </div>
