@@ -102,12 +102,9 @@ class Editor extends CI_Controller
 
         if (!$this->upload->do_upload('upload')) {
             $error = array('error' => $this->upload->display_errors());
-            print_r($error);
-//            $this->load->view('upload_form', $error);
         } else {
             $data = array('upload_data' => $this->upload->data());
             echo 'Success';
-//            $this->load->view('upload_success', $data);
         }
     }
 }

@@ -232,7 +232,8 @@ class Auth extends CI_Controller
 		// Validate rules and call forgot password function
 		if ($val->run() AND $this->dx_auth->forgot_password($val->set_value('login')))
 		{
-			$data['auth_message'] = 'An email has been sent to your email with instructions with how to activate your new password.';
+			$data['auth_message'] = 'An email has been sent to your email with instructions
+			with how to activate your new password. <a href="login">Back</a>';
 			$this->load->view($this->dx_auth->forgot_password_success_view, $data);
 		}
 		else
