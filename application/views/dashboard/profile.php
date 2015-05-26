@@ -95,7 +95,7 @@
                                             <a class="dropdown-toggle" data-toggle="dropdown"
                                                href="#">
                                                 HTML<b class="caret"></b></a>
-                                            <ul class="dropdown-menu">
+                                            <ul class="dropdown-menu pull-right">
                                                 <li>
                                                     <a href="<?php echo base_url('render/html/' . $item['id']); ?>">Preview</a>
                                                 </li>
@@ -152,7 +152,7 @@
                                         <a class="dropdown-toggle" data-toggle="dropdown"
                                            href="#">
                                             HTML<b class="caret"></b></a>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu pull-right">
                                             <li>
                                                 <a href="<?php echo base_url('render/html/'.$all_books[$item['book_id']]['id']); ?>">Preview</a>
                                             </li>

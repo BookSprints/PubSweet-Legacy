@@ -95,8 +95,11 @@ class Chapter extends CI_Controller
         $this->lang->load($lang, $lang);
 
         $this->load->model('Books_model','books_model');
-        $this->load->model('Chapters_model','chapters_model');
+        $this->load->model('Chapters_model', 'chapters_model');
         $chapter= $this->chapters_model->get($id);
+        if($chapter['editor_id']!=1){
+            redirect('book/tocmanager/' .  $chapter['book_id'], false);
+        }
         $this->load->model('Dictionary_entries_model','dictionary');
         $data['entries'] = $this->dictionary->term_list($id);
         $this->load->model('Definitions_model','definitions');

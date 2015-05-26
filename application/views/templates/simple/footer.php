@@ -22,7 +22,7 @@
                 bookId = $body.data('book-id');
             $body.annotator()
                 .annotator('addPlugin', 'Store', {
-                    prefix: '/annotations',
+                    prefix: '<?php echo base_url();?>annotations',
                     urls: {
                         // These are the default URLs.
                         create:  '/create/'+bookId,
