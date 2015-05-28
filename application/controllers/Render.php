@@ -212,6 +212,9 @@ class Render extends CI_Controller{
         if(isset($this->html) && $this->html){
             return $content;
         }else{
+            if(!function_exists('str_get_html')){
+                require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+            }
             $content = $this->fixImageLinks($content);
             return $this->getXhtml(array('title'=>$chapter['title'], 'content'=>$content));
         }
@@ -457,6 +460,7 @@ class Render extends CI_Controller{
     }
 
     /**
+     * TODO: move this and others method to a separate library that should be accessible to all controllers, maybe library/Creator
      * @param $id
      * @param $draft
      */
@@ -498,6 +502,24 @@ class Render extends CI_Controller{
                 unlink($file); // delete file
         }
 
+    }
+
+    /**
+     * Loads the UI for find/replace on the entire book
+     * TODO: this method should be in this controller
+     * @param $bookId
+     */
+    public function replace($bookId)
+    {
+        $this->load->library('Creator');
+        $content = $this->creator->getContent();
+        $this->load->view('templates/header');
+        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('book/full',
+            array('content'=>$content
+            ));
+
+        $this->load->view('templates/footer');
     }
 }
 

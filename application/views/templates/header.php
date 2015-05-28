@@ -1,5 +1,10 @@
+<?php
+    $lang = $this->session->userdata('lang_iso_code');
+    $lang = empty($lang) ? 'en' : $lang;
+?>
 <!DOCTYPE html>
-<html dir="<?php echo $this->session->userdata('lang_dir');?>" lang="<?php echo $this->session->userdata('lang_iso_code');?>">
+<html dir="<?php echo $this->session->userdata('lang_dir');?>"
+      lang="<?php echo $lang;?>">
 <head>
 <meta charset="utf-8">
 <base href="<?php echo base_url();?>">

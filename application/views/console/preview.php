@@ -62,11 +62,14 @@
         }*/
     </style>
     <?php
-
+    if(!empty($js)):
     foreach ($js as $key=>$item) :?>
         <script src="console/js/<?php echo $book;?>/<?php echo $key;?>"></script>
 
-    <?php endforeach;?>
+    <?php
+    endforeach;
+    endif;
+    ?>
 </head>
 <body
     <?php if(isset($prettify) && $prettify):?>
