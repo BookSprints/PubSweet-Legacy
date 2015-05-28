@@ -2454,9 +2454,7 @@
                                 .removeAttr('style');
                         });
                     return false;
-                }).error(function () {
-                        $this.find(':submit').button('reset');
-                    });
+                });
                 driver.addAsync('ckeditor', function () {
                     if (typeof CKEDITOR !== "undefined") {
                         $.ajax({
@@ -2471,7 +2469,6 @@
                             }
 
                         });
-
 
                         var config = {
                             startupFocus : true,
@@ -2505,7 +2502,7 @@
                             extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre,tabletools'/*,customlanguage'*/,
                             resize_enabled: false,
                             contentsCss: "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: $('base').attr('href')+"book/images/"+driver.parameters[0],
+                            imageBrowser_listUrl: "book/images/"+driver.parameters[0],
 
                             height: '75vh',
                             magicline_color: '#666',
@@ -2520,9 +2517,9 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : $('base').attr('href')+'editor/uploadImage/'+driver.parameters[0],
+                            filebrowserImageUploadUrl : 'editor/uploadImage/'+driver.parameters[0],
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
-                            autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
+                            autoSaveOptionUrl: 'book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),
                             flags: window.myflags,
                             baseHref: $('base').attr('href')

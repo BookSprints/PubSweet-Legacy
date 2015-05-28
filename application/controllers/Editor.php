@@ -75,7 +75,7 @@ class Editor extends CI_Controller
         $this->load->view('templates/header');
         $this->load->view('templates/navbar', array('book' => $bookname));
         $this->load->view(
-            'editor/normal',
+            'editor/normal2',
             array(
                 'id'          => $id,
                 'chaptername' => $chaptername
