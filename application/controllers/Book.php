@@ -228,14 +228,14 @@ class Book extends CI_Controller
     public function imageManager($id)
     {
         $this->load->model(array('books_model','sections_model','chapters_model'));
-        $bookname = $this->books_model->get($id);
+        $book = $this->books_model->get($id);
         $sections = $this->sections_model->find($id);
         $chapters = $this->chapters_model->find($id);
         foreach ($chapters as &$item) {
             $item['images'] = $this->findImages($item['content']);
         }
         $this->load->view('templates/header');
-        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('templates/navbar', array('book' => $book));
         $this->load->view('book/image-manager',
             array('id'=>$id,
                   'sections'=>$sections,
@@ -270,18 +270,40 @@ class Book extends CI_Controller
     public function full($bookId)
     {
         $this->load->model(array('books_model','sections_model','chapters_model'));
-        $bookname = $this->books_model->get($bookId);
+        $book = $this->books_model->get($bookId);
         $sections = $this->sections_model->find($bookId, true);
         $chapters = $this->chapters_model->find($bookId, true);
         foreach ($chapters as &$item) {
             $item['images'] = $this->findImages($item['content']);
         }
         $this->load->view('templates/header');
-        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('templates/navbar', array('book' => $book));
         $this->load->view('book/full',
             array('id'=>$bookId,
                   'sections'=>$sections,
                   'chapters'=>$chapters,
+            ));
+
+        $this->load->view('templates/footer');
+    }
+
+    public function findReplace($bookId)
+    {
+        $this->load->model(array('books_model','sections_model','chapters_model'));
+
+        if($this->input->post('find') && $this->input->post('replace')){
+            $this->books_model->replace($this->input->post('find'), $this->input->post('replace'), $bookId);
+        }
+        $book = $this->books_model->get($bookId);
+        $sections = $this->sections_model->find($bookId);
+        $chapters = $this->chapters_model->find($bookId);
+
+        $this->load->view('templates/header');
+        $this->load->view('templates/navbar', array('book' => $book));
+        $this->load->view('book/find-replace',
+            array('sections'=>$sections,
+                  'chapters'=>$chapters,
+                    'book'=>$book
             ));
 
         $this->load->view('templates/footer');

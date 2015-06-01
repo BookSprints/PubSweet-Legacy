@@ -188,4 +188,11 @@ class Books_model extends CI_Model
         $folderName = url_title($bookTitle);
         return BASEPATH.'../public/uploads/'.$folderName.'/';
     }
+
+    public function replace($find, $replace, $bookId)
+    {
+        $this->db->where('id', $this->input->post('book_id'));
+        return $this->db->query('UPDATE chapters SET content = replace(content, ?, ?)
+                WHERE book_id = ?', array($find, $replace, $bookId));
+    }
 }

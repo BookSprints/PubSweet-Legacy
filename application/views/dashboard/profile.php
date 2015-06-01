@@ -77,7 +77,7 @@
                                                     <?php echo $this->lang->line('settings');?></a>
                                             </li>
                                             <li>
-                                                <a href="book/replace/<?php echo $item['id']; ?>">
+                                                <a href="book/findReplace/<?php echo $item['id']; ?>">
                                                     <?php echo $this->lang->line('find-replace');?></a>
                                             </li>
                                             <li>

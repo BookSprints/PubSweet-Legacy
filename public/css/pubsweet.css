@@ -58,6 +58,11 @@ h1.brand {
     min-height: 80vh;
 }
 
+.pubsweet-main > .row-fluid{
+    margin: 20px;
+    width: auto;
+}
+
 .btn-primary {
     background-color: #7280af;
     background-image: linear-gradient(to bottom, #7280af, #4D5677);
@@ -142,6 +147,7 @@ h1.brand {
     padding-left: 25px;
     padding-right: 25px;
     font-family: "myriad";
+    padding-bottom: 50px;
 }
 
 
@@ -462,10 +468,6 @@ html[dir="RTL"] .pull-right{
 /* ****** END TOCMANAGER ****** */
 
 /* ******* FULL TOC ********* */
-#full-content .row-fluid{
-    margin: 20px;
-    width: auto;
-}
 .deleted, .deleted a{
     color: darkgray;
 }
