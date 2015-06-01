@@ -40,7 +40,9 @@ class Stats extends CI_Controller{
         $subTotals = array();
         foreach ($data as $entry) {
             $total += $entry['words'];
-            $total -= $subTotals[$entry['chapter_id']];
+            if(!empty($subTotals[$entry['chapter_id']])){
+                $total -= $subTotals[$entry['chapter_id']];
+            }
             echo '"'.$entry['created'].'",'.$total.PHP_EOL;
             $subTotals[$entry['chapter_id']] = $entry['words'];
         }
