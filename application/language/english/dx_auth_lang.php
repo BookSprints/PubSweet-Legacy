@@ -59,8 +59,7 @@ The %s Team";
 $lang['auth_forgot_password_content'] = "%s,
 <p>
 You have requested your password to be changed, because you forgot the password.
-Please follow this link in order to complete change password process:
-%s
+Please follow this link in order to complete change password process: <a href='%s'>Reset password</a>.
 </p>
 <p>Your New Password: %s</p>
 <p>Key for Activation: %s</p>

@@ -58,6 +58,11 @@ h1.brand {
     min-height: 80vh;
 }
 
+.pubsweet-main > .row-fluid{
+    margin: 20px;
+    width: auto;
+}
+
 .btn-primary {
     background-color: #7280af;
     background-image: linear-gradient(to bottom, #7280af, #4D5677);
@@ -126,16 +131,23 @@ h1.brand {
     height: 100px;
 }
 
-#btncreatebook {
+.profile-button {
     padding: 20px;
     margin: 0;
     font-size: 14px;
+    margin-left: 20px;
+    margin-top: 10px;
+    width: 160px !important;
+    display: block;
+    box-sizing: content-box;
+    border: none;
 }
 
 #mybook {
     padding-left: 25px;
     padding-right: 25px;
     font-family: "myriad";
+    padding-bottom: 50px;
 }
 
 
@@ -160,7 +172,7 @@ h1.brand {
     margin: 15px;
 }
 
-.chapter-type a {
+.chapter-type a, small a{
     font-size: 8pt;
     color: #747474;
     font-family: "myriad";
@@ -225,8 +237,13 @@ h1.brand {
 .section-name {
     margin: 0;
     font-size: 1.6em;
-
 }
+
+.section-preview{
+    line-height: 40px;
+    margin-right: 5px;
+}
+
 .contributor .section-name{
     cursor: move;
 }
@@ -284,7 +301,7 @@ html[dir="RTL"] .pull-right{
     min-height: 15px;
 }
 
-.chapter {
+.section .chapter {
     counter-increment: chapters;
     border: solid 1px #fff;
     margin-bottom: 10px;
@@ -305,14 +322,14 @@ html[dir="RTL"] .pull-right{
     border: solid 1px #d3d3d3;
 }
 
-.chapter:before {
+.sections .chapter:before {
     content: counter(sections) "." counter(chapters) ". ";
     color: #3de697;
     background-color: white;
     padding-left: 10px;
 }
 
-.chapter .title {
+.sections .chapter .title {
     font-size: 1.6em;
     font-family: "myriad";
     background-color: white;
@@ -327,7 +344,7 @@ html[dir="RTL"] .pull-right{
     line-height: 1.2em;
 }
 
-.chapter .options{
+.sections .chapter .options{
     background-color: white;
     padding-left: 5px;
     line-height: 1.6em;
@@ -449,6 +466,23 @@ html[dir="RTL"] .pull-right{
 }
 
 /* ****** END TOCMANAGER ****** */
+
+/* ******* FULL TOC ********* */
+.deleted, .deleted a{
+    color: darkgray;
+}
+.section-row{
+    background-color: #f9f9f9;
+}
+.section-row a{
+    line-height: 40px;
+    margin: 10px 0;
+    display: block;
+}
+.deleted a.undo{
+    color: #08c;
+}
+/* ******* END FULL TOC ********* */
 
 
 /* ******  DICTIONARY/CREATE ****** */
@@ -611,6 +645,10 @@ html[dir="RTL"] .pull-right{
 /* ****** END DICTIONARY/CREATE ****** */
 
 /* **** WYSI EDITOR **** */
+#form-editor .row-fluid{
+    margin: 0;
+}
+
 #normal-container #editor{
     min-height: 80vh;
 }
@@ -642,10 +680,10 @@ html[dir="RTL"] .pull-right{
     background: white;
 }
 
-.cke_button__removeformat_icon {
+.cke_button__removeformat_icon, .cke_button__customautosaveoptions_icon {
     display: none !important;
 }
-.cke_button__removeformat_label {
+.cke_button__removeformat_label, .cke_button__customautosaveoptions_label {
     display: inline !important;
 }
 
@@ -871,4 +909,28 @@ rect{
 /** flags **/
 #edit-flags{
     padding: 20px;
+}
+
+/** book graphics **/
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.area {
+    fill: steelblue;
+}
+
+/** book find/replace **/
+.highlight{
+    background-color: #fbed50;
+}
+
+#find-replace .affix{
+    background-color: white;
+    width: 900px;
+    margin-top: -65px;
+    padding-top: 10px;
 }

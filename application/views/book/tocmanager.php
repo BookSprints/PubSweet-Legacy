@@ -3,7 +3,7 @@
     <div class="row-fluid">
 
         <h1><?php echo $this->lang->line('contents'); ?><span class="pull-right">
-                <?php if($bookOwner || $contributor):?>
+                <?php if($isBookOwner || $contributor):?>
                     <?php if(isset($settings['enable_flag']) && $settings['enable_flag']):?>
                     <a class="btn flags" href="<?php echo base_url('flags/all/edit'); ?>">Flags</a>
                         <?php endif;?>
@@ -26,17 +26,20 @@
         <div class="accordion" id="accordion2">
             <div class="accordion-group inline">
                 <div class="lists accordion-heading">
-                    <ul class="unstyled sections <?php echo ($bookOwner || $contributor) ? 'contributor' : 'reviewer'; ?>">
+                    <ul class="unstyled sections <?php echo ($isBookOwner || $contributor) ? 'contributor' : 'reviewer'; ?>">
                         <?php foreach ($sections as $section): ?>
                             <li class="section" data-id="<?php echo $section['id'] ?>"
                                 data-order="<?php echo $section['order']; ?>">
                                 <h3 class="section-name">
                                     <span class="name editable editable-click"><?php echo $section['title']; ?></span>
-                                    <?php if($bookOwner == $this->session->userdata('DX_user_id') ):?>
+                                    <?php if($isBookOwner || $isFacilitator ):?>
                                     <span class="pull-right" >
-                                        <a href="<?php echo base_url('sections/delete_section/'); ?>"  class="delete-section" data-id="<?php echo $section['id']; ?>">&times;</a>
+                                        <a href="<?php echo base_url('section/delete_section/'); ?>"  class="delete-section" data-id="<?php echo $section['id']; ?>">&times;</a>
                                     </span>
                                     <?php endif;?>
+                                    <small class='pull-right section-preview'>
+                                        <a href="<?php echo 'render/section/' . $section['id']; ?>">Preview</a>
+                                    </small>
                                     <a data-toggle="collapse"
                                        data-target="#section-chapters-<?php echo $section['id'] ?>"
                                        class="accordion-toggle pull-left">&nbsp;</a>
@@ -64,55 +67,63 @@
                                                 };
                                                 ?>
                                                 <li class="chapter" data-id="<?php echo $item['id']; ?>">
-                                                        <span class="title editable editable-click"
-                                                              title="<?php echo $item['title']; ?>">
-                                                            <?php echo $item['title']; ?></span>
-                                                        <span class="options pull-right">
-                                                            <?php if ($bookOwner || $contributor): ?>
-                                                                <span class="chapter-status">
-                                                                <a href="#">
+                                                    <span class="title editable editable-click"
+                                                          title="<?php echo $item['title']; ?>">
+                                                        <?php echo $item['title']; ?></span>
+                                                    <span class="options pull-right">
+                                                        <?php if ($isBookOwner || $contributor): ?>
+                                                            <span class="chapter-status">
+                                                            <a href="#">
+                                                                <?php
+                                                                foreach ($status as $status_item):
+                                                                    if ($status_item['chapter_id'] == $item['id']):
+                                                                        ?>
+                                                                        <span class="status" data-user_id="<?php
+                                                                        if (!empty($status_item['user_id']))
+                                                                            echo $status_item['user_id'];
+                                                                        ?>"
+                                                                              data-user=""
+                                                                              data-title="<?php echo $status_item['title'] ?>"
+                                                                              data-id="<?php echo $status_item['id'] ?>"
+                                                                              data-status="<?php echo $status_item['status'] ?>">
+                                                                        <?php echo ($status_item['status']) ? "Ø" : "O"; ?>
+                                                                    </span>
                                                                     <?php
-                                                                    foreach ($status as $status_item):
-                                                                        if ($status_item['chapter_id'] == $item['id']):
-                                                                            ?>
-                                                                            <span class="status" data-user_id="<?php
-                                                                            if (!empty($status_item['user_id']))
-                                                                                echo $status_item['user_id'];
-                                                                            ?>"
-                                                                                  data-user=""
-                                                                                  data-title="<?php echo $status_item['title'] ?>"
-                                                                                  data-id="<?php echo $status_item['id'] ?>"
-                                                                                  data-status="<?php echo $status_item['status'] ?>">
-                                                                            <?php echo ($status_item['status']) ? "Ø" : "O"; ?>
-                                                                        </span>
-                                                                        <?php
-                                                                        endif;
-                                                                    endforeach;
+                                                                    endif;
+                                                                endforeach;
 
-                                                                    ?>
-                                                                </a>
+                                                                ?>
+                                                            </a>
                                                         </span>
-                                                            <?php endif; ?>
-                                                            <span class='chapter-type'>
-                                                                <a href="<?php echo base_url('render/chapter/' . $item['id']); ?>"
-                                                                   class="chapter-contents">
-                                                                    <?php echo $type; ?></a>
-                                                            </span>&nbsp;&nbsp;
-                                                            <?php
-                                                            if ($bookOwner || $contributor):?>
-                                                                <a href="<?php echo base_url($url . $item['id']); ?>" class="edit">
-                                                                    <?php echo $this->lang->line('edit'); ?></a>
-                                                                <a href="<?php echo base_url('chapter/delete_chapter/'); ?>"  class="delete-chapter"
-                                                                   data-id="<?php echo $item['id']; ?>"><?php echo $this->lang->line('delete'); ?></a>
-                                                                <a href="<?php echo base_url('chapter/history/'.$item['id']); ?>"  class="history-chapter">
-                                                                    <?php echo $this->lang->line('history'); ?></a>
-                                                            <?php
-                                                            endif;
+                                                        <?php endif; ?>
+                                                        <span class='chapter-type'>
+                                                            <a href="<?php echo base_url('render/chapter/' . $item['id']); ?>"
+                                                               class="chapter-contents">
+                                                                <?php echo $type; ?></a>
+                                                        </span>&nbsp;&nbsp;
+                                                        <?php
+                                                        if ($isBookOwner || $contributor):?>
+                                                            <a href="<?php echo base_url($url . $item['id']); ?>" class="edit"
+                                                                <?php if($item['locked']) { echo ' style="display:none;" ';}?>>
+                                                                <?php echo $this->lang->line('edit'); ?></a>
+                                                            <a href="<?php echo base_url('chapter/delete_chapter/'); ?>"  class="delete-chapter"
+                                                                <?php if($item['locked']) { echo ' style="display:none;" ';}?>
 
-                                                            if ($bookOwner || $reviewer):?>
-                                                                <a href="<?php echo base_url('chapter/review/' . $item['id']); ?>"><?php echo $this->lang->line('review'); ?></a>
-                                                            <?php endif; ?>
-                                                        </span>
+                                                            data-id="<?php echo $item['id']; ?>"><?php echo $this->lang->line('delete'); ?></a>
+                                                            <a href="<?php echo base_url('chapter/history/'.$item['id']); ?>"  class="history-chapter">
+                                                                <?php echo $this->lang->line('history'); ?></a>
+                                                        <?php
+                                                        endif;
+
+                                                        if (($isBookOwner || $reviewer) && $item['editor_id']==1 /*lexicon*/):?>
+                                                            <a href="<?php echo base_url('chapter/review/' . $item['id']); ?>"><?php echo $this->lang->line('review'); ?></a>
+                                                        <?php endif; ?>
+
+                                                        <?php if ($this->session->userdata('DX_username') == 'admin' || $isBookOwner || $isFacilitator){?>
+                                                            <a class="lock" href="<?php echo base_url('chapter/toggleLock/' . $item['id']); ?>" data-lock="<?php echo $item['locked'];?>">
+                                                                <?php echo $this->lang->line($item['locked'] ? 'unlock' : 'lock'); ?></a>
+                                                        <?php }else if($item['locked']){ echo 'Locked'; }; ?>
+                                                    </span>
                                                 </li>
                                             <?php
                                             endif;
@@ -132,7 +143,7 @@
 
 <div class="modals">
     <div class="modal hide fade" id="create-section-modal">
-        <form id="create-section" action="<?php echo base_url('sections/save'); ?>" method="post"
+        <form id="create-section" action="<?php echo base_url('section/save'); ?>" method="post"
               class="modal-form">
             <input type="hidden" name="book_id" value="<?php echo $id; ?>">
 
@@ -190,7 +201,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-
+                <div class="alert hide"></div>
                 <a href="#" class="btn" data-dismiss="modal"><?php echo $this->lang->line('cancel'); ?></a>
                 <button type="submit" class="btn btn-primary" data-loading-text="Creating..." id="chapter-create">
                     <?php echo $this->lang->line('create'); ?>
@@ -338,38 +349,5 @@
         <div class="modal-footer"></div>
     </div>
 
-<!--    <div class="modals">
-        <div class="modal hide fade" id="invited-modal">
-            <form id="invited-email" action="<?php //echo base_url('invited/invite'); ?>" method="post" class="modal-form">
-                <input type="hidden" name="book_id" value="<?php //echo $id; ?>">
-                <input type="hidden" name="user_id" value="<?php //echo $this->session->userdata('DX_user_id'); ?>"/>
-
-                <div class="modal-header">
-                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                   <h3><?php //echo $this->lang->line('invite-a-user'); ?></h3>
-               </div>
-                <div class="modal-body">
-
-                    <div class="controls-group">
-                        <label for="">Email</label>
-                       <div class="controls">
-                       <input type="email" name="invited" required="required" autofocus="true">
-                       </div>
-                   </div>
-
-               </div>
-                <div class="modal-footer">
-
-                   <a href="#" class="btn" data-dismiss="modal"><?php //echo $this->lang->line('cancel'); ?></a>
-                   <button type="submit" class="btn btn-primary" data-loading-text="Inviting..." id="user-invited">
-                    <?php //echo $this->lang->line('invite'); ?>
-                    </button>
-               </div>
-
-            </form>
-     </div>
-   </div>-->
-
-
 </div>
-
+</div>

@@ -14,29 +14,11 @@ if (!empty($id)):  ?>
             <ul class="nav">
 
                     <li>
-                        <a href="<?php echo base_url('admin/stats/');?>">Stats</a>
+                        <a href="<?php echo base_url('admin/books/');?>">Books</a>
                     </li>
-             <?php if (!($view == "profile" || empty($view))):?>
-                 <li class="<?php if($module=='book') echo 'active';?>">
-
-                    <a href="<?php echo base_url('book/tocmanager/' . $book['id']);?>"><?php echo $this->lang->line('contents');?></a>
-                 </li>
-                <li class="<?php if($module=='topic') echo 'active';?>" >
-                       <a href="<?php echo base_url('topic/view/'. $book['id']);?>"
-                           <?php if($module!='topic') echo 'target="_blank"'; else echo 'target=""'; ?>>
-                       <?php echo $this->lang->line('discussion');?></a>
-
-                </li>
-
-                    <?php if($id==$book['owner'] || $this->user_model->isFacilitator($id)):?>
-                    <li><a href="<?php echo base_url().'taskmanager/' . $book['id'] . '/'; ?>" >
-                            <?php echo $this->lang->line('task-manager');?></a></li>
-                    <li><a href="<?php echo base_url().'console/' . $book['id'] . '/';?>" target="_blank">
-                            <?php echo $this->lang->line('console');?></a></li>
-
-                <?php
-                    endif;//user
-                    endif; ?>
+                <li><a href="<?php echo base_url('admin/users/');?>">Users</a></li>
+                <li><a href="<?php echo base_url('admin/facilitators/');?>">Facilitators</a></li>
+                <li><a href="<?php echo base_url('admin/stats/');?>">Stats</a></li>
 
             </ul>
             <ul class="nav pull-right">

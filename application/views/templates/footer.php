@@ -14,7 +14,8 @@
     <li class="section" data-id="{{id}}" data-order="{{order}}">
         <h3 class="section-name"><span class="name editable editable-click">{{title}}</span>
             <span class="pull-right" >
-               <a href="<?php echo base_url('sections/delete_section/'); ?>"  class="delete-section" data-id="<?php //echo $item['id']; ?>">&times;</a>
+               <a href="<?php echo base_url('section/delete_section/'); ?>"
+                  class="delete-section" data-id="{{id}}">&times;</a>
             </span>
             <a data-toggle="collapse" data-target="#section-chapters-{{id}}"
                class="accordion-toggle pull-left">&nbsp;</a></h3>
@@ -36,11 +37,11 @@
                 </a>
             </span>
             <span class='chapter-type'>
-                <a href="<?php echo base_url() . 'render/chapter/{{id}}'; ?>"
+                <a href="<?php echo 'render/chapter/{{id}}'; ?>"
                    class="chapter-contents">{{type}}</a></span>&nbsp;&nbsp;
-            <a href="<?php echo base_url(); ?>{{url}}{{id}}">Edit</a>
-            <a href="<?php echo base_url();?>chapter/delete_chapter/"  class="delete-chapter" data-id="{{id}}">Delete</a>
-            <a href="<?php echo base_url();?>chapter/review/{{id}}">Review</a>
+            <a href="{{url}}{{id}}">Edit</a>
+            <a href="chapter/delete_chapter/"  class="delete-chapter" data-id="{{id}}">Delete</a>
+            <a href="chapter/review/{{id}}">Review</a>
         </span>
     </li>
 </script>
@@ -108,7 +109,7 @@
 <div class="deletable media" data-id="{{id}}">
 
     <a class="pull-left" href="">
-              <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
+              <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
          </a>
     <div class="media-body">
         <div class="pull-right btn-like">
@@ -150,7 +151,7 @@
 <div class="deletable media comment" data-id="{{id}}">
 
     <a class="pull-left" href="">
-              <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
+              <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="64px" height="64px"/>
          </a>
     <div class="media-body">
         <div class="pull-right btn-like">
@@ -177,7 +178,7 @@
 <script id="new-review" type="text/x-handlebars-template">
     <div class="deletable media">
         <span class="pull-left" >
-            <img class="media-object" src="<?php echo base_url() . 'user/image/{{user_id}}'; ?>" alt="" width="48px" height="48px"/>
+            <img class="media-object" src="<?php echo 'user/image/{{user_id}}'; ?>" alt="" width="48px" height="48px"/>
         </span>
         <div class="media-body">
 
@@ -216,32 +217,26 @@
     </li>
 </script>
 
-<!--<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery-2.0.2.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/bootstrap-editable.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/chosen.jquery.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery-ui-1.10.3.custom.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery.validationEngine.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery.validationEngine-en.js"></script>-->
+<script type="text/javascript" src="public/js/pubsweet-libs.js"></script>
 
+<?php
+$serverNodeJS = $this->config->item('nodejs');
+if(empty($serverNodeJS)){
+    $host= gethostname();
+    $ip = gethostbyname($host);
+    $serverNodeJS = 'http://'.$ip.':8080/';
+}
+?>
+<script>
+    window.use = {
+        nodejs: '<?php echo $serverNodeJS;?>'
+    }
+</script>
 
-<!-- File Uploader -->
-<!--<script src="<?php /*echo base_url(); */?>public/js/jquery.ui.widget.js"></script>
-<script src="<?php /*echo base_url(); */?>public/js/jquery.iframe-transport.js"></script>
-<script src="<?php /*echo base_url(); */?>public/js/jquery.fileupload.js"></script>-->
+<!--<script type="text/javascript" src="public/js/pubsweet.js"></script>-->
+<script type="text/javascript" src="public/js/pubsweet.min.js"></script>
 
-<!-- next script are not jquery dependent-->
-<!--<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/d3.v3.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/handlebars.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/timeago.js"></script>-->
-
-<script type="text/javascript" src="<?php echo base_url();?>public/js/pubsweet-libs.js"></script>
-
-<!--<script type="text/javascript" src="--><?php //echo base_url(); ?><!--public/js/pubsweet.js"></script>-->
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/pubsweet.min.js"></script>
-
-<script type="text/javascript" src="http://213.108.105.1/socket.io/socket.io.js" async onload="broadcast.init()"></script>
-<!--<script type="text/javascript" src="http://pubsweet.local:8080/socket.io/socket.io.js" async onload="broadcast.init()"></script>-->
-<script src="<?php echo base_url(); ?>public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
+<script type="text/javascript" src="<?php echo $serverNodeJS;?>socket.io/socket.io.js" async onload="broadcast.init()"></script>
+<script src="public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
 </body>
 </html>

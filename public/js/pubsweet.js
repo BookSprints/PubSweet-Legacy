@@ -6,17 +6,7 @@
 /*global io, console, driver */
 (function ($, H) {
     "use strict";
-    var conf = {
-            server: {
-                nodejs: 'http://213.108.105.1/',
-                servername: 'http://pubsweet-new.booksprints.net/'
-            },
-            local: {
-                nodejs: 'http://pubsweet.local:8080/',
-                servername: 'http://pubsweet.local/'
-            }
-        },
-        use = conf.server;
+
     window.broadcast = {
         server: use.nodejs+'pubsweet',
         socket: null,
@@ -33,8 +23,10 @@
 
                     self.socket.on('new-section', window.driver.book.drawSection);
                     self.socket.on('move-section', window.driver.book.moveSection);
+                    self.socket.on('delete-section', window.driver.book.deleteSection);
                     self.socket.on('new-chapter', window.driver.book.drawChapter);
                     self.socket.on('move-chapter', window.driver.book.moveChapter);
+                    self.socket.on('delete-chapter', window.driver.book.deleteChapter);
                     self.socket.on('add-chapter-status', window.driver.book.addStatus);
                     self.socket.on('delete-chapter-status', window.driver.book.deleteChapterStatus);
                     self.socket.on('update-status-chapter', window.driver.book.updateStatus);
@@ -77,7 +69,6 @@
     };
 
     window.driver = {
-        urlBase: use.servername,
         indexFile: 'index.php',
         defaultURL: 'dashboard/profile',
         async: [],//array of functions to be executed asynchronously
@@ -99,12 +90,12 @@
             this.info = $('#info');
             this.infoTemplate = H.compile($("#info-template").html());
 
-            var fullURL = window.location.href.replace(this.urlBase, ''),
+            var fullURL = window.location.href.replace($('base').attr('href'), ''),
                 url = fullURL.length > 0 ? fullURL : this.defaultURL;
             this.route(url.split('/'));
             this.UrlPosition = url;
             broadcast.customOnConnect(function () {
-                $.getJSON(driver.urlBase + 'user/getUsersInfo', null, function (response) {
+                $.getJSON('user/getUsersInfo', null, function (response) {
 //                        var book_id = driver.parameters[0];//getting first parameter
                     var data = {
                         id: response.id,
@@ -224,7 +215,7 @@
                     var status = $(this).is(':checked');
                     var data = "id=" + $(this).attr('data-id') + "&" +
                         "checked=" + status;
-                    $.post(driver.urlBase + 'admin/editor_status', data)
+                    $.post('admin/editor_status', data)
                         .fail(function () {
                             $('.result').html(info({type: 'error', text: '<span><strong>Sorry</strong> we had a problem</span>'}));
                         })
@@ -238,7 +229,7 @@
                 $('body').on('click', '.delete-user',function(){
                     var $this= $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'admin/userDelete', {user_id: $this.data('id')}, function(){
+                        $.post('admin/userDelete', {user_id: $this.data('id')}, function(){
                             $this.parents('#user').addClass('banned');
                             $this.text('Unban');
                             $this.removeClass('delete-user');
@@ -250,7 +241,7 @@
                 $('body').on('click', '.enable-user',function(){
                     var $this= $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'admin/user_enabled', {user_id: $this.data('id')}, function(){
+                        $.post('admin/user_enabled', {user_id: $this.data('id')}, function(){
                             $this.parents('#user').removeClass('banned');
                             $this.text('Ban');
                             $this.removeClass('enable-user');
@@ -320,7 +311,7 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.json(driver.urlBase+"admin/login_stats/"+$('#graph').data('last-days'), function(error, data) {
+                d3.json("admin/login_stats/"+$('#graph').data('last-days'), function(error, data) {
                     data.forEach(function(d) {
                         d.date = parseDate(d.date);
                         d.count = +d.count;
@@ -349,6 +340,79 @@
                         .attr("class", "line")
                         .attr("d", line);
                 });
+            },
+            books: function () {
+                var $modalBookOwner = $('#modal-book-owner'),
+                    $formOwners = $modalBookOwner.find('#form-book-owner'),
+                    $owners = $formOwners.find('#owners'),
+                    $bookInput = $formOwners.find('#book-input'),
+                    $errorHandler = $modalBookOwner.find('.help-inline.error'),
+                    $currentOwner = null,
+                    $modalBookname = $('#modal-book-name'),
+                    $formBookname = $modalBookname.find('#form-book-name'),
+                    $bookNameInput = $formBookname.find('#book-name-id'),
+                    $errorHandlerBookname = $modalBookname.find('.help-inline.error'),
+                    $currentBookname = null;
+
+                $('.update-owner').on('click', function () {
+                    $currentOwner = $(this);
+                    $errorHandler.hide();
+                    $owners.val($currentOwner.data('value'));
+                    $bookInput.val($currentOwner.parents('tr').data('book-id'));
+                    $modalBookOwner.modal('show');
+                    return false;
+                });
+                $('.change-book-name').on('click', function () {
+                    $currentBookname = $(this);
+                    $errorHandlerBookname.hide();
+                    $bookNameInput.val($currentBookname.parents('tr').data('book-id'));
+                    $('[name=bookname]').val($currentBookname.siblings('.current-bookname').text());
+                    $modalBookname.modal('show');
+                    return false;
+
+                });
+                $formOwners.on('submit', function(){
+                    var $this = $(this),
+                        newOwnerId = $owners.val(),
+                        $submit = $this.find(":submit");
+                    $submit.button('loading');
+                    $.post($formOwners.attr('action'), $formOwners.serialize(), function(resp){
+                        if(resp.ok){
+                            $currentOwner.data('value', newOwnerId)
+                                .siblings('.owner-name').text($('option[value='+newOwnerId+']').text());
+                            $submit.button('reset');
+                            $modalBookOwner.modal('hide');
+                        }else{
+                            $submit.button('reset');
+                            $errorHandler.text('Unexpected error').show();
+                        }
+
+                    }, 'json').error(function(resp){
+                        $submit.button('reset');
+                        $errorHandler.text('Unexpected error').show();
+                    });
+                   return false;
+                });
+
+                $formBookname.on('submit', function(){
+                    var $submit = $formBookname.find(':submit');
+                    $submit.button('loading');
+                    $.post($formBookname.attr('action'), $formBookname.serialize(), function(resp){
+                        if(resp.ok){
+                            $currentBookname.siblings('.current-bookname').text($('[name=bookname]').val());
+                            $submit.button('reset');
+                            $modalBookname.modal('hide');
+                        }else{
+                            $submit.button('reset');
+                            $errorHandler.text('Unexpected error').show();
+                        }
+
+                    }, 'json').error(function(resp){
+                        $submit.button('reset');
+                        $errorHandler.text('Unexpected error').show();
+                    });
+                   return false;
+                });
             }
         },
         dashboard: {
@@ -361,7 +425,7 @@
                         $.post($this.attr('action'), $this.serialize(), function (data) {
                             if (data.ok) {
 
-                                window.location.href = driver.urlBase + 'book/tocmanager/' + data.id;
+                                window.location.href = 'book/tocmanager/' + data.id;
                             } else {
                                 $this.find(":submit").button('reset');
                             }
@@ -380,7 +444,7 @@
                                 text = $('input', this).val();
                                 $(this).html(text);
                                 var data = 'name=' + text;
-                                $.post(driver.urlBase + 'register/profile_update', data);
+                                $.post('register/profile_update', data);
                             }
                             if (e.keyCode === 27) {//press scape
                                 $(this).html(text);
@@ -390,6 +454,28 @@
                 driver.dashboard.handleImage();
                 $('#profile-img').on('click', function () {
                     $('#upload').trigger('click');
+                });
+
+                var $copyForm = $('#copy-form');
+                $('.copy-link').on('click', function(){
+                    $copyForm.get(0).reset();
+                    $copyForm.attr('action', $(this).data('href'));
+                    $('#copy-modal').modal('show');
+                    return false;
+                });
+                $copyForm.on('submit', function () {
+                    var $this = $(this);
+                    $this.find(":submit").button('loading');
+                    $.post($this.attr('action'), $this.serialize(), function(resp){
+                        if (resp.ok) {
+//                            window.location.href = driver.urlBase + 'book/tocmanager/' + resp.id;
+                            window.location.href = window.location.href;
+                        } else {
+                            $this.find(":submit").button('reset');
+                        }
+
+                    },'json');
+                    return false;
                 });
             },
             previewImg: function (evt) {
@@ -676,7 +762,7 @@
                 });
             },
             uploadPicture: function (picture) {
-                $.post(driver.urlBase + 'register/set_picture', {picture: picture}, function (data) {
+                $.post('register/set_picture', {picture: picture}, function (data) {
                     console.log(data)
                 });
             }
@@ -711,7 +797,7 @@
                         id: driver.book.data[1].toString(),
                         order: driver.book.data[2].toString()
                     };
-                    $.post(driver.urlBase + "chapter/update",
+                    $.post("chapter/update",
                         data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-chapter', data);
@@ -778,7 +864,7 @@
 //                                driver.book.reorder();
                         });
 
-                        $.post(driver.urlBase + "sections/update", data, function (response) {
+                        $.post("section/update", data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-section', newPositions);
                         });
@@ -797,7 +883,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: driver.urlBase + 'chapter/changeName',
+                        url: 'chapter/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -806,6 +892,7 @@
                         },
                         success:function(response){
                             var data = JSON.parse(response);
+                            $(this).attr('title', data.title);
                             broadcast.emit('updateTitleChapter',data);
                         }
                     });
@@ -816,7 +903,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: driver.urlBase + 'sections/changeName',
+                        url: 'section/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -844,20 +931,20 @@
                         $('#chapter-message-title').text(name);
                         $('#chapter_id').val(chapter_id);
                         $('#selected-user').val($this.data('user_id'));
-                        $.post(driver.urlBase+'status/chapterStatusList',{'chapter_id':chapter_id},function(response){
+                        $.post('status/chapterStatusList',{'chapter_id':chapter_id},function(response){
                             var addStatus = H.compile($('#status-item-template').html());
                             $('#StatusList').empty();
                             for(var item in response){
                                 var data ={
-                                    id:response[item].id,
-                                    title:response[item].title,
-                                    status:response[item].status === "1"?'checked':'',
-                                    user_id:response[item].user_id
+                                    id: response[item].id,
+                                    title: response[item].title,
+                                    status: response[item].status === "1"?'checked':'',
+                                    user_id: response[item].user_id
                                 };
                                 $('#StatusList').append(addStatus(data));
                             }
                         },'json');
-                        $.getJSON(driver.urlBase+'user/get_all_users',null)
+                        $.getJSON('user/get_all_users',null)
                             .done(function(response){
                                 $('.select-user').empty();
                                 var addUser = H.compile($('#status-user-template').html());
@@ -890,7 +977,7 @@
                     var id = status.data('id');
                     var user = status.data('user_id');
                     if(user !== "" && status.data('user')=="" ){
-                        var url = driver.urlBase+'user/getUsersInfo/'+user.toString();
+                        var url = 'user/getUsersInfo/'+user.toString();
                         $.post(url,null,function(response){
                             user = response.names;
                             $('.chapter-status').find('.status[data-id="'+id+'"]').data('user',user);
@@ -931,7 +1018,7 @@
                         user_id:data[2].toString(),
                         status:data[3].toString()
                     }
-                    $.post(driver.urlBase+'status/update',info,function(response){
+                    $.post('status/update',info,function(response){
                         if(response.ok){
                             $('#chapter-message-modal').modal('hide');
                             driver.book.updateStatus(info);
@@ -952,7 +1039,7 @@
                         user_id:0,
                         status_id:''
                     };
-                    $.post(driver.urlBase+'status/save',data,function(response){
+                    $.post('status/save',data,function(response){
                         data.status_id = response.id;
                         driver.book.addStatus(data);
                         broadcast.emit('add-chapter-status',data);
@@ -963,7 +1050,7 @@
                 $('body').on('click','.status-delete',function(){
                     if(confirm('are you sure?')){
                         var status_id =$(this).parents('.status-item').data('id');
-                        $.post(driver.urlBase+'status/delete',{id:status_id},function(response){
+                        $.post('status/delete',{id:status_id},function(response){
                             if(response.ok)
                             {
                                 driver.book.deleteChapterStatus(response);
@@ -976,8 +1063,13 @@
                     .on('click','.delete-chapter', function(){
                         var $this = $(this);
                         if(confirm('Are you sure?')){
-                            $.post(driver.urlBase+'chapter/delete_chapter', {chapter_id: $this.data('id')}, function(){
-                                $this.parents('.chapter').remove();
+                            $.post('chapter/delete_chapter',
+                                {chapter_id: $this.data('id')}, function(response){
+                                if(response.ok){
+                                    driver.book.deleteChapter(response);
+                                    broadcast.emit('delete-chapter',response);
+                                }
+
                             },'json');
                         }
                         return false;
@@ -1032,9 +1124,18 @@
                                 $('.modal').modal('hide');
                                 $(".chapters").sortable('refresh');
                                 $this.get(0).reset();
+                                $('.alert').hide();
+                            }else{
+                                $('.alert').text('An error has occurred');
                             }
+
+                        }, 'json')
+                        .always(function(resp){
                             $this.find(":submit").button('reset');
-                        }, 'json');
+                        })
+                        .error(function(resp){
+                            $('.alert').text('An error has occurred').show();
+                        });
                     }
 
                     return false;
@@ -1066,8 +1167,12 @@
                 $('body').on('click','.delete-section', function(){
                     var $this = $(this);
                     if(confirm('Are you sure?')){
-                        $.post(driver.urlBase+'sections/delete_section', {section_id: $this.data('id')}, function(){
-                            $this.parents('.section').remove();
+                        $.post('section/delete_section', {section_id: $this.data('id')}, function(response){
+                            if(response.ok)
+                            {
+                                driver.book.deleteSection(response);
+                                broadcast.emit('delete-section',response);
+                            }
                         },'json');
                     }
                     return false;
@@ -1088,6 +1193,31 @@
                     }, 'json');
                     return false;
                 });
+
+                /* LOCK/UNLOCK CHAPTER */
+                $('body').on('click', '.lock', function(){
+                    var $this = $(this), lock = !!$this.data('lock');
+                    $.post($this.attr('href'), function(resp){
+                        if(resp.ok){
+                            lock = !lock;
+                            $this.data('lock', lock);
+                            var $parent = $this.parents('.options'),
+                                $edit = $parent.find('.edit'),
+                                $delete = $parent.find('.delete-chapter');
+                            if(lock){
+                                $this.text('Unlock');
+                                $edit.hide();
+                                $delete.hide();
+
+                            }else{
+                                $this.text('Lock');
+                                $edit.show();
+                                $delete.show();
+                            }
+                        }
+                    }, 'json');
+                    return false;
+                })
             },
             handleBroadcasting: function(){
 
@@ -1100,8 +1230,9 @@
                                 return;
                             }
                             var $edit = $('li.chapter[data-id="'+item.chapter_id+'"]').find('.edit'),
-                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: item.user.names+' is editing',
-                                    'title': item.user.names+' is editing'});
+                                editorName = item.user.names=='' ? item.user.username : item.user.names,
+                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName+' is editing',
+                                    'title': editorName+' is editing'});
 
                             $edit.replaceWith($newEdit);
                         });
@@ -1109,8 +1240,9 @@
 
                     io.socket.on('lock-wysi', function(data){
                         var $edit = $('li.chapter[data-id="'+data.chapter_id+'"]').find('.edit'),
-                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: data.user.names+' is editing',
-                                'title': data.user.names+' is editing'});
+                            editorName = data.user.names==''?data.user.username:data.user.names,
+                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName + ' is editing',
+                                'title': editorName + ' is editing'});
 
                         $edit.replaceWith($newEdit);
                     });
@@ -1129,14 +1261,14 @@
             unlockChapter: function(data){
                 var $edit = $('li.chapter[data-id="'+data.chapter_id+'"]').find('.edit'),
                     $newEdit = $('<a></a>', {"class":'edit', text: 'Edit',
-                        'href': driver.urlBase+"editor/normal/"+data.chapter_id});
+                        'href': "editor/normal/"+data.chapter_id});
                 $edit.tooltip('destroy');
                 $edit.replaceWith($newEdit);
             },
             handleToCPersistence: function($sections){
                 var user_id;
                 $(function(){
-//                    $.getJSON(driver.urlBase + 'user/getUsersInfo',function (response) {
+//                    $.getJSON('user/getUsersInfo',function (response) {
 //                        user_id = response.id;
 //                        sessionStorage.user_id = user_id;
 //
@@ -1263,7 +1395,7 @@
                 })
                     .on('click', '.btn-update', function(){
                         var $this = $(this);
-                        $.post(driver.urlBase+'book/updateCoAuthor/',
+                        $.post('book/updateCoAuthor/',
                             {
                                 user: $this.data('user-id'),
                                 book: bookid,
@@ -1283,7 +1415,7 @@
                 $('.section[data-id="'+data.id+'"]').find('.name').text(data.title);
             },
             updateTitleChapter:function(data){
-                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title);
+                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title).attr('title', title);
             },
             drawSection: function (data) {
                 if(driver.book.id==data.book_id){
@@ -1306,6 +1438,9 @@
                 });
                 $(".sections").sortable("refresh");
             },
+            deleteSection: function(data){
+                $('.section[data-id="'+data.id+'"]').remove();
+            },
             moveChapter: function (data) {
                 var section = data.section.split(',');
                 var chapter = data.id.split(',');
@@ -1315,6 +1450,9 @@
                 });
                 $(".sections").sortable("refresh");
                 $(".chapters").sortable(driver.book.chapterSortConfig);
+            },
+            deleteChapter: function(data){
+                $('.chapter[data-id="'+data.id+'"]').remove();
             },
             addStatus:function(data){
                 var addChapterStatus = H.compile($('#status-chapter-template').html());//element in the drag & drop
@@ -1327,7 +1465,7 @@
                 }
                 $('#StatusList').append(addStatus(data2));
                 $('.status-item[data-id="'+data2.id+'"] .chapter-message-user').children('.name').find('strong').text('nobody');
-                $.getJSON(driver.urlBase+'user/get_all_users',null,function(response){
+                $.getJSON('user/get_all_users',null,function(response){
                     $('.select-user').empty();
                     var addUser = H.compile($('#status-user-template').html());
                     for(var item in response){
@@ -1366,14 +1504,14 @@
                     if(title[i] !== "")
                         statusItem.data('title',title[i]);
                     if(user[i] !== ''){
-                        $.getJSON(driver.urlBase+'user/getUsersInfo/'+user[i],null,function(response){
+                        $.getJSON('user/getUsersInfo/'+user[i],null,function(response){
                             statusItem.data('user', response.names);
                             statusItem.data('user_id', response.id);
                         });
                     }
                 });
             },
-            stats: function(){
+            stats: function() {
                 var margin = {top: 20, right: 20, bottom: 30, left: 40},
                     width = 960 - margin.left - margin.right,
                     height = 500 - margin.top - margin.bottom;
@@ -1399,10 +1537,14 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.json(driver.urlBase+"review/data/"+driver.parameters[0], function(error, data) {
+                d3.json("review/data/" + driver.parameters[0], function (error, data) {
 
-                    x.domain(data.map(function(d) { return d.names; }));
-                    y.domain([0, d3.max(data, function(d) { return d.allComments; })]);
+                    x.domain(data.map(function (d) {
+                        return d.names;
+                    }));
+                    y.domain([0, d3.max(data, function (d) {
+                        return d.allComments;
+                    })]);
 
                     svg.append("g")
                         .attr("class", "y axis")
@@ -1418,10 +1560,16 @@
                         .data(data)
                         .enter().append("rect")
                         .attr("class", "bar")
-                        .attr("x", function(d) { return x(d.names); })
+                        .attr("x", function (d) {
+                            return x(d.names);
+                        })
                         .attr("width", x.rangeBand())
-                        .attr("y", function(d) { return y(d.allComments); })
-                        .attr("height", function(d) { return height - y(d.allComments); });
+                        .attr("y", function (d) {
+                            return y(d.allComments);
+                        })
+                        .attr("height", function (d) {
+                            return height - y(d.allComments);
+                        });
 
                     //Adding after bar so text will be above the bars
                     svg.append("g")
@@ -1432,18 +1580,18 @@
                         .style("text-anchor", "end")
                         .attr("dx", "-.8em")
                         .attr("dy", ".15em")
-                        .attr("transform", function(d) {
+                        .attr("transform", function (d) {
                             return "translate(10, -5)"
                         });
 
                     createPieChart(data);
                 });
 
-                function createPieChart(data){
+                function createPieChart(data) {
                     var w = 960,                        //width
                         h = 500,                            //height
                         margin = 40,                    //
-                        r = (h/2) - margin,                            //radius
+                        r = (h / 2) - margin,                            //radius
                         color = d3.scale.category20c();     //builtin range of colors
 
 //                    data = [{"label":"one", "value":20},
@@ -1455,13 +1603,15 @@
                         .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
                         .attr("height", h)
                         .append("svg:g")                //make a group to hold our pie chart
-                        .attr("transform", "translate(" + w/2 + "," + h/2 + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+                        .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")")    //move the center of the pie chart from 0, 0 to radius, radius
 
                     var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
                         .outerRadius(r);
 
                     var pie = d3.layout.pie()           //this will create arc data for us given a list of values
-                        .value(function(d) { return d.allComments; });    //we must tell it out to access the value of each element in our data array
+                        .value(function (d) {
+                            return d.allComments;
+                        });    //we must tell it out to access the value of each element in our data array
 
                     var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
                         .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties)
@@ -1470,18 +1620,22 @@
                         .attr("class", "slice");    //allow us to style things in the slices (like text)
 
                     arcs.append("svg:path")
-                        .attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                        .attr("fill", function (d, i) {
+                            return color(i);
+                        }) //set the color for each slice to be chosen from the color function defined above
                         .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
 
                     arcs.append("svg:text")                                     //add a label to each slice
-                        .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                        .attr("transform", function (d) {                    //set the label's origin to the center of the arc
                             //we have to make sure to set these before calling arc.centroid
                             d.innerRadius = r + 100;
                             d.outerRadius = r + 200;
                             return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
                         })
                         .attr("text-anchor", "middle")                          //center the text on it's origin
-                        .text(function(d, i) { return data[i].names; });        //get the label from our original data array
+                        .text(function (d, i) {
+                            return data[i].names;
+                        });        //get the label from our original data array
 
                 }
 
@@ -1489,7 +1643,325 @@
 //                    d.frequency = +d.frequency;
                     return d;
                 }
+
+                driver.book.wordCount();
+                driver.book.bubbleUsersWordCount();
+                driver.book.wordHistory();
+
+            },
+            wordCount: function () {
+                var width = 940,
+                    height = 660,
+                    radius = 300,
+                    color = d3.scale.category20c();
+
+                var svg = d3.select("#word-count").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
+
+                var partition = d3.layout.partition()
+                    .sort(null)
+                    .size([2 * Math.PI, radius * radius])
+                    .value(function(d) { return d.words; });
+
+                var arc = d3.svg.arc()
+                    .startAngle(function(d) { return d.x; })
+                    .endAngle(function(d) { return d.x + d.dx; })
+                    .innerRadius(function(d) { return Math.sqrt(d.y/2); })
+                    .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
+
+                d3.json("stats/bookWordCount/" + driver.parameters[0], function(error, root) {
+                    var path = svg.datum(root).selectAll("path")
+                        .data(partition.nodes)
+                        .enter().append("path")
+                        .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+                        .attr("d", arc)
+                        .style("stroke", "#fff")
+                        .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+                        .style("fill-rule", "evenodd")
+                        .each(stash);
+
+                    d3.selectAll("input").on("change", function change() {
+                        var self = this,
+                            value = function(d) { return d[self.value]; };
+
+                        path
+                            .data(partition.value(value).nodes)
+                            .transition()
+                            .duration(1500)
+                            .attrTween("d", arcTween);
+                    });
+
+                    var text = svg.datum(root).selectAll("text").data(partition.nodes);
+                    var textEnter = text.enter().append("text")
+                        .style("fill-opacity", 1)
+                        .attr("text-anchor", function(d) {
+                            return (d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                        })
+                        .attr("dy", ".2em")
+                        .attr("transform", function(d) {
+                            var multiline = (d.name || "").length > 16,
+                                angle = (d.x + d.dx / 2) * 180 / Math.PI - 90,
+                                rotate = angle + (multiline ? -.5 : 0);
+                            return "rotate(" + rotate + ")translate(" + (Math.sqrt(d.y/2) ) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                        })
+                        .on("mouseover", function(d){
+                            d3.select(this).selectAll('tspan').text(function(d){
+                                return "("+ d.value + ") " + d.name;
+                            });
+                        }).
+                        on('mouseout', function(d){
+                            d3.select(this).selectAll('tspan').text(function(d){
+                                return d.name!=undefined ? d.name.substr(0, 15)
+                                + (d.name.length > 15 ? '...' : '') : '';
+                            });
+                        });
+                    textEnter.append("tspan")
+                        .attr("x", 0)
+                        .text(function(d) { return d.name!=undefined ? d.name.substr(0, 15)
+                        + (d.name.length > 15 ? '...' : '') : ''});
+
+                    driver.book.bubbleWordCount(root);
+                });
+
+                // Stash the old values for transition.
+                function stash(d) {
+                    d.x0 = d.x;
+                    d.dx0 = d.dx;
+                }
+
+                // Interpolate the arcs in data space.
+                function arcTween(a) {
+                    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+                    return function(t) {
+                        var b = i(t);
+                        a.x0 = b.x;
+                        a.dx0 = b.dx;
+                        return arc(b);
+                    };
+                }
+
+                d3.select(self.frameElement).style("height", height + "px");
+            },
+            bubbleWordCount : function (root) {
+                var diameter = 940,
+                    format = d3.format(",d"),
+                    color = d3.scale.category20c();
+
+                var bubble = d3.layout.pack()
+                    .sort(null)
+                    .size([diameter, diameter])
+                    .padding(1.5);
+
+                var svg = d3.select("#bubble-words").append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("class", "bubble");
+
+                //d3.json("stats/bookWordCount/" + driver.parameters[0], function(error, root) {
+                    var node = svg.selectAll(".node")
+                        .data(bubble.nodes(classes(root))
+                            .filter(function(d) { return !d.children; }))
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+                    node.append("title")
+                        .text(function(d) { return d.packageName + ": " + format(d.value); });
+
+                    node.append("circle")
+                        .attr("r", function(d) { return d.r; })
+                        .style("fill", function(d) { return color(d.packageName); });
+
+                    node.append("text")
+                        .attr("dy", ".3em")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return d.className.substring(0, d.r / 3); });
+                //});
+
+                // Returns a flattened hierarchy containing all leaf nodes under the root.
+                function classes(root) {
+                    var classes = [];
+
+                    function recurse(name, node) {
+                        if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+                        else classes.push({packageName: name, className: node.name, value: node.words});
+                    }
+
+                    recurse(null, root);
+                    return {children: classes};
+                }
+
+                d3.select(self.frameElement).style("height", diameter + "px");
+            },
+            bubbleUsersWordCount : function (root) {
+                var diameter = 940,
+                    format = d3.format(",d"),
+                    color = d3.scale.category20c();
+
+                var bubble = d3.layout.pack()
+                    .sort(null)
+                    .size([diameter, diameter])
+                    .padding(1.5);
+
+                var svg = d3.select("#users-words").append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("class", "bubble");
+
+                d3.json("stats/usersWordCount/" + driver.parameters[0], function(error, root) {
+                    var node = svg.selectAll(".node")
+                        .data(bubble.nodes(classes(root))
+                            .filter(function(d) { return !d.children; }))
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+                    node.append("title")
+                        .text(function(d) { return d.packageName + ": " + format(d.value); });
+
+                    node.append("circle")
+                        .attr("r", function(d) { return d.r; })
+                        .style("fill", function(d) { return color(d.packageName); });
+
+                    node.append("text")
+                        .attr("dy", ".3em")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return d.className.substring(0, d.r / 3); });
+                });
+
+                // Returns a flattened hierarchy containing all leaf nodes under the root.
+                function classes(root) {
+                    var classes = [];
+
+                    function recurse(name, node) {
+                        if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+                        else classes.push({packageName: node.names, className: node.names, value: node.added});
+                    }
+
+                    recurse(null, root);
+                    return {children: classes};
+                }
+
+                d3.select(self.frameElement).style("height", diameter + "px");
+            },
+            wordHistory: function () {
+                var margin = {top: 20, right: 20, bottom: 100, left: 80},
+                    width = 940 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+                var parseDate = d3.time.format("%d-%b-%y").parse;
+
+                var x = d3.time.scale()
+                    .range([0, width]);
+
+                var y = d3.scale.linear()
+                    .range([height, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
+
+                var area = d3.svg.area()
+                    .x(function(d) { return x(d.date); })
+                    .y0(height)
+                    .y1(function(d) { return y(d.words); });
+
+                var svg = d3.select("#words-history").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                d3.csv("stats/wordHistory/" + driver.parameters[0], function(error, data) {
+                    data.forEach(function(d) {
+                        var date = d.date.split(" ")[0].split("-"),
+                            time = d.date.split(" ")[1].split(":");
+
+                        d.date = new Date(+date[0], +date[1]-1, +date[2], +time[0], +time[1], +time[2]);
+                        d.words = parseInt(d.words);
+                    });
+
+                    x.domain(d3.extent(data, function(d) { return d.date; }));
+                    y.domain([0, d3.max(data, function(d) { return +d.words; })]);
+
+                    svg.append("path")
+                        .datum(data)
+                        .attr("class", "area")
+                        .attr("d", area);
+
+                    svg.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(xAxis);
+
+                    svg.append("g")
+                        .attr("class", "y axis")
+                        .call(yAxis)
+                        .append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .style("text-anchor", "end")
+                        .text("Words ($)");
+                });
+            },
+            /**
+             * controller / action
+             */
+            full: function(){
+                $('.undo').on('click', function(){
+                    var $this = $(this);
+                    $.post($this.attr('href'), function(resp){
+                       if(resp.ok){
+                           $this.parents('.deleted').removeClass('deleted');
+                           $this.remove();
+                       }
+                    }, 'json');
+                    return false;
+                })
+            },
+            /**
+             * controller / action
+             */
+            findReplace: function(){
+                var $currentChapter = null,
+                    $contents = $('#contents');
+                $('#down').on('click', function(){
+                    $contents.highlight($('#find').val(), 'next', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#up').on('click', function(){
+                    $contents.highlight($('#find').val(), 'previous', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#single-replace').on('click', function(){
+                    $.post('chapter/replace/'+$currentChapter.data('id')
+                        + '/' + $('#find').val() + '/' + $('#replace').val(),
+                    function(resp){
+                        if(resp.ok){
+                            $currentChapter.html(resp.content);
+                        }
+                    },'json');
+                    return false;
+                });
+
             }
+
         },
         register: {
             login: function () {
@@ -1553,7 +2025,7 @@
                     }
                 });
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo', function(response){
                         sessionStorage.username = response.username;
                     });
                     localStorage.removeItem('term');
@@ -1669,7 +2141,7 @@
                     var $this = $(this),
                         itemId = $this.val(),
                         term_id =  $termId.val();
-                    $.post(driver.urlBase+'dictionary/update_chapter/',{
+                    $.post('dictionary/update_chapter/',{
                         chapter_id: itemId,
                         term_id: term_id
                     }, function (response) {
@@ -1774,7 +2246,7 @@
                     $(".item-editor").val($this.text());
                     //Assigns the id to input hidden
                     $termId.val($this.data("id"));
-                    $.getJSON(driver.urlBase + 'term/get/' + $this.data("id"), function (data) {
+                    $.getJSON('term/get/' + $this.data("id"), function (data) {
                         driver.dictionary.handleFileUpload(data);
 
                         if(data.term.meaning === null)
@@ -1854,7 +2326,7 @@
                 $('#delete-image').on('click', function(){
                     if(confirm('Are you sure?')){
 
-                        $.post(driver.urlBase+'dictionary/delete_image',{id: $(this).data('id')}, function(){
+                        $.post('dictionary/delete_image',{id: $(this).data('id')}, function(){
                             $('#result').html($('<img/>', {src: 'http://placehold.it/200'}))
                         } );
                     }
@@ -1980,7 +2452,7 @@
             normal: function () {
 
                 broadcast.customOnConnect(function (io) {
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                         io.socket.emit('lock-wysi', {chapter_id: driver.parameters[0],
                             'user': response});
@@ -1996,7 +2468,7 @@
                     var $this = $(this);
                     $this.find(':submit').button('loading');
                     $('.cke_button__save').find('.cke_button__save_icon')
-                        .attr('style','background-image:url('+driver.urlBase+'public/img/loading.gif)!important; ' +
+                        .attr('style','background-image:url('+'public/img/loading.gif)!important; ' +
                             'background-position:0 0!important;');
                     $.post($this.attr('action'), $this.serialize(), function (data) {
                         if (data.ok) {
@@ -2016,17 +2488,29 @@
                                 .removeAttr('style');
                         });
                     return false;
-                }).error(function () {
-                        $this.find(':submit').button('reset');
-                    });
+                });
                 driver.addAsync('ckeditor', function () {
                     if (typeof CKEDITOR !== "undefined") {
+                        $.ajax({
+                            type: "GET",
+                            url: 'flags/all',
+                            async: false,
+                            data: {},
+                            dataType: 'JSON',
+                            success: function(resp)
+                            {
+                                window.myflags=resp.data;
+                            }
+
+                        });
+
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
+                            extraAllowedContent: '* [id]',
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
-                                    items: [ /*'Source', '-', */'Save'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
+                                    items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
                                 { name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ],
                                     items: [ 'Find', 'Replace', '-', /*'SelectAll', '-',*/ 'Scayt' ] },
                                 { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ],
@@ -2036,7 +2520,7 @@
                                     items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Indent List',
                                         '-', /*'CreateDiv',*/ '-'/*,
                                          'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'*/, '-', 'BidiLtr', 'BidiRtl' ] },
-                                { name: 'insert', items: [ 'Image', /* 'Flash', */'Table', 'CreatePlaceholder','EqnEditor','SpecialChar']},
+                                { name: 'insert', items: [ 'InsertPre','Image', 'Link',/* 'Flash', */'Table', 'CreatePlaceholder','EqnEditor','SpecialChar']},
                                 { name: 'styles', items: [ 'Styles', 'Format'/*, 'Blockquote', 'Font', 'FontSize' */]},
                                 { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
                                 { name: 'tools', items: [  'ShowBlocks' ]}/*,
@@ -2046,13 +2530,13 @@
                                  items: [ 'jQuerySpellChecker' ]
                                  }*/
                             ],
-                            removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,contextmenu,liststyle,tabletools,lite,autosave,align,bidi',//elementspath',
+                            removePlugins: 'forms,flash,floatingspace,iframe,newpage,resize,maximize,smiley,liststyleS,lite,autosave,align,bidi',//elementspath',
                             //elementspath, is for bottom bar
                             // jqueryspellchecker,
-                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,customlanguage,eqneditor,specialchar',
+                            extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre,tabletools'/*,customlanguage'*/,
                             resize_enabled: false,
-                            contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: driver.urlBase + "book/images/",
+                            contentsCss: "public/css/custom_ckeditor.css",
+                            imageBrowser_listUrl: "book/images/"+driver.parameters[0],
 
                             height: '75vh',
                             magicline_color: '#666',
@@ -2067,9 +2551,13 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage',
-                            format_tags: "p;h1;h2;h3;h4;pre;blockquote"
-                        }
+                            filebrowserImageUploadUrl : 'editor/uploadImage/'+driver.parameters[0],
+                            format_tags: "p;h1;h2;h3;h4;pre;blockquote",
+                            autoSaveOptionUrl: 'book/saveUserConfig/'+driver.parameters[0],
+                            autoSaveOptionTime: $('#editor').data('auto-save-time'),
+                            flags: window.myflags,
+                            baseHref: $('base').attr('href')
+                        };
                         $('#editor').ckeditor(config);
                     }
                 });
@@ -2125,7 +2613,7 @@
                     var $this = $(this);
                     $this.find(':submit').button('loading');
                     $('.cke_button__save').find('.cke_button__save_icon')
-                        .attr('style','background-image:url('+driver.urlBase+'public/img/loading.gif)!important; ' +
+                        .attr('style','background-image:url('+'public/img/loading.gif)!important; ' +
                             'background-position:0 0!important;');
                     $.post($this.attr('action'), $this.serialize(), function (data) {
                         if (data.ok) {
@@ -2175,8 +2663,8 @@
                             // jqueryspellchecker,
                             extraPlugins: 'savebutton,imagebrowser,backup,placeholder,indentlist,customlanguage',
                             resize_enabled: false,
-                            contentsCss: driver.urlBase + "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: driver.urlBase + "book/images/",
+                            contentsCss: "public/css/custom_ckeditor.css",
+                            imageBrowser_listUrl: "book/images/",
                             height: '75vh',
                             magicline_color: '#666',
                             sharedSpaces:{top:'top', bottom:'bottom'},
@@ -2190,10 +2678,9 @@
 
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
-                            filebrowserImageUploadUrl : driver.urlBase + 'editor/uploadImage',
+                            filebrowserImageUploadUrl : 'editor/uploadImage',
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote"
-
-                        }
+                        };
                         CKEDITOR.inline('editor', config);
 //                        $('#editor').ckeditor(config);
 
@@ -2252,7 +2739,7 @@
             view: function(){
 
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                     });
                 });
@@ -2296,7 +2783,7 @@
                         message_id:message_id,
                         book_id: book_id
                     }
-                    $.post(driver.urlBase+'likes/add_like',data,function(response){
+                    $.post('likes/add_like',data,function(response){
                         if(response.ok){
                             var data ={id:message_id,user_id:user_id};
                             driver.discussion.addLike(data);
@@ -2313,7 +2800,7 @@
                             message_id:message_id,
                             book_id: book_id
                         }
-                        $.post(driver.urlBase+'likes/remove_like',data,function(response){
+                        $.post('likes/remove_like',data,function(response){
                             if(response.ok)
                             {
                                 var data ={id:message_id,user_id:user_id};
@@ -2358,7 +2845,7 @@
                 return driver.discussion.$comments
             },
             drawMessage: function(data){
-                data.url = driver.urlBase+'discussion/delete/';
+                data.url = 'discussion/delete/';
                 driver.discussion.getCommentsDiv().prepend(driver.discussion.getMessageTemplate()(data));
             }
 
@@ -2367,7 +2854,7 @@
             review: function(){
 
                 $(function(){
-                    $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
                     });
                 });
@@ -2410,7 +2897,7 @@
                             term_id:$(this).data('term-id')
                         };
 
-                    $.post(driver.urlBase+'review/new_approve',data,function(resp){
+                    $.post('review/new_approve',data,function(resp){
                         if(resp.ok){
                             $this.attr('disabled','disabled');
                             data.user_id = resp.user_id;
@@ -2425,7 +2912,7 @@
                     var $this = $(this);
                     var id = $this.data('term-id');
                     var add = H.compile($('#user-approve').html());
-                    $.getJSON(driver.urlBase+'review/list_approve_by_term/'+id)
+                    $.getJSON('review/list_approve_by_term/'+id)
                         .done(function(data){
                             $('.users-approves').empty();
                             for(var user in data){
@@ -2461,11 +2948,14 @@
             history: function(){
                 var $preview = $('#preview-entry');
                 $('.view-content').on('click', function(){
-                    $preview.find('.modal-body').html($(this).siblings('.hide').html());
-                    $preview.modal('show')
+                    var $this = $(this);
+                    $.get($this.attr('href'), function(resp){
+                        $preview.find('.modal-body').html(resp);
+                        $preview.modal('show')
+                    });
                     return false;
                 });
-                $('.rollback').on('click', function(){
+                $('.rollback').on('click', function (){
                     var $this = $(this);
                     $.post($this.attr('href'), function(resp){
                         if(resp.ok){
@@ -2479,6 +2969,14 @@
                     }, 'json');
                     return false;
                 });
+                $('.compare').on('click', function (){
+                    var $this = $(this);
+                    var $content = $('#compare-modal').modal('show').find('.modal-body').text('fetching...');
+                    $.get($this.attr('href'), function(resp){
+                        $content.html(resp);
+                    });
+                    return false;
+                });
             }
         }
     }
@@ -2489,7 +2987,7 @@
     var topic={
         view: function(){
             $(function(){
-                $.getJSON(driver.urlBase+'user/getUsersInfo',function(response){
+                $.getJSON('user/getUsersInfo',function(response){
                     sessionStorage.user_id = response.id;
                 });
             });
@@ -2507,7 +3005,7 @@
                                 base: driver.urlBase}));
 
                             var $comments = $('#comments-'+data.id),
-                                href=driver.urlBase+'topic/detail/'+data.id;
+                                href='topic/detail/'+data.id;
                             $comments.load(href+' #comments .media', function(){
                                 $comments.before($('<a></a>', {'class':'actions',/*'href': href+'/new',*/ text: 'Reply',"data-id":data.id}));
                                 // $comments.before($('<a></a>', {'class':'actions','href': href, text: 'View all comments >>'}));
@@ -2528,7 +3026,7 @@
                 var $this = $(this),
                     $comments = $('#comments-'+$this.data('id')),
                     target = $this.data('target');
-                $this.find(".loading").attr('src',''+driver.urlBase+'public/img/loading.gif').show();
+                $this.find(".loading").attr('src',''+'public/img/loading.gif').show();
                 $comments.load(target+' #comments .media', function(){
                     $comments.prepend($('<a></a>', {'class':'actions',/*'href': target+'/new',*/ text: 'Reply',"data-id":$this.data('id')}));
                     /* $comments.prepend($('<a></a>', {'class':'actions','href': target, text: 'View all comments >>'})); */
@@ -2587,7 +3085,7 @@
                         comment_id:comment_id,
                         book_id:book_id
                     }
-                    $.post(driver.urlBase+'like_comment/add_like',data,function(response){
+                    $.post('like_comment/add_like',data,function(response){
                         if(response.ok){
                             var data ={id:comment_id,user_id:user_id};
                             driver.topic.addLike(data);
@@ -2604,7 +3102,7 @@
                         comment_id:comment_id,
                         book_id: book_id
                     }
-                    $.post(driver.urlBase+'like_comment/remove_like',data,function(response){
+                    $.post('like_comment/remove_like',data,function(response){
                         if(response.ok){
                             var data ={id:comment_id,user_id:user_id};
                             driver.topic.removeLike(data);

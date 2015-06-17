@@ -42,6 +42,39 @@ CKEDITOR.stylesSet.add( 'default', [
 			border: '1px solid #ccc'
 		}
 	},
+	{
+		name: 'Important',
+		element: 'div',
+		styles: {
+			padding: '5px 10px',
+			border: '1px solid #FF6C6F'
+        }
+	},
+
+    {
+        name: 'Tip',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#FFE56F'
+        }
+    }, {
+        name: 'Note',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#7E8C86'
+        }
+    }, {
+        name: 'caution',
+        element: 'div',
+        styles: {
+            padding: '5px 10px',
+            background: '#FF6C6F'
+
+        }
+    },
+
 
 	/* Inline Styles */
 

@@ -3,15 +3,17 @@
     $(function(){
         $('img').each(function(i, item){
             var $this = $(this);
-            $this.replaceWith('<span>$$'+$this.attr('alt')+'$$</span>');
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+            if($this.attr('src').startsWith('http://latex.codecogs.com/')){
+                $this.replaceWith('<span>$$'+$this.attr('alt')+'$$</span>');
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+            }
+
         });
 
     });
 
 </script>
-
-<?php if($draft):?>
+<?php if(!empty($draft) && $draft):?>
 
     <script src="<?php echo base_url();?>public/js/annotator-full.min.js"></script>
     <script>
@@ -20,7 +22,7 @@
                 bookId = $body.data('book-id');
             $body.annotator()
                 .annotator('addPlugin', 'Store', {
-                    prefix: '/annotations',
+                    prefix: '<?php echo base_url();?>annotations',
                     urls: {
                         // These are the default URLs.
                         create:  '/create/'+bookId,
