@@ -301,7 +301,7 @@ html[dir="RTL"] .pull-right{
     min-height: 15px;
 }
 
-.chapter {
+.section .chapter {
     counter-increment: chapters;
     border: solid 1px #fff;
     margin-bottom: 10px;
@@ -322,14 +322,14 @@ html[dir="RTL"] .pull-right{
     border: solid 1px #d3d3d3;
 }
 
-.chapter:before {
+.sections .chapter:before {
     content: counter(sections) "." counter(chapters) ". ";
     color: #3de697;
     background-color: white;
     padding-left: 10px;
 }
 
-.chapter .title {
+.sections .chapter .title {
     font-size: 1.6em;
     font-family: "myriad";
     background-color: white;
@@ -344,7 +344,7 @@ html[dir="RTL"] .pull-right{
     line-height: 1.2em;
 }
 
-.chapter .options{
+.sections .chapter .options{
     background-color: white;
     padding-left: 5px;
     line-height: 1.6em;
@@ -645,6 +645,10 @@ html[dir="RTL"] .pull-right{
 /* ****** END DICTIONARY/CREATE ****** */
 
 /* **** WYSI EDITOR **** */
+#form-editor .row-fluid{
+    margin: 0;
+}
+
 #normal-container #editor{
     min-height: 80vh;
 }
@@ -917,4 +921,16 @@ rect{
 
 .area {
     fill: steelblue;
+}
+
+/** book find/replace **/
+.highlight{
+    background-color: #fbed50;
+}
+
+#find-replace .affix{
+    background-color: white;
+    width: 900px;
+    margin-top: -65px;
+    padding-top: 10px;
 }

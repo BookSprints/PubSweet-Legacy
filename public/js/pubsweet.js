@@ -1913,7 +1913,7 @@
                 });
             },
             /**
-             * Controller
+             * controller / action
              */
             full: function(){
                 $('.undo').on('click', function(){
@@ -1926,6 +1926,40 @@
                     }, 'json');
                     return false;
                 })
+            },
+            /**
+             * controller / action
+             */
+            findReplace: function(){
+                var $currentChapter = null,
+                    $contents = $('#contents');
+                $('#down').on('click', function(){
+                    $contents.highlight($('#find').val(), 'next', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#up').on('click', function(){
+                    $contents.highlight($('#find').val(), 'previous', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#single-replace').on('click', function(){
+                    $.post('chapter/replace/'+$currentChapter.data('id')
+                        + '/' + $('#find').val() + '/' + $('#replace').val(),
+                    function(resp){
+                        if(resp.ok){
+                            $currentChapter.html(resp.content);
+                        }
+                    },'json');
+                    return false;
+                });
+
             }
 
         },

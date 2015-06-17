@@ -8,15 +8,25 @@
 ?>
 <div id="find-replace">
     <div class="container pubsweet-main">
-        <div class="row-fluid">
-            <form action="" method="POST" role="form" class="form-inline">
-                <label for="">Find</label>
-                <input type="text" class="form-control" name="find" id="find"
-                    value="<?php echo $this->input->post('find');?>" required>
-                <label for="">Replace</label>
-                <input type="text" class="form-control" name="replace" id="replace"
+        <div class="row-fluid" data-spy="affix" data-offset-top="100" style="background-color: white">
+            <form action="book/replace/<?php echo $id;?>" method="POST" role="form" class="form-inline">
+                <div class="controls controls-row">
+                    <label for="" class="span1">Find</label>
+                    <input type="text" class="span3" name="find" id="find"
+                           value="<?php echo $this->input->post('find');?>" required>
+                    <div class="btn-group">
+                        <button class="btn" type="button" id="up"><i class="icon-arrow-up"></i></button>
+                        <button class="btn" type="button" id="down"><i class="icon-arrow-down"></i></button>
+                    </div>
+                </div>
+                <div class="controls controls-row">
+                <label for="" class="span1">Replace</label>
+                <input type="text" class="span3" name="replace" id="replace"
                        value="<?php echo $this->input->post('replace');?>" required>
-                <button type="submit" class="btn btn-primary">Find</button>
+                <button type="button" class="btn" id="single-replace">Replace</button>
+                <button type="submit" class="btn" id="replace-all">Replace all</button>
+                </div>
+
             </form>
             <div class="alert alert-info">
             	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -24,7 +34,7 @@
             </div>
 
         </div>
-        <div class="row-fluid">
+        <div class="row-fluid" id="contents">
             <h1 class="text-center"><?php echo $book['title'];?></h1>
             <?php
 
@@ -36,7 +46,9 @@
                 foreach ($chapters as $object) :
                     if($object['section_id']==$section['id']):
                     ?>
-                    <div><?php echo $object['content']?></div>
+                    <div class="chapter" data-id="<?php echo $object['id'];?>">
+                        <?php echo $object['content']?>
+                    </div>
                     <?php
                     endif;
                 endforeach;//end chapters

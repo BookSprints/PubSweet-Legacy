@@ -140,6 +140,10 @@
                                                     <?php echo $this->lang->line('stats');?></a>
                                             </li>
                                             <li>
+                                                <a href="book/findReplace/<?php echo $all_books[$item['book_id']]['id']; ?>">
+                                                    <?php echo $this->lang->line('find-replace');?></a>
+                                            </li>
+                                            <li>
                                                 <a href="book/settings/<?php echo $all_books[$item['book_id']]['id']; ?>">
                                                     <?php echo $this->lang->line('settings');?></a>
                                             </li>

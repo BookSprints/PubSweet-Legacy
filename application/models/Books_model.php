@@ -51,8 +51,11 @@ class Books_model extends CI_Model
      * TODO: change method name, it could collide with generic get method
      */
     public function get($bookId){
+        $this->db->reset_query();
         $this->db->select('id, title, owner');
-        $query= $this->db->get_where('books', array('id'=>$bookId));
+        $this->db->from('books');
+        $this->db->where('id', $bookId);
+        $query = $this->db->get();
         return $query->row_array();
     }
 
@@ -191,6 +194,7 @@ class Books_model extends CI_Model
 
     public function replace($find, $replace, $bookId)
     {
+        $this->db->reset_query();
         $this->db->where('id', $this->input->post('book_id'));
         return $this->db->query('UPDATE chapters SET content = replace(content, ?, ?)
                 WHERE book_id = ?', array($find, $replace, $bookId));

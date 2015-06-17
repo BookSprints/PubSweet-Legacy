@@ -291,9 +291,6 @@ class Book extends CI_Controller
     {
         $this->load->model(array('books_model','sections_model','chapters_model'));
 
-        if($this->input->post('find') && $this->input->post('replace')){
-            $this->books_model->replace($this->input->post('find'), $this->input->post('replace'), $bookId);
-        }
         $book = $this->books_model->get($bookId);
         $sections = $this->sections_model->find($bookId);
         $chapters = $this->chapters_model->find($bookId);
@@ -301,12 +298,23 @@ class Book extends CI_Controller
         $this->load->view('templates/header');
         $this->load->view('templates/navbar', array('book' => $book));
         $this->load->view('book/find-replace',
-            array('sections'=>$sections,
+            array('id'=>$bookId,
+                  'sections'=>$sections,
                   'chapters'=>$chapters,
                     'book'=>$book
             ));
 
         $this->load->view('templates/footer');
+    }
+
+    public function replace($id)
+    {
+        $this->load->model('books_model');
+        if($this->books_model->replace($this->input->post('find'), $this->input->post('replace'), $id)){
+            redirect('book/findReplace/'.$id);
+        }else{
+            echo json_encode(array('ok'=>0));
+        }
     }
 
 }

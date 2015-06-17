@@ -188,4 +188,10 @@ class Chapters_model extends MY_Model
         return $query->result_array();
     }
 
+    public function replace($id, $search, $replace)
+    {
+        return $this->db->query('UPDATE chapters SET content = replace(content, ?, ?)
+                WHERE id = ?', array($search, $replace, $id));
+    }
+
 }
