@@ -1932,9 +1932,10 @@
              */
             findReplace: function(){
                 var $currentChapter = null,
-                    $contents = $('#contents');
+                    $contents = $('#contents'),
+                    $alert = $('.alert.alert-info').clone();
                 $('#down').on('click', function(){
-                    $contents.highlight($('#find').val(), 'next', function(node){
+                    $contents.highlight('next', $('#find').val(), function(node){
                         var $node = $(node);
                         $currentChapter = $node.parents('.chapter');
                         $(window).scrollTop($node.offset().top - 250);
@@ -1942,7 +1943,7 @@
                     return false;
                 });
                 $('#up').on('click', function(){
-                    $contents.highlight($('#find').val(), 'previous', function(node){
+                    $contents.highlight('previous', $('#find').val(), function(node){
                         var $node = $(node);
                         $currentChapter = $node.parents('.chapter');
                         $(window).scrollTop($node.offset().top - 250);
@@ -1950,13 +1951,28 @@
                     return false;
                 });
                 $('#single-replace').on('click', function(){
-                    $.post('chapter/replace/'+$currentChapter.data('id')
-                        + '/' + $('#find').val() + '/' + $('#replace').val(),
+                    var $highlight = $currentChapter.find('.highlight'),
+                        $temp = $highlight.clone(),
+                        textNode = document.createTextNode($('#replace').val());
+                    $highlight.replaceWith(textNode);
+                    $.post('chapter/replace/'+$currentChapter.data('id'),
+                        {content: $currentChapter.html()},
                     function(resp){
                         if(resp.ok){
+                            $contents.highlight('reset');
                             $currentChapter.html(resp.content);
+                        }else{
+                            $(textNode).replaceWith($temp);
+                            $alert.find('p').text('Internal error: Unable to save').end()
+                                .removeClass('alert-info')
+                                .addClass('alert-error');
+                            if(!!$('.alert.alert-info').length){
+                                $('.alert.alert-info').replaceWith($alert.clone());
+                            }else{
+                                $('form').after($alert.clone());
+                            }
                         }
-                    },'json');
+                    }, 'json');
                     return false;
                 });
 

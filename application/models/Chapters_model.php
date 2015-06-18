@@ -91,8 +91,8 @@ class Chapters_model extends MY_Model
    }
 
     public function update($data, $id){
-        $oldChapter = $this->get($id);
-        $this->db->where('id',$id);
+        $oldChapter = $this->get($id);//necessary for history tracking
+        $this->db->where('id', $id);
         $result = $this->db->update('chapters', $data);
         if($result && $oldChapter['content'] != $data['content']){
             $this->addToHistory($id, $this->session->userdata('DX_user_id'),
@@ -186,12 +186,6 @@ class Chapters_model extends MY_Model
         $this->db->order_by('s.order, c.order');
         $query = $this->db->get();
         return $query->result_array();
-    }
-
-    public function replace($id, $search, $replace)
-    {
-        return $this->db->query('UPDATE chapters SET content = replace(content, ?, ?)
-                WHERE id = ?', array($search, $replace, $id));
     }
 
 }

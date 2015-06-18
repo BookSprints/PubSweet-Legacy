@@ -202,10 +202,9 @@ class Chapter extends CI_Controller
         echo json_encode(array('ok'=>1, 'id'=>$id));
     }
 
-    public function replace($id, $search, $replace){
-        $search = urldecode($search);
-        $replace = urldecode($replace);
-        if($this->model->replace($id, $search, $replace)){
+    public function replace($id){
+
+        if($this->model->update(array('content'=>$this->input->post('content')), $id)){
             $chapter = $this->model->get($id);
             echo json_encode(array('ok'=>1,
                 'content'=>$chapter['content']));

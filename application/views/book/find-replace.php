@@ -30,7 +30,7 @@
             </form>
             <div class="alert alert-info">
             	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            	<strong>Heads up!</strong> Find/Replaces is case-sensitive. Also will not work on section's name.
+            	<p><strong>Heads up!</strong> Find/Replaces is case-sensitive. Also will not work on section's name.</p>
             </div>
 
         </div>

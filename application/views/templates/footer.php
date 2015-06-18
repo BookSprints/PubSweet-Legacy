@@ -218,6 +218,7 @@
 </script>
 
 <script type="text/javascript" src="public/js/pubsweet-libs.js"></script>
+<script type="text/javascript" src="public/js/jquery.highlight.js"></script>
 
 <?php
 $serverNodeJS = $this->config->item('nodejs');
@@ -233,8 +234,8 @@ if(empty($serverNodeJS)){
     }
 </script>
 
-<!--<script type="text/javascript" src="public/js/pubsweet.js"></script>-->
-<script type="text/javascript" src="public/js/pubsweet.min.js"></script>
+<script type="text/javascript" src="public/js/pubsweet.js"></script>
+<!--<script type="text/javascript" src="public/js/pubsweet.min.js"></script>-->
 
 <script type="text/javascript" src="<?php echo $serverNodeJS;?>socket.io/socket.io.js" async onload="broadcast.init()"></script>
 <script src="public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>
