@@ -2408,7 +2408,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
     //internal
     $.util.i = {'insensitive': false};
 
-    $.fn.highlight = function(text, method, callback) {
+    $.fn.highlight = function(method, text, callback) {
         if(method==null){
             method = 'all';
         }
@@ -2416,7 +2416,9 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
             that = this,
             nextNode = false;
         function init(){
-            if(!$.util.i.hasOwnProperty('found')){
+            if(method === 'reset'){
+                $.util.i.found = false;
+            }else if(!$.util.i.hasOwnProperty('found')){
                 $.util.i.found = false;
             }
             if($.util.i.lastPhrase != text){
@@ -2542,7 +2544,10 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
         init();
 
         return this.length && text && text.length ? this.each(function() {
-            return find(this, text);
+            if(method !== 'reset'){
+                return find(this, text);
+            }
+
         }) : this;
     };
 
