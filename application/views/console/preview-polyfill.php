@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Preview - <?php echo $bookTitle;?></title>
+    <base href="<?php echo base_url();?>">
     <!--    <link rel="stylesheet" href="https://raw.github.com/sourcefabric/BookJS/0.25.0/book.css">-->
     <?php if(isset($prettify) && $prettify):?>
         <link rel="stylesheet" href="<?php echo base_url();?>public/js/prettifier/prettify.css"/>
@@ -74,7 +75,7 @@
                 document.head.appendChild(st);
                 var s = document.createElement('script');
                 s.type = "text/javascript";
-                s.src = "/public/js/cssregions.min.js";
+                s.src = "public/js/css-regions-polyfill.min.js";
                 document.head.appendChild(s);
             }
 
@@ -113,7 +114,7 @@
         <?php endif;?>
     </script>
 
-    <script type="text/javascript" src="<?php echo base_url();?>public/js/book2.js"></script>
+    <script type="text/javascript" src="<?php echo base_url();?>public/js/book-polyfill.js"></script>
 </head>
 <body
     <?php if(isset($prettify) && $prettify):?>

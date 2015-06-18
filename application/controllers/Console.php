@@ -60,7 +60,7 @@ class Console extends CI_Controller
         }
     }
 
-    public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false)
+    public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false, $polyfill = false)
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
@@ -173,7 +173,18 @@ class Console extends CI_Controller
             $params['bookTitle'] = $xml->docTitle->text;
         }
 
-        $this->load->view('console/preview', $params);
+        if($polyfill){
+            $this->load->view('console/preview-polyfill', $params);
+
+        }else{
+            $this->load->view('console/preview', $params);
+
+        }
+    }
+
+    public function polyfill($book, $identifier, $editablecss, $hyphen, $prettify=false)
+    {
+        $this->preview($book, $identifier, $editablecss, $hyphen, $prettify, true);
     }
 
     /**
