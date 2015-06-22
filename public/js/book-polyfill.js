@@ -284,11 +284,11 @@
      * CSS style.
      */
     pagination.initiate = function () {
-        this.setStyle();
-        this.setPageStyle();
+        //this.setStyle();
+        /*this.setPageStyle();
         document.head.insertBefore(
             pagination.pageStyleSheet,
-            document.head.firstChild);
+            document.head.firstChild);*/
     };
 
     /**
@@ -311,7 +311,7 @@
      * Set style for the regions and pages used by BookJS and add it to the
      * head of the DOM.
      */
-    pagination.setStyle = function () {
+    /*pagination.setStyle = function () {
         var style = document.getElementById('flows');
         if(style==null){
 
@@ -324,9 +324,9 @@
             "-webkit-flex-direction: column; flex-direction: column;}" +
             "\n.pagination-contents-container {position: absolute;}" +
             "\n.pagination-contents {display: -webkit-flex; -webkit-flex: 1; display: flex; flex: 1;}"
-        /* There seems to be a bug in the new flexbox model code which requires the
+        *//* There seems to be a bug in the new flexbox model code which requires the
          * height to be set to an arbitrary value (which is ignored).
-         */ + "\n.pagination-contents {height: 0px;}" +
+         *//* + "\n.pagination-contents {height: 0px;}" +
             "\n.pagination-contents-column {-webkit-flex: 1; flex: 1;}" +
                 "\nbody {" +
             "counter-reset: pagination-footnote pagination-footnote-reference;}" +
@@ -346,8 +346,8 @@
             "\n.pagination-page {margin-left:auto; margin-right:auto;}" +
             "\n.pagination-marginnote-item {position:absolute;}" +
             "\n.pagination-marginnote > * {display: block;}";
-//        document.head.appendChild(stylesheet);
-    };
+        document.head.appendChild(stylesheet);
+    };*/
 
     /**
      * Set style for a particular page size.
@@ -358,7 +358,7 @@
             marginNotesWidth = marginNotesWidthNumber + unit,
             marginNotesSeparatorWidthNumber = pagination.config('marginNotesSeparatorWidth') * pagination.config('enableMarginNotes'),
             marginNotesSeparatorWidth = marginNotesSeparatorWidthNumber + unit,
-            marginNotesVerticalSeperator = pagination.config('marginNotesVerticalSeparator') + unit,
+            marginNotesVerticalSeperator = !!pagination.config('marginNotesVerticalSeparator') ? pagination.config('marginNotesVerticalSeparator') + unit : '0',
             contentsWidthNumber = pagination.config('pageWidth') - pagination.config(
                 'innerMargin') - pagination.config('outerMargin') - (marginNotesWidthNumber + marginNotesSeparatorWidthNumber),
             contentsWidth = contentsWidthNumber + unit,
@@ -384,13 +384,16 @@
             imageMaxWidth = contentsWidthNumber - .1 + unit;
             
         pagination.pageStyleSheet.innerHTML =
-            ".pagination-page {height:" + pageHeight + "; width:" + pageWidth +
-            ";" + "background-color: #fff;}" + "\n@page {size:" + pageWidth +
-            " " + pageHeight + ";}" + "\nbody {background-color: #efefef;}"
+            ".pagination-page {height:" + pageHeight + "; width:" + pageWidth + ";" + "background-color: transparent;}" +
+            //".pagination-contents-item{height:" + pageHeight +"}" +
+            "\n@page {size:" + pageWidth + " " + pageHeight + ";}" +
+            "\nbody {background-color: #efefef;}"
         // A .page.simple is employed when CSS Regions are not accessible
         + "\n.pagination-simple {padding: 1in;}"
         // To give the appearance on the screen of pages, add a space of .2in
-        + "\n@media screen{.pagination-page {border:solid 1px #000; " +
+        //+ "\n@media screen{.pagination-page {border: solid 1px #000; " +
+
+        + "\n@media screen{.pagination-page {border: solid 1px #000; " +
             "margin-bottom:.2in;}}" +
             "\n.pagination-main-contents-container {width:" + contentsWidth + ";}" + 
             "\n.pagination-contents-container {bottom:" + contentsBottomMargin + "; height:" + contentsHeight + "; " +
@@ -1106,12 +1109,28 @@
         contentsDiv.id = 'pagination-contents';
         document.body.appendChild(contentsDiv);
 
-
+        var styles = '';
         for (i = 0; i < bodyObjects.length; i++) {
             layoutDiv.appendChild(bodyObjects[i].div);
             contentsDiv.appendChild(bodyObjects[i].rawdiv);
+            styles += bodyObjects[i].getStyle();
+        }
+        if(styles!==''){ debugger;
+            pagination.setPageStyle();
+            //document.head.insertBefore(
+            //    pagination.pageStyleSheet,
+            //    document.head.firstChild);
+
+            var stylesheet = document.createElement('style');
+            stylesheet.innerHTML = styles + pagination.pageStyleSheet.innerHTML;
+            document.head.appendChild(stylesheet);
+        }
+
+        for (i = 0; i < bodyObjects.length; i++) {
+
             bodyObjects[i].initiate();
         }
+
 
         pagination.pageCounters.arab.numberPages();
 
@@ -1172,14 +1191,15 @@
         document.dispatchEvent(pagination.events.layoutFlowFinished);
     };
 
-
+    /**
+     * Apply this alternative layout in case CSS Regions are not present
+     */
     pagination.applySimpleBookLayout = function () {
-        // Apply this alternative layout in case CSS Regions are not present 
         var contentsDiv, simplePage;
         
         if (eval(pagination.config('flowElement')) === document.body) {
             /* We are reflowing the body itself, yet the layout will be added to 
-             * the body. This will make the broser crash. So we need to move the 
+             * the body. This will make the browser crash. So we need to move the
              * original contents inside a Div of its own first.
              */
             contentsDiv = document.createElement('div');
@@ -1342,14 +1362,21 @@
      * have been set and rawdiv has been filled with initial contents.
      */
     flowObject.prototype.initiate = function () {
-        this.setStyle();
+        //this.setStyle();
         if(document.webkitGetNamedFlows!=undefined){
             this.namedFlow = document.webkitGetNamedFlows()[this.name];
         }else if(document.getNamedFlow!=undefined){
             this.namedFlow = document.getNamedFlow(this.name);
         }
 
-        this.addOrRemovePages();
+        this.div.appendChild(
+            pagination.createPages(
+                2,
+                this.name,
+                this.pageCounter.cssClass,
+                this.columns));
+        //this.addPagesLoop(2);
+        //this.addOrRemovePages();
         this.setupReflow();
         this.findAllTopfloats();
         this.findAllFootnotes();
@@ -1361,29 +1388,45 @@
         if (pagination.config('numberPages')) {
             this.pageCounter.numberPages();
         }
+
     };
 
-    /*flowObject.prototype.setStyle = function () {
-        *//* Create a style element for this flowObject and add it to the header in
-         * the DOM. That way it will not be mixing with the DOM of the
-         * contents.
-         *//*
-        var stylesheet = document.createElement('style');
-        stylesheet.innerHTML = "." + this.name + "-layout" +
+    /**
+     * Create a style element for this flowObject and add it to the header in
+     * the DOM. That way it will not be mixing with the DOM of the contents.
+     */
+    //flowObject.prototype.setStyle = function () {
+    //
+    //
+    //    var stylesheet = document.createElement('style');
+    //    stylesheet.innerHTML = "." + this.name + "-layout" +
+    //        " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
+    //
+    //        "\n." + this.name + "-contents " + "{" +
+    //        "-webkit-flow-into: " + this.name + "; " +
+    //        "flow-into: " + this.name + "; }";
+    //    document.head.appendChild(stylesheet);
+    //};
+
+    flowObject.prototype.getStyle = function () {
+
+
+        //var stylesheet = document.createElement('style');
+        return " ." + this.name + "-layout" +
             " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
 
             "\n." + this.name + "-contents " + "{" +
             "-webkit-flow-into: " + this.name + "; " +
             "flow-into: " + this.name + "; }";
-        document.head.appendChild(stylesheet);
-    };*/
+        //document.head.appendChild(stylesheet);
+    };
 
     /**
      * Create a style element for this flowObject and add it to the header in
      * the DOM. That way it will not be mixing with the DOM of the
      * contents.
      */
-    flowObject.prototype.setStyle = function () {
+    /*flowObject.prototype.setStyle = function () {
         var style = document.getElementById('flows');
         if(style==null){
 
@@ -1391,14 +1434,14 @@
             style.setAttribute('id', 'flows');
             document.head.appendChild(style);
         }
-        style.innerHTML += "." + this.name + "-layout" +
-            " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
-
+        style.innerHTML +=
+            " ." + this.name + "-layout" + " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
             "\n." + this.name + "-contents " + "{" +
-            "-webkit-flow-into: " + this.name + "; " +
-            "flow-into: " + this.name + "; }";
+                "-webkit-flow-into: " + this.name + "; " +
+                "flow-into: " + this.name + "; " +
+            "}";
         document.head.appendChild(style);
-    };
+    };*/
 
     flowObject.prototype.setType = function (type) {
         // Set the type of this flowObject (chapter or section start).
@@ -1562,7 +1605,7 @@
             }
         }
 
-        return;
+        //return;
     };
 
     /**
@@ -1580,11 +1623,7 @@
         escapePage = this.findEscapePage(
             escapeObject['item']);
 
-        if (escapePage === referencePage) {
-            return true;
-        } else {
-            return false;
-        }
+        return escapePage === referencePage;
     };
 
 
@@ -1593,17 +1632,17 @@
         var flowObject = this, reFlow, redoEscapes;
 
 
-        reFlow = function () {
-            flowObject.placeAllEscapes();
-        };
+        //reFlow = function () {
+        //    flowObject.placeAllEscapes();
+        //};
 
-        this.namedFlow.addEventListener('escapesNeedMove', reFlow);
+        this.namedFlow.addEventListener('escapesNeedMove', flowObject.placeAllEscapes);
 
-        redoEscapes = function () {
-            flowObject.redoEscapes();
-        };
+        //redoEscapes = function () {
+        //    flowObject.redoEscapes();
+        //};
 
-        this.rawdiv.addEventListener('redoEscapes', redoEscapes);
+        this.rawdiv.addEventListener('redoEscapes', flowObject.redoEscapes);
     };
 
     flowObject.prototype.redoEscapes = function () {
@@ -1633,9 +1672,16 @@
             this.escapes[escapeTypes[j]] = [];
         }
 
+        var styles = '';
         // Find footnotes from scratch.
-        this.findAllTopfloats();
-        this.findAllFootnotes();
+        styles += this.findAllTopfloats();
+        styles += this.findAllFootnotes();
+        if(styles!==''){
+            var css = document.createElement('style');
+            css.innerHTML = styles;
+            document.head.appendChild(css);
+        }
+
     };
 
     flowObject.prototype.findAllTopfloats = function () {
@@ -1645,12 +1691,12 @@
 
     flowObject.prototype.findAllMarginnotes = function () {
         // Find all the footnotes in the text and prepare them for flow.
-        this.findAllEscapes('marginnote');
+        return this.findAllEscapes('marginnote');
     };    
 
     flowObject.prototype.findAllFootnotes = function () {
         // Find all the footnotes in the text and prepare them for flow.
-        this.findAllEscapes('footnote');
+        return this.findAllEscapes('footnote');
     };
 
     /**
@@ -1716,9 +1762,11 @@
 
 
         }
-        if (this.escapeStylesheets[escapeType].innerHTML !== '') {
-            document.head.appendChild(this.escapeStylesheets[escapeType]);
-        }
+        //if (this.escapeStylesheets[escapeType].innerHTML !== '') {
+        //    document.head.appendChild(this.escapeStylesheets[escapeType]);
+        //}
+
+        return this.escapeStylesheets[escapeType].innerHTML;
 
     };
 
@@ -2000,18 +2048,16 @@
      * @param pages
      */
     flowObject.prototype.addOrRemovePages = function (pages) {
-        if (true/*this.namedFlow.overset */&& pagination.getInnerText(this.rawdiv).length > 0) {
+        if (this.namedFlow.overset && pagination.getInnerText(this.rawdiv).length > 0) {
             /* If there are too few regions (overset==True) and the contents of
              * rawdiv are at least 1 character long, pages need to be added.
              */
             this.pageCounter.needsUpdate = true;
             this.redoPages = true;
             this.addPagesLoop(pages);
-        } else if (
-        (this.namedFlow.firstEmptyRegionIndex !== -1) && (
-        (
-            this.namedFlow.getRegions().length - this.namedFlow.firstEmptyRegionIndex) >=
-            this.columns)) {
+        } else if (this.namedFlow.firstEmptyRegionIndex !== -1 && (
+                (this.namedFlow.getRegions().length - this.namedFlow.firstEmptyRegionIndex) >=
+                this.columns)) {
             /* If there are excess regions, and the number of empty regions is
              * equal to or higher than the number of columns, we need to remove
              * pages.
