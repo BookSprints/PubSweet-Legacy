@@ -6,34 +6,11 @@
     <base href="<?php echo base_url(); ?>">
     <!-- Required for the css regions polyfill -->
     <style id="flows">
+        <?php echo $pageStyles;?>
         #flow {
             display: none;
         }
 
-        .pagination-contents-item {
-            /*height: 11in;*/
-            /*width: 8.5in;*/
-            background-color: #fff;
-            /*border: solid 1px #000;*/
-            margin-bottom: .2in;
-            break-after: always;
-            position: relative;
-            margin-left: auto;
-            margin-right: auto;
-            display: flex;
-            /*padding-top: 0.8in;
-            padding-bottom: 0.8in;*/
-        }
-
-        .pagination-contents-item:nth-child(odd) {
-            padding-right: 0.5in;
-            padding-left: 0.8in;
-        }
-
-        .pagination-contents-item:nth-child(even) {
-            padding-right: 0.8in;
-            padding-left: 0.5in;
-        }
         .pagination-main-contents-container {
             display: -webkit-flex;
             display: flex;
@@ -87,10 +64,7 @@
             margin-left: auto;
             margin-right: auto;
             page-break-after: always;
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
+            position: relative;
 
         }
 
@@ -122,9 +96,10 @@
         .pagination-marginnote > * {
             display: block;
         }
+        <?php echo $chapterRegions;?>
     </style>
     <?php if (isset($prettify) && $prettify): ?>
-        <link rel="stylesheet" href="<?php echo base_url(); ?>public/js/prettifier/prettify.css"/>
+        <link rel="stylesheet" href="public/js/prettifier/prettify.css"/>
     <?php endif; ?>
     <!--    <link rel="stylesheet" href="book.css">-->
     <?php if (!isset($editablecss) || !$editablecss):
@@ -154,8 +129,41 @@
         </style>
     <?php endif; ?>
     <?php if (isset($prettify) && $prettify): ?>
-        <script type="text/javascript" src="<?php echo base_url(); ?>public/js/prettifier/prettify.js"></script>
+        <script type="text/javascript" src="public/js/prettifier/prettify.js"></script>
     <?php endif; ?>
+    <script src="public/js/css-regions-polyfill.js"></script>
+
+    <script type="text/javascript">
+        window.paginationConfig = {
+            'sectionStartMarker': 'div.section',
+            'sectionTitleMarker': 'h1.sectiontitle',
+            'chapterStartMarker': 'div.chapter',
+            'chapterTitleMarker': 'h1.chaptertitle',
+            'flowElement': "document.getElementById('flow')",
+            'alwaysEven': true,
+            'enableFrontmatter': true,
+            'bulkPagesToAdd': 50,
+            'pagesToAddIncrementRatio': 1.4,
+            'pageHeight': 11,
+            'pageWidth': 8.5,
+            'lengthUnit: ': 'in',
+            'oddAndEvenMargins': false,
+            'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
+            + '<div class="pagination-pagebreak"></div>',
+            'autoStart': true,
+
+        };
+        <?php if(isset($_GET['pageHeight']) && !empty($_GET['pageHeight'])):?>
+        paginationConfig.pageHeight = <?php echo $_GET['pageHeight'];?>;
+        <?php endif;?>
+        <?php if(isset($_GET['pageWidth']) && !empty($_GET['pageHeight'])):?>
+        paginationConfig.pageWidth = <?php echo $_GET['pageWidth'];?>;
+        <?php endif;?>
+        <?php if(isset($_GET['lengthUnit']) && !empty($_GET['pageHeight'])):?>
+        paginationConfig.lengthUnit = '<?php echo $_GET['lengthUnit'];?>';
+        <?php endif;?>
+    </script>
+    <script type="text/javascript" src="public/js/book-polyfill.js"></script>
 
 </head>
 <body
@@ -171,39 +179,5 @@ endif; ?>
 <div id="flow">
     <?php echo $fullHTML; ?>
 </div>
-
-<script type="text/javascript">
-    window.paginationConfig = {
-        'sectionStartMarker': 'div.section',
-        'sectionTitleMarker': 'h1.sectiontitle',
-        'chapterStartMarker': 'div.chapter',
-        'chapterTitleMarker': 'h1.chaptertitle',
-        'flowElement': "document.getElementById('flow')",
-        'alwaysEven': true,
-        'enableFrontmatter': true,
-        'bulkPagesToAdd': 50,
-        'pagesToAddIncrementRatio': 1.4,
-        'pageHeight': 11,
-        'pageWidth': 8.5,
-        'lengthUnit: ': 'in',
-        'oddAndEvenMargins': false,
-        'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
-        + '<div class="pagination-pagebreak"></div>',
-        'autoStart': true,
-
-    };
-    <?php if(isset($_GET['pageHeight']) && !empty($_GET['pageHeight'])):?>
-    paginationConfig.pageHeight = <?php echo $_GET['pageHeight'];?>;
-    <?php endif;?>
-    <?php if(isset($_GET['pageWidth']) && !empty($_GET['pageHeight'])):?>
-    paginationConfig.pageWidth = <?php echo $_GET['pageWidth'];?>;
-    <?php endif;?>
-    <?php if(isset($_GET['lengthUnit']) && !empty($_GET['pageHeight'])):?>
-    paginationConfig.lengthUnit = '<?php echo $_GET['lengthUnit'];?>';
-    <?php endif;?>
-</script>
-<script type="text/javascript" src="<?php echo base_url(); ?>public/js/book-polyfill.js"></script>
-<script src="public/js/css-regions-polyfill.min.js"></script>
-
 </body>
 </html>

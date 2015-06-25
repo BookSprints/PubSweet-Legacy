@@ -1109,22 +1109,22 @@
         contentsDiv.id = 'pagination-contents';
         document.body.appendChild(contentsDiv);
 
-        var styles = '';
+        //var styles = '';
         for (i = 0; i < bodyObjects.length; i++) {
             layoutDiv.appendChild(bodyObjects[i].div);
             contentsDiv.appendChild(bodyObjects[i].rawdiv);
-            styles += bodyObjects[i].getStyle();
+            //styles += bodyObjects[i].getStyle();
         }
-        if(styles!==''){ debugger;
-            pagination.setPageStyle();
+        //if(styles!==''){ debugger;
+        //    pagination.setPageStyle();
             //document.head.insertBefore(
             //    pagination.pageStyleSheet,
             //    document.head.firstChild);
 
-            var stylesheet = document.createElement('style');
+            /*var stylesheet = document.createElement('style');
             stylesheet.innerHTML = styles + pagination.pageStyleSheet.innerHTML;
-            document.head.appendChild(stylesheet);
-        }
+            document.head.appendChild(stylesheet);*/
+        //}
 
         for (i = 0; i < bodyObjects.length; i++) {
 
@@ -1369,18 +1369,18 @@
             this.namedFlow = document.getNamedFlow(this.name);
         }
 
-        this.div.appendChild(
+        /*this.div.appendChild(
             pagination.createPages(
                 2,
                 this.name,
                 this.pageCounter.cssClass,
-                this.columns));
-        //this.addPagesLoop(2);
+                this.columns));*/
+        this.addPagesLoop(Math.ceil(this.rawdiv.innerText.length/3000));
         //this.addOrRemovePages();
-        this.setupReflow();
-        this.findAllTopfloats();
+        //this.setupReflow();
+        /*this.findAllTopfloats();
         this.findAllFootnotes();
-        this.findAllMarginnotes();
+        this.findAllMarginnotes();*/
         // Layout margin notes once before everything else, so that they don't fill up text
         //this.layoutMarginnotes();
         this.placeAllEscapes();
@@ -1408,18 +1408,16 @@
     //    document.head.appendChild(stylesheet);
     //};
 
-    flowObject.prototype.getStyle = function () {
+    /*flowObject.prototype.getStyle = function () {
 
 
-        //var stylesheet = document.createElement('style');
         return " ." + this.name + "-layout" +
             " .pagination-contents-column {-webkit-flow-from: " + this.name +"; flow-from: " + this.name +";}" +
 
             "\n." + this.name + "-contents " + "{" +
             "-webkit-flow-into: " + this.name + "; " +
             "flow-into: " + this.name + "; }";
-        //document.head.appendChild(stylesheet);
-    };
+    };*/
 
     /**
      * Create a style element for this flowObject and add it to the header in
@@ -1674,17 +1672,17 @@
 
         var styles = '';
         // Find footnotes from scratch.
-        styles += this.findAllTopfloats();
+        /*styles += this.findAllTopfloats();
         styles += this.findAllFootnotes();
         if(styles!==''){
             var css = document.createElement('style');
             css.innerHTML = styles;
             document.head.appendChild(css);
-        }
+        }*/
 
     };
 
-    flowObject.prototype.findAllTopfloats = function () {
+    /*flowObject.prototype.findAllTopfloats = function () {
         // Find all the topfloats in the text and prepare them for flow.
         this.findAllEscapes('topfloat');
     };
@@ -1697,14 +1695,14 @@
     flowObject.prototype.findAllFootnotes = function () {
         // Find all the footnotes in the text and prepare them for flow.
         return this.findAllEscapes('footnote');
-    };
+    };*/
 
     /**
      * Find all the escapes (footnotes, topfloats) in the text and prepare
      * them for flow.
      * @param escapeType
      */
-    flowObject.prototype.findAllEscapes = function (escapeType) {
+    /*flowObject.prototype.findAllEscapes = function (escapeType) {
 
         var allEscapes, escapeId, escapeObject, escapeFlowTo, i;
 
@@ -1715,19 +1713,19 @@
         }
 
 
-        /* Look for all the items that have "pagination-"+escapeType in their 
+        *//* Look for all the items that have "pagination-"+escapeType in their
          * class list. These will be treated as escapes from the normal text 
          * flow.
-         */
+         *//*
         allEscapes = this.rawdiv.querySelectorAll(
             pagination.config(escapeType + 'Selector'));
 
         for (i = 0; i < allEscapes.length; i++) {
 
             if (allEscapes[i].id === '') {
-                /* If the escape has no id, create one, so that we can target it
+                *//* If the escape has no id, create one, so that we can target it
                  * using CSS rules.
-                 */
+                 *//*
                 allEscapes[i].id = pagination.createRandomId(
                     'pagination-' + escapeType + '-');
             }
@@ -1742,9 +1740,9 @@
 
 
             escapeObject = {};
-            /* We create this object so that we can find the escape item and
+            *//* We create this object so that we can find the escape item and
              * reference again later on.
-             */
+             *//*
 
             escapeObject['reference'] = allEscapes[i];
 
@@ -1768,7 +1766,7 @@
 
         return this.escapeStylesheets[escapeType].innerHTML;
 
-    };
+    };*/
 
     flowObject.prototype.layoutTopfloats = function () {
         // Layout all top floats

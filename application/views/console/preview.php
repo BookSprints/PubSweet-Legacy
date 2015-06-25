@@ -35,49 +35,6 @@
     <?php if(isset($prettify) && $prettify):?>
         <script type="text/javascript" src="<?php echo base_url();?>public/js/prettifier/prettify.js"></script>
     <?php endif;?>
-    <script>
-        /**
-         * Test if native cssregions is available. Otherwise it injects the css-regions-polyfill
-         * https://github.com/FremyCompany/css-regions-polyfill
-         */
-        !function(){
-            if(document.webkitGetNamedFlows==undefined){
-                var st = document.createElement('style');
-                st.innerHTML =
-                    "#flow{display: none;}"+
-                    ".pagination-contents-item{"+
-                    "height: 11in;"+
-                    "width: 8.5in;"+
-                    "background-color: #fff;"+
-                    "border: solid 1px #000;"+
-                    "margin-bottom: .2in;"+
-                    "break-after: always;"+
-                    "position: relative;"+
-                    "margin-left: auto;"+
-                    "margin-right: auto;"+
-                    "display: flex;"+
-                    "padding-top: 0.8in;"+
-                    "padding-bottom: 0.8in;"+
-                    "}"+
-
-                    ".pagination-contents-item:nth-child(odd){"+
-                    "        padding-right: 0.5in;"+
-                    "        padding-left: 0.8in;"+
-                    "    }"+
-                    ".pagination-contents-item:nth-child(even){"+
-                    "        padding-right: 0.8in;"+
-                    "        padding-left: 0.5in;"+
-                    "   }";
-                document.head.appendChild(st);
-                var s = document.createElement('script');
-                s.type = "text/javascript";
-                s.src = "public/js/cssregions.min.js";
-                document.head.appendChild(s);
-            }
-
-        }();
-
-    </script>
 
     <script type="text/javascript">
         <?php echo $customConfig;?>
