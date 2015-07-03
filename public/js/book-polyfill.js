@@ -277,7 +277,7 @@
         return randomId;
     };
 
-    pagination.pageStyleSheet = document.createElement('style');
+    //pagination.pageStyleSheet = document.createElement('style');
 
     /**
      * Initiate BookJS by importing user set config options and setting basic
@@ -305,143 +305,6 @@
             returnValue = defaults[configKey];
         }
         return returnValue;
-    };
-
-    /**
-     * Set style for the regions and pages used by BookJS and add it to the
-     * head of the DOM.
-     */
-    /*pagination.setStyle = function () {
-        var style = document.getElementById('flows');
-        if(style==null){
-
-            style = document.createElement('style');
-            style.setAttribute('id', 'flows');
-            document.head.appendChild(style);
-        }
-        style.innerHTML +=
-            ".pagination-main-contents-container {display: -webkit-flex; display: flex; " +
-            "-webkit-flex-direction: column; flex-direction: column;}" +
-            "\n.pagination-contents-container {position: absolute;}" +
-            "\n.pagination-contents {display: -webkit-flex; -webkit-flex: 1; display: flex; flex: 1;}"
-        *//* There seems to be a bug in the new flexbox model code which requires the
-         * height to be set to an arbitrary value (which is ignored).
-         *//* + "\n.pagination-contents {height: 0px;}" +
-            "\n.pagination-contents-column {-webkit-flex: 1; flex: 1;}" +
-                "\nbody {" +
-            "counter-reset: pagination-footnote pagination-footnote-reference;}" +
-            "\n.pagination-footnote::before {" +
-            "counter-increment: pagination-footnote-reference; " +
-            "content: counter(pagination-footnote-reference);}" +
-            "\n.pagination-footnote > * > *:first-child::before {" +
-            "counter-increment: pagination-footnote;" +
-            "content: counter(pagination-footnote);}" +
-            "\n.pagination-footnote > * > * {display: block;}" +
-            "\n.pagination-page {page-break-after: always; position: relative;}" +
-            "\nimg {-webkit-region-break-before: always; break-before: always; " +
-            "-webkit-region-break-after: always; break-after: always;}" +
-            "\n.pagination-pagenumber, .pagination-header {position: absolute;}" +
-            "\n.pagination-pagebreak {-webkit-region-break-after: always; break-after: always;}" +
-            "\n.pagination-simple {height: auto; position: relative;}" +
-            "\n.pagination-page {margin-left:auto; margin-right:auto;}" +
-            "\n.pagination-marginnote-item {position:absolute;}" +
-            "\n.pagination-marginnote > * {display: block;}";
-        document.head.appendChild(stylesheet);
-    };*/
-
-    /**
-     * Set style for a particular page size.
-     */
-    pagination.setPageStyle = function () {
-        var unit = pagination.config('lengthUnit'),
-            marginNotesWidthNumber = pagination.config('marginNotesWidth') * pagination.config('enableMarginNotes'), 
-            marginNotesWidth = marginNotesWidthNumber + unit,
-            marginNotesSeparatorWidthNumber = pagination.config('marginNotesSeparatorWidth') * pagination.config('enableMarginNotes'),
-            marginNotesSeparatorWidth = marginNotesSeparatorWidthNumber + unit,
-            marginNotesVerticalSeperator = !!pagination.config('marginNotesVerticalSeparator') ? pagination.config('marginNotesVerticalSeparator') + unit : '0',
-            contentsWidthNumber = pagination.config('pageWidth') - pagination.config(
-                'innerMargin') - pagination.config('outerMargin') - (marginNotesWidthNumber + marginNotesSeparatorWidthNumber),
-            contentsWidth = contentsWidthNumber + unit,
-            contentsColumnSeparatorWidthNumber = pagination.config('columnSeparatorWidth'),
-            contentsColumnSeparatorWidth = contentsColumnSeparatorWidthNumber + unit,
-            columnWidth = contentsWidthNumber / pagination.config('columns') -
-                (contentsColumnSeparatorWidthNumber * (pagination.config('columns') - 1))
-                + unit,
-            contentsHeightNumber = pagination.config('pageHeight') - pagination
-                .config('contentsTopMargin') - pagination.config(
-                'contentsBottomMargin'),
-            contentsHeight = contentsHeightNumber + unit,
-            pageWidth = pagination.config('pageWidth') + unit,
-            pageHeight = pagination.config('pageHeight') + unit,
-            contentsBottomMargin = pagination.config('contentsBottomMargin') +
-                unit,
-            innerMargin = pagination.config('innerMargin') + unit,
-            outerMargin = pagination.config('outerMargin') + unit,
-            pagenumberBottomMargin = pagination.config('pagenumberBottomMargin') +
-                unit,
-            headerTopMargin = pagination.config('headerTopMargin') + unit,
-            imageMaxHeight = contentsHeightNumber - .1 + unit,
-            imageMaxWidth = contentsWidthNumber - .1 + unit;
-            
-        pagination.pageStyleSheet.innerHTML =
-            ".pagination-page {height:" + pageHeight + "; width:" + pageWidth + ";" + "background-color: transparent;}" +
-            //".pagination-contents-item{height:" + pageHeight +"}" +
-            "\n@page {size:" + pageWidth + " " + pageHeight + ";}" +
-            "\nbody {background-color: #efefef;}"
-        // A .page.simple is employed when CSS Regions are not accessible
-        + "\n.pagination-simple {padding: 1in;}"
-        // To give the appearance on the screen of pages, add a space of .2in
-        //+ "\n@media screen{.pagination-page {border: solid 1px #000; " +
-
-        + "\n@media screen{.pagination-page {border: solid 1px #000; " +
-            "margin-bottom:.2in;}}" +
-            "\n.pagination-main-contents-container {width:" + contentsWidth + ";}" + 
-            "\n.pagination-contents-container {bottom:" + contentsBottomMargin + "; height:" + contentsHeight + "; " +
-                "display: -webkit-flex; display: flex;}"
-        // Images should at max size be slightly smaller than the contentsWidth.
-        + "\nimg {max-height: " + imageMaxHeight + ";max-width: " +
-            imageMaxWidth + ";}" + "\n.pagination-pagenumber {bottom:" +
-            pagenumberBottomMargin + ";}" + "\n.pagination-header {top:" +
-            headerTopMargin + ";}" +
-            "\n#pagination-toc-title:before {content:'Contents';}" +
-            "\n#pagination-tof-title:before {content:'Figures';}" +
-            "\n#pagination-tot-title:before {content:'Tables';}" +
-            "\n.pagination-page:nth-child(odd) .pagination-contents-container, " +
-            ".pagination-page:nth-child(odd) .pagination-pagenumber," +
-            ".pagination-page:nth-child(odd) .pagination-header {" + "right:" +
-            outerMargin + ";left:" + innerMargin + ";}" +
-            "\n.pagination-page:nth-child(even) .pagination-contents-container, " +
-            ".pagination-page:nth-child(even) .pagination-pagenumber," +
-            ".pagination-page:nth-child(even) .pagination-header {" + "right:" +
-            innerMargin + ";left:" + outerMargin + ";}" +
-            "\n.pagination-page:nth-child(odd) .pagination-pagenumber," +
-            ".pagination-page:nth-child(odd) .pagination-header {" +
-            "text-align:right;}" +
-            "\n.pagination-page:nth-child(even) .pagination-pagenumber," +
-            ".pagination-page:nth-child(even) .pagination-header {" +
-            "text-align:left;}" +
-            "\n.pagination-footnote > * > * {font-size: 0.7em; margin:.25em;}" +
-            "\n.pagination-footnote > * > *::before, .pagination-footnote::before " +
-            "{position: relative; top: -0.5em; font-size: 80%;}" +
-            "\n.pagination-toc-entry .pagination-toc-pagenumber, " +
-            ".pagination-tof-entry .pagination-tof-pagenumber, " +
-            ".pagination-tot-entry .pagination-tot-pagenumber {float:right}"
-        /* This seems to be a bug in Webkit. But unless we set the width of the 
-         * original element that is being flown, some elements extend beyond the
-         * mainContentsContainer's width.
-         */ 
-        
-        + "\n.pagination-contents-item {width:" + columnWidth + ";}" +
-            "\n.pagination-frontmatter-contents {width:" + contentsWidth + ";}"
-        + "\n.pagination-contents-column-separator {width:" + contentsColumnSeparatorWidth + ";}" +
-        // Footnotes in non-CSS Regions browsers will render as right margin notes.
-        "\n.pagination-simple .pagination-footnote > span {" +
-            "position: absolute; right: 0in; width: 1in;}" +
-        "\n.pagination-marginnotes, .pagination-marginnote-item {width:" + marginNotesWidth + ";}" +
-        "\n.pagination-marginnote-item {margin-bottom:" + marginNotesVerticalSeperator + ";}" +
-        "\n.pagination-marginnotes-separator {width:" + marginNotesSeparatorWidth + ";}" +
-        "\n.pagination-main-contents-container, .pagination-marginnotes, .pagination-marginnotes-separator {height:" + contentsHeight + ";}";
-        
     };
 
     /** Create a pagecounter. cssClass is the CSS class employed by this page
@@ -1189,6 +1052,7 @@
 
         }
         document.dispatchEvent(pagination.events.layoutFlowFinished);
+
     };
 
     /**
@@ -1375,7 +1239,7 @@
                 this.name,
                 this.pageCounter.cssClass,
                 this.columns));*/
-        this.addPagesLoop(Math.ceil(this.rawdiv.innerText.length/3000));
+        this.addPagesLoop(this.calculatePages());
         //this.addOrRemovePages();
         //this.setupReflow();
         /*this.findAllTopfloats();
@@ -1388,7 +1252,29 @@
         if (pagination.config('numberPages')) {
             this.pageCounter.numberPages();
         }
+        var that = this, div = that.div;
+        this.namedFlow.addEventListener('regionfragmentchange', function(){
+            var pages = div.querySelectorAll('.pagination-contents-column'),
+                counter = 0;
 
+            for (var i = 0; i < pages.length; i++) {
+                if(pagination.getInnerText(pages[i]).length > 0){
+                    counter++;
+                }
+
+            }
+            if(counter>0){
+                that.removeExcessPages(counter)
+
+            }
+
+        });
+
+    };
+
+    flowObject.prototype.calculatePages = function(){
+        var figures = this.rawdiv.querySelectorAll('img');
+        return Math.ceil((this.rawdiv.innerText.length/2000))
     };
 
     /**
@@ -2094,7 +1980,7 @@
             allPages.length; i++) {
             this.div.removeChild(allPages[i]);
         }
-        this.addOrRemovePages(pages);
+        //this.addOrRemovePages(pages);
     };
 
     /**

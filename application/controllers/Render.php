@@ -278,8 +278,8 @@ class Render extends CI_Controller{
                     $css = $this->breakCSS('image{'.$element->style.'}');
                     $this->images[str_replace('graphics/','', $element->src)] = array(
                         'src'=>$element->src,
-                        'height'=>$css['image']['height'],
-                        'width'=>$css['image']['width']
+                        'height'=>empty($css['image']['height']) ? null : $css['image']['height'],
+                        'width'=>empty($css['image']['width']) ? null : $css['image']['width']
                     );
 
                 }
@@ -404,16 +404,22 @@ class Render extends CI_Controller{
 
             if(extension_loaded('gd')){
                 $config['source_image'] = $this->fullPath.'/graphics/'.$key;
-
-                $config['width'] = str_replace('px','',$image['width']);
-                $config['height'] = str_replace('px','',$image['height']);
-
-                $this->load->library('image_lib', $config);
-
-                if ( ! $this->image_lib->resize())
-                {
-                    echo $this->image_lib->display_errors();
+                if(!empty($image['width'])){
+                  $config['width'] = str_replace('px','',$image['width']);
                 }
+                if(!empty($image['height'])){
+                  $config['height'] = str_replace('px','',$image['height']);
+                }
+                if(!empty($config['height']) && is_numeric($config['height']) && !empty($config['width'])
+                  && is_numeric($config['width'])){
+                  $this->load->library('image_lib', $config);
+
+                  if ( ! $this->image_lib->resize())
+                  {
+                    echo $this->image_lib->display_errors();
+                  }
+                }
+
             }
 
         }

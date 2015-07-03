@@ -170,12 +170,14 @@ class Console extends CI_Controller
                             ++$i;
                         }
 
+                        //extra page for every section
+                        $chapterRegions .= $this->getPaginationRegion($chapterCounter);
+                        $chapterCounter++;
                     }
                 }
             }
 
         }
-
         $params = array('book' => $book, 'editablecss' =>$editablecss,
             'hyphen' => $hyphen, 'prettify' => $prettify,
             'fullHTML' => $fullHTML, 'css' => $this->loadCss($dir),
@@ -269,7 +271,7 @@ class Console extends CI_Controller
         $enableMarginNotes = false;
         $marginNotesSeparatorWidth = 0.09;
         $lengthUnit = 'in';
-        $contentsBottomMargin = 0.08;
+        $contentsBottomMargin = 0.8;
         $contentsTopMargin =  0.8;
         $pagenumberBottomMargin = 0.3;
         $headerTopMargin = 0.3;
