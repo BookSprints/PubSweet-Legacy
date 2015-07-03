@@ -35,7 +35,7 @@
     <?php if(isset($prettify) && $prettify):?>
         <script type="text/javascript" src="<?php echo base_url();?>public/js/prettifier/prettify.js"></script>
     <?php endif;?>
-<!--    <script type="text/javascript" src="--><?php //echo base_url();?><!--public/js/cssregions.min.js"></script>-->
+
     <script type="text/javascript">
         <?php echo $customConfig;?>
         <?php if(isset($_GET['h']) && !empty($_GET['h'])):?>

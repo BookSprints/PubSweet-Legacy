@@ -473,8 +473,9 @@ if (!empty($book['id'])):  ?>
     <div id="result" class="row hide">
         <a href="#" id="epub" class="btn btn-block btn-primary hide" target="_blank">Download</a>
         <div class="row-fluid">
-        <a id="bookjs" href="#" class="btn span6 hide" target="_blank">Preview</a>
-        <a id="livecss" href="#" class="btn span6 hide" target="_blank">Experimental Designer</a>
+        <a id="bookjs" href="#" class="btn span4 hide" target="_blank">Preview</a>
+        <a id="bookjs-polyfill" href="#" class="btn span4 hide" target="_blank">Preview with polyfill</a>
+        <a id="livecss" href="#" class="btn span4 hide" target="_blank">Experimental Designer</a>
         </div>
 </div>
 <!--<div class="container">

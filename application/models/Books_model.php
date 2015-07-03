@@ -156,7 +156,7 @@ class Books_model extends CI_Model
 
     public function updateOwner()
     {
-        $this->db->where('book_id', $this->input->post('book_id'));
+        $this->db->where('id', $this->input->post('book_id'));
         return $this->db->update('books', array('owner'=>$this->input->post('owner')));
 
     }

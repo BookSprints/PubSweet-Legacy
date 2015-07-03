@@ -171,7 +171,7 @@
         },
         end: function(){
             var $result = $('#result');
-            driver.createPreviewURL($result.find('#bookjs'));
+            driver.createPreviewURL($result.find('#bookjs'), $result.find('#bookjs-polyfill'));
             driver.createLiveCSSURL($result.find('#livecss'));
             $result.find('#epub').attr('href', driver.url).removeClass('hide');
             $result.show();
@@ -185,21 +185,35 @@
          * Handle the options related to the creation of the pdf preview
          * @param $link
          */
-        createPreviewURL: function($link){
+        createPreviewURL: function($link, $polyfill){
             if($('#create-bookjs').is(':checked')){
                 var token = $('#settings-token').val();
                 $.post('console/saveSettings', {'bookjs-config': $('#bookjs-config').val(), 'settings-token': token}, function(){
-                    $link.attr('href', 'console/preview/'+driver.bookname+'/'
-                    + token + '/'
-                    +($('#editablecss').is(':checked')?1:0)+'/'
-                    +($('#hyphen').is(':checked')?1:0)+'/'
-                    +($('#prettify').is(':checked')?1:0)
-                    +'/?a=1'//only a placeholder
-                    +($('#pageWidth').val()!=7.44?'&w='+$('#pageWidth').val():'')
-                    +($('#pageHeight').val()!=9.68?'&h='+$('#pageHeight').val():'')
-                    +($('#lengthUnit').val()!='in'?'&u='+$('#lengthUnit').val():'')
-                    +($('#language').val()!='en-US'?'&l='+$('#language').val():''))
-                        .removeClass('hide');
+
+                        $link.attr('href', 'console/preview/'+driver.bookname+'/'
+                            + token + '/'
+                            +($('#editablecss').is(':checked')?1:0)+'/'
+                            +($('#hyphen').is(':checked')?1:0)+'/'
+                            +($('#prettify').is(':checked')?1:0)
+                            +'/?a=1'//only a placeholder
+                            +($('#pageWidth').val()!=7.44?'&w='+$('#pageWidth').val():'')
+                            +($('#pageHeight').val()!=9.68?'&h='+$('#pageHeight').val():'')
+                            +($('#lengthUnit').val()!='in'?'&u='+$('#lengthUnit').val():'')
+                            +($('#language').val()!='en-US'?'&l='+$('#language').val():''))
+                                .removeClass('hide');
+
+                    $polyfill.attr('href', 'console/polyfill/'+driver.bookname+'/'
+                        + token + '/'
+                        +($('#editablecss').is(':checked')?1:0)+'/'
+                        +($('#hyphen').is(':checked')?1:0)+'/'
+                        +($('#prettify').is(':checked')?1:0)
+                        +'/?a=1'//only a placeholder
+                        +($('#pageWidth').val()!=7.44?'&w='+$('#pageWidth').val():'')
+                        +($('#pageHeight').val()!=9.68?'&h='+$('#pageHeight').val():'')
+                        +($('#lengthUnit').val()!='in'?'&u='+$('#lengthUnit').val():'')
+                        +($('#language').val()!='en-US'?'&l='+$('#language').val():''))
+                            .removeClass('hide');
+
                 });
 
             }

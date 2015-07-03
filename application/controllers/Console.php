@@ -60,7 +60,7 @@ class Console extends CI_Controller
         }
     }
 
-    public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false)
+    public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false, $polyfill = false)
     {
         require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
         if (isset($book)) {
@@ -72,7 +72,17 @@ class Console extends CI_Controller
                     $xml = new SimpleXMLElement($toc);
                     $sections = array();
                     $fullHTML = '';
+                    $chapterRegions = '';
+                    $chapterCounter = 0;
+                    $chapterRegions = ' .pagination-frontmatter-layout .pagination-contents-column {
+                            flow-from: pagination-frontmatter;
+                        }
 
+                        .pagination-frontmatter-contents {
+                                            flow-into: pagination-frontmatter;
+                        } ';
+                    $chapterRegions .= $this->getPaginationRegion($chapterCounter);//TOC
+                    $chapterCounter++;
                     foreach ($xml->navMap->navPoint as $navPoint) {
                         $sectionId = $navPoint->content->attributes()->src[0];
                         $sectionPage = '<div class="section">';
@@ -88,6 +98,8 @@ class Console extends CI_Controller
                         $i=0;
 
                         while(isset($navPoint->navPoint[$i])){
+                            $chapterRegions .= $this->getPaginationRegion($chapterCounter);
+                            $chapterCounter++;
                             $chapter = $navPoint->navPoint[$i];
                             $entry = (string) $chapter->content->attributes()->src[0];
 
@@ -158,22 +170,204 @@ class Console extends CI_Controller
                             ++$i;
                         }
 
+                        //extra page for every section
+                        $chapterRegions .= $this->getPaginationRegion($chapterCounter);
+                        $chapterCounter++;
                     }
                 }
             }
 
         }
-
         $params = array('book' => $book, 'editablecss' =>$editablecss,
             'hyphen' => $hyphen, 'prettify' => $prettify,
             'fullHTML' => $fullHTML, 'css' => $this->loadCss($dir),
             'js'=>$this->loadExtraJs($dir),
-            'customConfig'=>$this->loadConfig($identifier, $xml->docTitle->text));
+            'customConfig'=>$this->loadConfig($identifier, $xml->docTitle->text),
+            'chapterRegions'=>$chapterRegions,
+            'pageStyles'=>$this->getPageStyle());
+
         if(isset($xml)){
             $params['bookTitle'] = $xml->docTitle->text;
         }
 
-        $this->load->view('console/preview', $params);
+        if($polyfill){
+            $this->load->view('console/preview-polyfill', $params);
+
+        }else{
+            $this->load->view('console/preview', $params);
+
+        }
+    }
+
+    public function polyfill($book, $identifier, $editablecss, $hyphen, $prettify=false)
+    {
+        $this->preview($book, $identifier, $editablecss, $hyphen, $prettify, true);
+    }
+
+    /**
+     * Parse a region definition
+     * @param $i
+     * @return string
+     */
+    private function getPaginationRegion($i)
+    {
+        return '.pagination-body-'.$i.'-layout .pagination-contents-column {
+                    flow-from: pagination-body-'.$i.';
+                }
+                .pagination-body-'.$i.'-contents {
+                    flow-into: pagination-body-'.$i.';
+                }
+                ';//let stay this space, for future concatenations
+    }
+    
+    private function getPageStyle(/*$pageHeight, $pageWidth, $contentsWidth, $contentsBottomMargin,
+        $contentsHeight, $imageMaxHeight, $imageMaxWidth, $pagenumberBottomMargin, $headerTopMargin,
+        $headerTopMargin, $innerMargin, $outerMargin, $columnWidth, $contentsColumnSeparatorWidth,
+        $marginNotesWidth, $marginNotesVerticalSeperator, $marginNotesSeparatorWidth*/){
+
+        /*defaults = {
+            // pagination.config starts out with default config options.
+            'sectionStartMarker': 'h1',
+            'sectionTitleMarker': 'h1',
+            'chapterStartMarker': 'h2',
+            'chapterTitleMarker': 'h2',
+            'flowElement': 'document.body',
+            'alwaysEven': false,
+            'columns': 1,
+            'enableFrontmatter': true,
+            'enableTableOfFigures': false,
+            'enableTableOfTables': false,
+            'enableMarginNotes': false,
+            'bulkPagesToAdd': 50,
+            'pagesToAddIncrementRatio': 1.4,
+            'frontmatterContents': '',
+            'autoStart': true,
+            'numberPages': true,
+            'divideContents': true,
+            'footnoteSelector': '.pagination-footnote',
+            'topfloatSelector': '.pagination-topfloat',
+            'marginnoteSelector': '.pagination-marginnote',
+            'maxPageNumber': 10000,
+            'columnSeparatorWidth': 0.09,
+            'outerMargin': 0.5,
+            'innerMargin': 0.8,
+            'contentsTopMargin': 0.8,
+            'headerTopMargin': 0.3,
+            'contentsBottomMargin': 0.8,
+            'pagenumberBottomMargin': 0.3,
+            'pageHeight': 8.3,
+            'pageWidth': 5.8,
+            'marginNotesWidth': 1.0,
+            'marginNotesSeparatorWidth': 0.09,
+            'marginNotesVerticalSeparator': 0.09,
+            'lengthUnit': 'in'
+        };*/
+
+        $pageHeight = 9.68;
+        $pageWidth = 7.44;
+        $innerMargin = 0.8;
+        $outerMargin = 0.5;
+        $marginNotesWidth = 1.0;
+        $enableMarginNotes = false;
+        $marginNotesSeparatorWidth = 0.09;
+        $lengthUnit = 'in';
+        $contentsBottomMargin = 0.8;
+        $contentsTopMargin =  0.8;
+        $pagenumberBottomMargin = 0.3;
+        $headerTopMargin = 0.3;
+        $columns = 1;
+        $columnSeparatorWidth = 0.09;
+        $marginNotesVerticalSeparator = 0.09;
+
+
+        $unit = $lengthUnit;
+        $pageHeight = $pageHeight.$unit;
+        $pageWidth = $pageWidth.$unit;
+        $marginNotesWidthNumber = $enableMarginNotes ? $marginNotesWidth : 0;
+        $marginNotesSeparatorWidth = $enableMarginNotes ? $marginNotesSeparatorWidth : 0;
+        $marginNotesSeparatorWidthNumber = $enableMarginNotes ? $marginNotesSeparatorWidth : 0;
+
+        $contentsWidthNumber = $pageWidth - $innerMargin - $outerMargin -
+            ($marginNotesWidthNumber + $marginNotesSeparatorWidthNumber);
+        $contentsHeightNumber = $pageHeight - $contentsTopMargin - $contentsBottomMargin;
+        $contentsColumnSeparatorWidthNumber = $columnSeparatorWidth;
+
+        $contentsWidth = $contentsWidthNumber . $unit;
+        $contentsBottomMargin = $contentsBottomMargin.$unit;
+        $contentsHeight = $contentsHeightNumber . $unit;
+        $imageMaxHeight = ($contentsHeightNumber - 0.1) . $unit;
+        $imageMaxWidth = ($contentsWidthNumber - 0.1) . $unit;
+        $pagenumberBottomMargin = $pagenumberBottomMargin . $unit;
+        $headerTopMargin = $headerTopMargin.$unit;
+        $innerMargin = $innerMargin.$unit;
+        $outerMargin = $outerMargin.$unit;
+        $columnWidth = $contentsWidthNumber / $columns -
+            ($contentsColumnSeparatorWidthNumber * ($columns - 1))
+            + $unit;
+        $contentsColumnSeparatorWidth = $contentsColumnSeparatorWidthNumber.$unit;
+        $marginNotesWidth = $marginNotesWidthNumber.$unit;
+        $marginNotesVerticalSeparator = !!$marginNotesVerticalSeparator ? $marginNotesVerticalSeparator . $unit : 0;
+        $marginNotesSeparatorWidth = $marginNotesSeparatorWidth.$unit;
+
+
+        return ".pagination-page {height:" . $pageHeight . "; width:" . $pageWidth . ";" . "background-color: white;}" .
+//        ".pagination-contents-item{height:" . $pageHeight ."}" .
+        "\n@page {size:" . $pageWidth . " " . $pageHeight . ";}" .
+        "\nbody {background-color: #efefef;}"
+        // A .page.simple is employed when CSS Regions are not accessible
+        . "\n.pagination-simple {padding: 1in;}"
+        // To give the appearance on the screen of pages, add a space of .2in
+        //. "\n@media screen{.pagination-page {border: solid 1px #000; " .
+
+        . "\n@media screen{.pagination-page {border: solid 1px #000; " .
+        "margin-bottom:.2in;}}" .
+        "\n.pagination-main-contents-container {width:" . $contentsWidth . ";}" .
+        "\n.pagination-contents-container {bottom:" . $contentsBottomMargin . "; height:" . $contentsHeight . "; " .
+        "display: -webkit-flex; display: flex;}"
+        // Images should at max size be slightly smaller than the contentsWidth.
+        . "\nimg {max-height: " . $imageMaxHeight . ";max-width: " .
+        $imageMaxWidth . ";}" . "\n.pagination-pagenumber {bottom:" .
+        $pagenumberBottomMargin . ";}" . "\n.pagination-header {top:" .
+        $headerTopMargin . ";}" .
+        "\n#pagination-toc-title:before {content:'Contents';}" .
+        "\n#pagination-tof-title:before {content:'Figures';}" .
+        "\n#pagination-tot-title:before {content:'Tables';}" .
+        "\n.pagination-page:nth-child(odd) .pagination-contents-container, " .
+        ".pagination-page:nth-child(odd) .pagination-pagenumber," .
+        ".pagination-page:nth-child(odd) .pagination-header {" . "right:" .
+        $outerMargin . ";left:" . $innerMargin . ";}" .
+        "\n.pagination-page:nth-child(even) .pagination-contents-container, " .
+        ".pagination-page:nth-child(even) .pagination-pagenumber," .
+        ".pagination-page:nth-child(even) .pagination-header {" . "right:" .
+        $innerMargin . ";left:" . $outerMargin . ";}" .
+        "\n.pagination-page:nth-child(odd) .pagination-pagenumber," .
+        ".pagination-page:nth-child(odd) .pagination-header {" .
+        "text-align:right;}" .
+        "\n.pagination-page:nth-child(even) .pagination-pagenumber," .
+        ".pagination-page:nth-child(even) .pagination-header {" .
+        "text-align:left;}" .
+        "\n.pagination-footnote > * > * {font-size: 0.7em; margin:.25em;}" .
+        "\n.pagination-footnote > * > *::before, .pagination-footnote::before " .
+        "{position: relative; top: -0.5em; font-size: 80%;}" .
+        "\n.pagination-toc-entry .pagination-toc-pagenumber, " .
+        ".pagination-tof-entry .pagination-tof-pagenumber, " .
+        ".pagination-tot-entry .pagination-tot-pagenumber {float:right}"
+        /* This seems to be a bug in Webkit. But unless we set the width of the 
+         * original element that is being flown, some elements extend beyond the
+         * mainContentsContainer's width.
+         */
+
+        . "\n.pagination-contents-item {width:" . $columnWidth . ";}" .
+        "\n.pagination-frontmatter-contents {width:" . $contentsWidth . ";}"
+        . "\n.pagination-contents-column-separator {width:" . $contentsColumnSeparatorWidth . ";}" .
+        // Footnotes in non-CSS Regions browsers will render as right margin notes.
+        "\n.pagination-simple .pagination-footnote > span {" .
+        "position: absolute; right: 0in; width: 1in;}" .
+        "\n.pagination-marginnotes, .pagination-marginnote-item {width:" . $marginNotesWidth . ";}" .
+        "\n.pagination-marginnote-item {margin-bottom:" . $marginNotesVerticalSeparator . ";}" .
+        "\n.pagination-marginnotes-separator {width:" . $marginNotesSeparatorWidth . ";}" .
+        "\n.pagination-main-contents-container, .pagination-marginnotes, .pagination-marginnotes-separator {height:" . $contentsHeight . ";}";
+
     }
 
     /**
