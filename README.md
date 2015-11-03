@@ -64,7 +64,7 @@ Go to `http://YourInstallation/install/` and follow the instructions. After exec
 
 In your favorite browser, got to your new PubSweet site
 
-Broadcaster () installation
+Broadcaster installation (optional)
 ===================
 
 Install [nodejs](http://nodejs.org/download/) 

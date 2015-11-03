@@ -37,7 +37,7 @@ if ($_POST) {
             $redir .= "://" . $_SERVER['HTTP_HOST'];
             $redir .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
             $redir = str_replace('install/', '', $redir);
-            header('Location: ' . $redir . 'welcome');
+            header('Location: ' . $redir . 'register/user');
         }
 
     } else {
