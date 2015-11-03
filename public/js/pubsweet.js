@@ -864,7 +864,7 @@
 //                                driver.book.reorder();
                         });
 
-                        $.post("sections/update", data, function (response) {
+                        $.post("section/update", data, function (response) {
 //                            $('#result').html(response);
                             broadcast.emit('move-section', newPositions);
                         });
@@ -892,6 +892,7 @@
                         },
                         success:function(response){
                             var data = JSON.parse(response);
+                            $(this).attr('title', data.title);
                             broadcast.emit('updateTitleChapter',data);
                         }
                     });
@@ -902,7 +903,7 @@
                         type: 'text',
                         mode: 'inline',
                         toggle: 'dblclick',
-                        url: 'sections/changeName',
+                        url: 'section/changeName',
                         params: function (params) {
                             var data = {};
                             data['title'] = params.value;
@@ -935,10 +936,10 @@
                             $('#StatusList').empty();
                             for(var item in response){
                                 var data ={
-                                    id:response[item].id,
-                                    title:response[item].title,
-                                    status:response[item].status === "1"?'checked':'',
-                                    user_id:response[item].user_id
+                                    id: response[item].id,
+                                    title: response[item].title,
+                                    status: response[item].status === "1"?'checked':'',
+                                    user_id: response[item].user_id
                                 };
                                 $('#StatusList').append(addStatus(data));
                             }
@@ -1123,9 +1124,18 @@
                                 $('.modal').modal('hide');
                                 $(".chapters").sortable('refresh');
                                 $this.get(0).reset();
+                                $('.alert').hide();
+                            }else{
+                                $('.alert').text('An error has occurred');
                             }
+
+                        }, 'json')
+                        .always(function(resp){
                             $this.find(":submit").button('reset');
-                        }, 'json');
+                        })
+                        .error(function(resp){
+                            $('.alert').text('An error has occurred').show();
+                        });
                     }
 
                     return false;
@@ -1157,7 +1167,7 @@
                 $('body').on('click','.delete-section', function(){
                     var $this = $(this);
                     if(confirm('Are you sure?')){
-                        $.post('sections/delete_section', {section_id: $this.data('id')}, function(response){
+                        $.post('section/delete_section', {section_id: $this.data('id')}, function(response){
                             if(response.ok)
                             {
                                 driver.book.deleteSection(response);
@@ -1220,8 +1230,9 @@
                                 return;
                             }
                             var $edit = $('li.chapter[data-id="'+item.chapter_id+'"]').find('.edit'),
-                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: item.user.names+' is editing',
-                                    'title': item.user.names+' is editing'});
+                                editorName = item.user.names=='' ? item.user.username : item.user.names,
+                                $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName+' is editing',
+                                    'title': editorName+' is editing'});
 
                             $edit.replaceWith($newEdit);
                         });
@@ -1229,8 +1240,9 @@
 
                     io.socket.on('lock-wysi', function(data){
                         var $edit = $('li.chapter[data-id="'+data.chapter_id+'"]').find('.edit'),
-                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: data.user.names+' is editing',
-                                'title': data.user.names+' is editing'});
+                            editorName = data.user.names==''?data.user.username:data.user.names,
+                            $newEdit = $('<span></span>', {"class":'edit chapter-disabled', text: editorName + ' is editing',
+                                'title': editorName + ' is editing'});
 
                         $edit.replaceWith($newEdit);
                     });
@@ -1403,7 +1415,7 @@
                 $('.section[data-id="'+data.id+'"]').find('.name').text(data.title);
             },
             updateTitleChapter:function(data){
-                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title);
+                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title).attr('title', title);
             },
             drawSection: function (data) {
                 if(driver.book.id==data.book_id){
@@ -1899,6 +1911,55 @@
                         .style("text-anchor", "end")
                         .text("Words ($)");
                 });
+            },
+            /**
+             * controller / action
+             */
+            full: function(){
+                $('.undo').on('click', function(){
+                    var $this = $(this);
+                    $.post($this.attr('href'), function(resp){
+                       if(resp.ok){
+                           $this.parents('.deleted').removeClass('deleted');
+                           $this.remove();
+                       }
+                    }, 'json');
+                    return false;
+                })
+            },
+            /**
+             * controller / action
+             */
+            findReplace: function(){
+                var $currentChapter = null,
+                    $contents = $('#contents');
+                $('#down').on('click', function(){
+                    $contents.highlight($('#find').val(), 'next', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#up').on('click', function(){
+                    $contents.highlight($('#find').val(), 'previous', function(node){
+                        var $node = $(node);
+                        $currentChapter = $node.parents('.chapter');
+                        $(window).scrollTop($node.offset().top - 250);
+                    });
+                    return false;
+                });
+                $('#single-replace').on('click', function(){
+                    $.post('chapter/replace/'+$currentChapter.data('id')
+                        + '/' + $('#find').val() + '/' + $('#replace').val(),
+                    function(resp){
+                        if(resp.ok){
+                            $currentChapter.html(resp.content);
+                        }
+                    },'json');
+                    return false;
+                });
+
             }
 
         },
@@ -1964,7 +2025,7 @@
                     }
                 });
                 $(function(){
-                    $.getJSON('user/getUsersInfo',function(response){
+                    $.getJSON('user/getUsersInfo', function(response){
                         sessionStorage.username = response.username;
                     });
                     localStorage.removeItem('term');
@@ -2427,9 +2488,7 @@
                                 .removeAttr('style');
                         });
                     return false;
-                }).error(function () {
-                        $this.find(':submit').button('reset');
-                    });
+                });
                 driver.addAsync('ckeditor', function () {
                     if (typeof CKEDITOR !== "undefined") {
                         $.ajax({
@@ -2445,10 +2504,10 @@
 
                         });
 
-
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
+                            extraAllowedContent: '* [id]',
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
                                     items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
@@ -2477,7 +2536,7 @@
                             extraPlugins: 'imagebrowser,backup,placeholder,indentlist,eqneditor,specialchar,customautosave,insertpre,tabletools'/*,customlanguage'*/,
                             resize_enabled: false,
                             contentsCss: "public/css/custom_ckeditor.css",
-                            imageBrowser_listUrl: $('base').attr('href')+"book/images/"+driver.parameters[0],
+                            imageBrowser_listUrl: "book/images/"+driver.parameters[0],
 
                             height: '75vh',
                             magicline_color: '#666',
@@ -2492,12 +2551,13 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : $('base').attr('href')+'editor/uploadImage/'+driver.parameters[0],
+                            filebrowserImageUploadUrl : 'editor/uploadImage/'+driver.parameters[0],
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
-                            autoSaveOptionUrl: '/book/saveUserConfig/'+driver.parameters[0],
+                            autoSaveOptionUrl: 'book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),
                             flags: window.myflags,
-                        }
+                            baseHref: $('base').attr('href')
+                        };
                         $('#editor').ckeditor(config);
                     }
                 });
@@ -2620,8 +2680,7 @@
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             filebrowserImageUploadUrl : 'editor/uploadImage',
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote"
-
-                        }
+                        };
                         CKEDITOR.inline('editor', config);
 //                        $('#editor').ckeditor(config);
 

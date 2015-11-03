@@ -14,7 +14,7 @@
     <li class="section" data-id="{{id}}" data-order="{{order}}">
         <h3 class="section-name"><span class="name editable editable-click">{{title}}</span>
             <span class="pull-right" >
-               <a href="<?php echo base_url('sections/delete_section/'); ?>"
+               <a href="<?php echo base_url('section/delete_section/'); ?>"
                   class="delete-section" data-id="{{id}}">&times;</a>
             </span>
             <a data-toggle="collapse" data-target="#section-chapters-{{id}}"
@@ -217,25 +217,6 @@
     </li>
 </script>
 
-<!--<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery-2.0.2.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/bootstrap-editable.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/chosen.jquery.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery-ui-1.10.3.custom.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery.validationEngine.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/jquery.validationEngine-en.js"></script>-->
-
-
-<!-- File Uploader -->
-<!--<script src="<?php /*echo base_url(); */?>public/js/jquery.ui.widget.js"></script>
-<script src="<?php /*echo base_url(); */?>public/js/jquery.iframe-transport.js"></script>
-<script src="<?php /*echo base_url(); */?>public/js/jquery.fileupload.js"></script>-->
-
-<!-- next script are not jquery dependent-->
-<!--<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/d3.v3.min.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/handlebars.js"></script>
-<script type="text/javascript" src="<?php /*echo base_url(); */?>public/js/timeago.js"></script>-->
-
 <script type="text/javascript" src="public/js/pubsweet-libs.js"></script>
 
 <?php
@@ -252,8 +233,8 @@ if(empty($serverNodeJS)){
     }
 </script>
 
-<script type="text/javascript" src="public/js/pubsweet.js"></script>
-<!--<script type="text/javascript" src="--><?php //echo base_url(); ?><!--public/js/pubsweet.min.js"></script>-->
+<!--<script type="text/javascript" src="public/js/pubsweet.js"></script>-->
+<script type="text/javascript" src="public/js/pubsweet.min.js"></script>
 
 <script type="text/javascript" src="<?php echo $serverNodeJS;?>socket.io/socket.io.js" async onload="broadcast.init()"></script>
 <script src="public/ckeditor/ckeditor.js" async onload="driver.execAsync('ckeditor');"></script>

@@ -81,3 +81,6 @@ $lang['history'] = 'History';
 $lang['lock'] = 'Lock';
 $lang['unlock'] = 'Unlock';
 $lang['copy'] = 'Copy';
+$lang['images'] = 'Images';
+$lang['full-content'] = 'Full Content';
+$lang['find-replace'] = 'Find/Replace';

@@ -49,4 +49,40 @@ class Core {
 			return false;
 		}
 	}
+
+	// Function to write the config file
+	function writeJSConfig($data=null) {
+
+		// Config path
+		include('config/js.php');
+		$output_path 	= '../public/js/config.js';
+
+		// Open the file
+		/*$database_file = file_get_contents($template_path);
+
+		$new  = str_replace("%HOSTNAME%",$data['hostname'],$database_file);
+		$new  = str_replace("%USERNAME%",$data['username'],$new);
+		$new  = str_replace("%PASSWORD%",$data['password'],$new);
+		$new  = str_replace("%DATABASE%",$data['database'],$new);*/
+
+		// Write the new database.php file
+		$handle = fopen($output_path,'w+');
+
+		// Chmod the file, in case the user forgot
+		@chmod($output_path,0777);
+
+		// Verify file permissions
+		if(is_writable($output_path)) {
+
+			// Write the file
+			if(fwrite($handle, 'var conf = '.json_encode($conf))) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} else {
+			return false;
+		}
+	}
 }

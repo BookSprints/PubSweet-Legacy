@@ -34,7 +34,7 @@
                                     <span class="name editable editable-click"><?php echo $section['title']; ?></span>
                                     <?php if($isBookOwner || $isFacilitator ):?>
                                     <span class="pull-right" >
-                                        <a href="<?php echo base_url('sections/delete_section/'); ?>"  class="delete-section" data-id="<?php echo $section['id']; ?>">&times;</a>
+                                        <a href="<?php echo base_url('section/delete_section/'); ?>"  class="delete-section" data-id="<?php echo $section['id']; ?>">&times;</a>
                                     </span>
                                     <?php endif;?>
                                     <small class='pull-right section-preview'>
@@ -115,7 +115,7 @@
                                                         <?php
                                                         endif;
 
-                                                        if ($isBookOwner || $reviewer):?>
+                                                        if (($isBookOwner || $reviewer) && $item['editor_id']==1 /*lexicon*/):?>
                                                             <a href="<?php echo base_url('chapter/review/' . $item['id']); ?>"><?php echo $this->lang->line('review'); ?></a>
                                                         <?php endif; ?>
 
@@ -143,7 +143,7 @@
 
 <div class="modals">
     <div class="modal hide fade" id="create-section-modal">
-        <form id="create-section" action="<?php echo base_url('sections/save'); ?>" method="post"
+        <form id="create-section" action="<?php echo base_url('section/save'); ?>" method="post"
               class="modal-form">
             <input type="hidden" name="book_id" value="<?php echo $id; ?>">
 
@@ -201,7 +201,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-
+                <div class="alert hide"></div>
                 <a href="#" class="btn" data-dismiss="modal"><?php echo $this->lang->line('cancel'); ?></a>
                 <button type="submit" class="btn btn-primary" data-loading-text="Creating..." id="chapter-create">
                     <?php echo $this->lang->line('create'); ?>
@@ -349,4 +349,5 @@
         <div class="modal-footer"></div>
     </div>
 
+</div>
 </div>

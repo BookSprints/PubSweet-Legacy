@@ -132,11 +132,11 @@ var pubsweetAdvanced = io
             var length = currentlyEditing.length;
             for(var i = 0; i<length; i++){
                 if(currentlyEditing[i]==null){
-                    delete currentlyEditing[i];
+                    currentlyEditing.splice(i, 1);
                     continue;
                 }
                 if(currentlyEditing[i]!=undefined && currentlyEditing[i].chapter_id==data.chapter_id){
-                    delete currentlyEditing[i];
+                    currentlyEditing.splice(i, 1);
                 }
             }
         });
@@ -150,7 +150,8 @@ app.get('/pubsweetbackend/editing-sections', function (req, res) {
     var length = currentlyEditing.length,
         chapters = [];
     for(var i = 0; i<length; i++){
-        if(currentlyEditing[i]==undefined){
+        if(currentlyEditing[i]==undefined||currentlyEditing[i]==null){
+            delete currentlyEditing[i];
             continue;
         }
         if(chapters.indexOf(currentlyEditing[i])==-1){

@@ -1,5 +1,10 @@
+<?php
+    $lang = $this->session->userdata('lang_iso_code');
+    $lang = empty($lang) ? 'en' : $lang;
+?>
 <!DOCTYPE html>
-<html dir="<?php echo $this->session->userdata('lang_dir');?>" lang="<?php echo $this->session->userdata('lang_iso_code');?>">
+<html dir="<?php echo $this->session->userdata('lang_dir');?>"
+      lang="<?php echo $lang;?>">
 <head>
 <meta charset="utf-8">
 <base href="<?php echo base_url();?>">
@@ -58,13 +63,6 @@
         font-style: italic;
     }*/
 </style>
-<!--<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap.min.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap-wysihtml5.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/chosen.css"/>
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/jquery-ui-1.10.3.custom.min.css">
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/validationEngine.jquery.css">
-<link rel="stylesheet" href="<?php /*echo base_url(); */?>public/css/bootstrap-editable.css"/>-->
-
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>public/css/pubsweet-libs.min.css"/>
 

@@ -14,28 +14,6 @@
  */
 
 (function() {
-	var customautosaveOptionsCmd = {
-		readOnly: 1,
-
-		exec: function( editor ) {
-			if ( editor.fire( 'savebutton' ) ) {
-                var $this = $(editor.element.$);
-                $.post($this.data('action-url'), {'content': $this.html(), 'id': $this.data('chapter')}, function(resp){
-                    if(resp.ok){
-                        alert('Well done');
-                    }
-                },'json')
-			}
-		}
-	};
-//    var backCmd = {
-//		readOnly: 1,
-//
-//		exec: function( editor ) {
-//			 editor.fire( 'back' );
-//            window.location.href = $(editor.element.$).data('back-url');
-//		}
-//	};
 
     CKEDITOR.dialog.add( 'customautosaveOptionsDialog', function( editor )
     {
@@ -77,17 +55,18 @@
                 this.commitContent(data);
                 $.post(editor.config.autoSaveOptionUrl, data, function(resp){
                     if(resp.ok){
-                        CKEDITOR.config.autoSaveOptionTime = data.time;
+                        editor.config.autoSaveOptionTime = parseInt(data.time);
+                        CKEDITOR.config.autoSaveOptionTime = parseInt(data.time);//UI was not refreshing
                         startTimer(editor);
                     }
-                });
+                }, 'json');
             }
         };
     });
 
 	var pluginName = 'customautosave';
 
-	// Register a plugin named "save".
+	// Register a plugin named "customautosave".
 	CKEDITOR.plugins.add( pluginName, {
 //		lang: 'af,ar,bg,bn,bs,ca,cs,cy,da,de,el,en,en-au,en-ca,en-gb,eo,es,et,eu,fa,fi,fo,fr,fr-ca,gl,gu,he,hi,hr,hu,id,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt,pt-br,ro,ru,si,sk,sl,sq,sr,sr-latn,sv,th,tr,ug,uk,vi,zh,zh-cn', // %REMOVE_LINE_CORE%
         lang: 'en',
@@ -95,9 +74,7 @@
 		hidpi: true, // %REMOVE_LINE_CORE%
 		init: function( editor ) {
             CKEDITOR.config.autoSaveOptionTime = editor.config.autoSaveOptionTime
-//			editor.addCommand( pluginName, customautosaveOptionsCmd );
             editor.addCommand( 'customautosaveOptionsDialog', new CKEDITOR.dialogCommand( 'customautosaveOptionsDialog' ) );
-//			editor.addCommand( 'back', backCmd );
 
 			editor.ui.addButton && editor.ui.addButton( 'CustomautosaveOptions', {
 				label: 'Auto Save',
@@ -105,22 +82,17 @@
 				toolbar: 'document,10'
 			});
             startTimer(editor);
-//            editor.ui.addButton && editor.ui.addButton( 'Backbutton', {
-//				label: 'Back',
-//				command: 'back',
-//				toolbar: 'document,10'
-//			});
 		}
 	});
 
     var timeOutId = 0,
         startTimer = function (editor) {
             if (timeOutId) {
-                clearTimeout(timeOutId);
+                clearInterval(timeOutId);
             }
             var delay = editor.config.autoSaveOptionTime != null ? editor.config.autoSaveOptionTime : 0;
-            if(delay>0){
-                timeOutId = setTimeout(function(){
+            if(delay > 0 ){
+                timeOutId = setInterval(function(){
                     editor.fire('save');
                 }, delay * 1000);
             }

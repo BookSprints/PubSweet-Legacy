@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Preview - <?php echo $bookTitle;?></title>
+    <base href="<?php echo base_url();?>">
     <!--    <link rel="stylesheet" href="https://raw.github.com/sourcefabric/BookJS/0.25.0/book.css">-->
     <?php if(isset($prettify) && $prettify):?>
         <link rel="stylesheet" href="<?php echo base_url();?>public/js/prettifier/prettify.css"/>
@@ -34,28 +35,9 @@
     <?php if(isset($prettify) && $prettify):?>
         <script type="text/javascript" src="<?php echo base_url();?>public/js/prettifier/prettify.js"></script>
     <?php endif;?>
-<!--    <script type="text/javascript" src="--><?php //echo base_url();?><!--public/js/cssregions.min.js"></script>-->
-    <script type="text/javascript">
-        window.paginationConfig = {
-            'sectionStartMarker': 'div.section',
-            'sectionTitleMarker': 'h1.sectiontitle',
-            'chapterStartMarker': 'div.chapter',
-            'chapterTitleMarker': 'h1.chaptertitle',
-            'flowElement': "document.getElementById('flow')",
-            'alwaysEven': false,
-            'enableFrontmatter': true,
-            'bulkPagesToAdd': 50,
-            'pagesToAddIncrementRatio': 1.4,
-            'pageHeight': 9.68,
-            'pageWidth': 7.44,
-            'lengthUnit: ': 'in',
-            'oddAndEvenMargins': false,
-            'frontmatterContents': '<h1><?php echo $bookTitle;?></h1>'
-                + '<div class="pagination-pagebreak"></div>',
-            'autoStart': true,
-            'polyfill': true
 
-        };
+    <script type="text/javascript">
+        <?php echo $customConfig;?>
         <?php if(isset($_GET['h']) && !empty($_GET['h'])):?>
         paginationConfig.pageHeight = <?php echo sprintf('%f',$_GET['h']);?>;
         <?php endif;?>
@@ -69,7 +51,7 @@
 
     <script type="text/javascript" src="<?php echo base_url();?>public/js/book.js"></script>
     <style>
-        @media print {
+        /*@media print {
             .pagination-page{
                 margin-right: 0;
                 margin-left: 0;
@@ -77,8 +59,17 @@
                 border: none;
                 margin-bottom: 0;
             }
-        }
+        }*/
     </style>
+    <?php
+    if(!empty($js)):
+    foreach ($js as $key=>$item) :?>
+        <script src="console/js/<?php echo $book;?>/<?php echo $key;?>"></script>
+
+    <?php
+    endforeach;
+    endif;
+    ?>
 </head>
 <body
     <?php if(isset($prettify) && $prettify):?>
