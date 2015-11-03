@@ -1095,7 +1095,7 @@
                 setTimeout(redoToc, 0);
                 
             });
-            document.fontloader.addEventListener('loadingdone', function() {
+                document.fontloader.addEventListener('loadingdone', function() {
                 // When fonts have been loaded, update the body layout.
                 // TODO: This does not seem to work at all times. 
                 document.body.dispatchEvent(pagination.events.bodyLayoutUpdated);
@@ -1149,7 +1149,7 @@
         } else {
             returnValue = false;
         }
-        
+
         return returnValue;
     };
 

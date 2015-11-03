@@ -11,9 +11,10 @@
 class Render extends CI_Controller{
     private $path = 'application/epub/';
     private $book = NULL;
-    private $bookname = NULL;
+    private $bookName = NULL;
     private $fullPath = NULL;
     private $cssFiles = NULL;
+    private $jsFiles = NULL;
     private $images = array();
     private $simpleChapter = false;
 
@@ -28,22 +29,44 @@ class Render extends CI_Controller{
         }
     }
 
+    private function readContentOptions($token)
+    {
+        $file = APPPATH.'epub/profiles/'.$token.'-content';
+        if(file_exists($file)){
+            $content = file_get_contents($file);
+            if(empty($content)){
+                return null;
+            }
+            return json_decode($content);
+        }else{
+            return null;
+        }
+
+    }
+
     /**
-     * @param $id Book ID
+     * @param $id
+     * @param null $token
      */
-    public function epub($id)
+    public function epub($id, $token = null)
     {
         $this->bookId = $id;
-        $this->load->helper(array('file','inflector'));
-        $this->load->model('Books_model','books');
+        $this->load->helper(array('file', 'inflector'));
+        $this->load->model('Books_model', 'books');
         $this->load->model('Chapters_model','chapters');
         $this->book = $this->books->get($id);
-        $this->bookname = underscore($this->book['title']);
-        $full = $this->chapters->findGrouped($id);
-        $this->fullPath = $this->path.$this->bookname.'/';
-        @mkdir($this->fullPath);
+        $this->bookName = $this->books->getFolderName($this->book['title']);
+
+        $full = $this->chapters->findGrouped($id, $this->readContentOptions($token));
+        $this->fullPath = $this->path.$this->bookName.'/';
+        if(file_exists($this->fullPath)){
+            $this->emptyFolder($this->fullPath);
+        }else{
+            @mkdir($this->fullPath);
+        }
 
         $this->cssFiles = $this->getCSSFiles();
+        $this->jsFiles = $this->getJSFiles();
 
         $toc = array();
         $temp = array();
@@ -81,13 +104,14 @@ class Render extends CI_Controller{
             array('toc'=>$toc,
                 'book_name'=>$this->book['title'],
                 'css'=>$this->getCSSFiles(),
+                'js'=>$this->getJSFiles(),
                 'metadata'=>$this->getMetadata(),
                 'images'=>$this->getImages()));
         $this->createMimetype();
         $this->createContainerXML(null);
 
         if($this->input->post('download')!=="false"){
-            $this->export($this->bookname);
+            $this->export($this->bookName);
         }else{
             echo json_encode(array('ok'=>1));
         }
@@ -108,15 +132,13 @@ class Render extends CI_Controller{
     }
 
     /**
-     * @param $path
-     * @param $bookname
+     * @param $bookName
      */
-    private function export($bookname)
+    private function export($bookName)
     {
         $this->load->library('zip');
         $this->zip->read_dir($this->fullPath, FALSE, $this->fullPath);
-        //$this->zip->archive('application/epub/'.$bookname.'.epub');
-        $this->zip->download($bookname.'.epub');
+        $this->zip->download($bookName.'.epub');
 
     }
 
@@ -127,6 +149,15 @@ class Render extends CI_Controller{
             $this->cssFiles = $files;
         }
         return $this->cssFiles;
+    }
+
+    private function getJSFiles()
+    {
+        if($this->jsFiles==null){
+            $files = get_dir_file_info($this->fullPath.'/js', FALSE);
+            $this->jsFiles = $files;
+        }
+        return $this->jsFiles;
     }
 
     private function getMetadata()
@@ -172,7 +203,6 @@ class Render extends CI_Controller{
             $definitions[$item['term_id']][$item['language_id']] = $item;
         }
         $data['definitions'] = $definitions;
-//        echo '<pre>';print_r($data['definitions']);echo '</pre>';
         return $this->load->view('epub/dictionary-html', $data, true);
     }
 
@@ -182,6 +212,9 @@ class Render extends CI_Controller{
         if(isset($this->html) && $this->html){
             return $content;
         }else{
+            if(!function_exists('str_get_html')){
+                require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+            }
             $content = $this->fixImageLinks($content);
             return $this->getXhtml(array('title'=>$chapter['title'], 'content'=>$content));
         }
@@ -190,6 +223,7 @@ class Render extends CI_Controller{
 
     private function getXhtml($data){
         $data['css']=$this->cssFiles;
+        $data['js']=$this->jsFiles;
         return $this->load->view('epub/xhtml', $data, true);
     }
 
@@ -200,9 +234,12 @@ class Render extends CI_Controller{
      */
     private function renderNormalChapter($item)
     {
+        if(!function_exists('str_get_html')){
+            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
+        }
         if(isset($this->html) && $this->html){
             $content = $this->fixImageLinks($item['content']);
-//            var_dump($content);
+            $content = $this->fixLocalLinks($content);
             return empty($content)?'<h1>'.$item['title'].'</h1>':$content;
         }elseif(isset($this->structure) && $this->structure){
             return $this->getStructure($item);
@@ -220,30 +257,29 @@ class Render extends CI_Controller{
      */
     public function fixImageLinks($content)
     {
-        if(!function_exists('str_get_html')){
-            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
-        }
-
         $dom = str_get_html($content);
         if(empty($dom)){
             return '';
         }
         if(!$this->simpleChapter){
+            $path = base_url() . 'public/uploads/';
+            $bookPath = $path .url_title($this->book['title']);
 
             foreach($dom->find('img') as $element){
 
                 if(strpos($element->src, base_url())!==false){
-                    if(strpos($element->src, base_url().'public/uploads/'.url_title($this->book['title']).'/')!==false){
-                        $element->src = str_replace(base_url().'public/uploads/'.url_title($this->book['title'].'/'), 'graphics/', $element->src);
-                    }else if(strpos($element->src, base_url().'public/uploads/')!==false){
-                        $element->src = str_replace(base_url().'public/uploads/','graphics/', $element->src);
+
+                    if(strpos($element->src, $bookPath)!==false){
+                        $element->src = str_replace($bookPath, 'graphics', $element->src);
+                    }else if(strpos($element->src, $path)!==false){
+                        $element->src = str_replace($path,'graphics', $element->src);
                     }
 
-                    $css = $this->BreakCSS('image{'.$element->style.'}');
+                    $css = $this->breakCSS('image{'.$element->style.'}');
                     $this->images[str_replace('graphics/','', $element->src)] = array(
                         'src'=>$element->src,
-                        'height'=>$css['image']['height'],
-                        'width'=>$css['image']['width']
+                        'height'=>empty($css['image']['height']) ? null : $css['image']['height'],
+                        'width'=>empty($css['image']['width']) ? null : $css['image']['width']
                     );
 
                 }
@@ -254,7 +290,35 @@ class Render extends CI_Controller{
         return $dom->innertext;
     }
 
-    function BreakCSS($css)
+    /**
+     * Change chapter-name[id].xhtml#anchor-name for #anchor-name
+     * @param $content
+     * @return string
+     */
+    public function fixLocalLinks($content)
+    {
+
+        $dom = str_get_html($content);
+        if(empty($dom)){
+            return '';
+        }
+
+        foreach($dom->find('a') as $element){
+
+            if(strpos($element->href, '.xhtml')!==false){
+
+                $parts = explode('.xhtml', $element->href);
+
+                $element->href = $parts[1];
+
+            }
+
+        }
+
+        return $dom->innertext;
+    }
+
+    private function breakCSS($css)
     {
 
         $results = array();
@@ -270,13 +334,8 @@ class Render extends CI_Controller{
         return $results;
     }
 
-
     public function getStructure($item)
     {
-        if(!function_exists('str_get_html')){
-            require dirname(__FILE__) . '/../libraries/simple_html_dom.php';
-        }
-
         $dom = str_get_html($item['content']);
         if(empty($dom)){
             return '';
@@ -292,6 +351,10 @@ class Render extends CI_Controller{
         return $result;
     }
 
+    /**
+     * @param $id
+     * @param null $data, pass chapter content, or query the database
+     */
     public function chapter($id, $data = null)
     {
         if($data===null){
@@ -324,37 +387,39 @@ class Render extends CI_Controller{
     }
 
     private function getImages(){
-//        $this->load->helper('directory');
         $uploadsFolder = BASEPATH.'../public/uploads/';
         if(!file_exists($this->fullPath.'/graphics')){
             mkdir($this->fullPath.'/graphics');
         }
-//        directory_copy(BASEPATH.'../public/uploads/'.$folderName, $this->fullPath.'/graphics');
-//        $this->load->helper('file');
-//        $files = get_filenames($this->fullPath.'/graphics');
-//        return $files;
+
         $config['image_library'] = 'gd2';
         $config['maintain_ratio'] = TRUE;
         foreach ($this->images as $key=>$image) {
-            if(file_exists($uploadsFolder.url_title($this->book['title']).'/'.$key)){
-                copy($uploadsFolder.url_title($this->book['title']).'/'.$key, $this->fullPath.'/graphics/'.$key);
+            $file = $uploadsFolder.url_title($this->book['title']).'/'.$key;
+            if(file_exists($file)){
+                copy($file, $this->fullPath.'/graphics/'.$key);
             }else if(file_exists($uploadsFolder.$key)){
                 copy($uploadsFolder.$key, $this->fullPath.'/graphics/'.$key);
             }
 
-            if(extension_loaded($config['image_library'])){
+            if(extension_loaded('gd')){
                 $config['source_image'] = $this->fullPath.'/graphics/'.$key;
-    //            $config['create_thumb'] = TRUE;
-
-                $config['width'] = str_replace('px','',$image['width']);
-                $config['height'] = str_replace('px','',$image['height']);
-
-                $this->load->library('image_lib', $config);
-
-                if ( ! $this->image_lib->resize())
-                {
-                    echo $this->image_lib->display_errors();
+                if(!empty($image['width'])){
+                  $config['width'] = str_replace('px','',$image['width']);
                 }
+                if(!empty($image['height'])){
+                  $config['height'] = str_replace('px','',$image['height']);
+                }
+                if(!empty($config['height']) && is_numeric($config['height']) && !empty($config['width'])
+                  && is_numeric($config['width'])){
+                  $this->load->library('image_lib', $config);
+
+                  if ( ! $this->image_lib->resize())
+                  {
+                    log_message('error', $this->image_lib->display_errors());
+                  }
+                }
+
             }
 
         }
@@ -364,51 +429,22 @@ class Render extends CI_Controller{
     /**
      * Will render the book's content as plain html
      * @param $id
+     * @param bool $draft
      */
     public function html($id, $draft = false)
     {
         $this->html = true;
-        $this->load->model('Chapters_model', 'chapters');
-        $chapters = $this->chapters->find($id);
-
-        ob_start();
-        $currentSection = null;
-        foreach ($chapters as $item) {
-            if($currentSection != $item['section_id']){
-                echo '<h1 class="section">'.$item['section_title'].'</h1>';
-            }
-            $this->chapter($item['id']);
-            $currentSection = $item['section_id'];
-        }
-        $originalContent = ob_get_contents();
-        ob_end_clean();
-        $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
-        $this->load->view('templates/simple/footer', array('draft'=>$draft));
+        $this->createContent($id, $draft);
     }
 
     /**
-     * Will render the book's chapter name and first paragraph
      * @param $id
+     * @param bool $draft
      */
     public function structure($id, $draft = false)
     {
         $this->structure = true;
-        $this->load->model('Chapters_model', 'chapters');
-        $chapters = $this->chapters->find($id);
-
-        ob_start();
-        $currentSection = null;
-        foreach ($chapters as $item) {
-            if($currentSection != $item['section_id']){
-                echo '<h1 class="section">'.$item['section_title'].'</h1>';
-            }
-            $this->chapter($item['id']);
-            $currentSection = $item['section_id'];
-        }
-        $originalContent = ob_get_contents();
-        ob_end_clean();
-        $this->load->view('templates/simple/header', array('id'=>$id, 'draft'=>$draft, 'content'=>$originalContent));
-        $this->load->view('templates/simple/footer', array('draft'=>$draft));
+        $this->createContent($id, $draft);
     }
 
     public function section($id)
@@ -427,6 +463,69 @@ class Render extends CI_Controller{
         $this->load->view('templates/simple/header', array('id'=>$id, 'content'=>$originalContent));
         $this->load->view('templates/simple/footer');
 
+    }
+
+    /**
+     * TODO: move this and others method to a separate library that should be accessible to all controllers, maybe library/Creator
+     * @param $id
+     * @param $draft
+     */
+    protected function createContent($id, $draft)
+    {
+        $this->load->model('Chapters_model', 'chapters');
+        $chapters = $this->chapters->find($id);
+
+        ob_start();
+        $currentSection = null;
+        foreach ($chapters as $item) {
+            if ($currentSection != $item['section_id']) {
+                echo '<h1 class="section">' . $item['section_title'] . '</h1>';
+            }
+            $this->chapter($item['id']);
+            $currentSection = $item['section_id'];
+        }
+        $originalContent = ob_get_contents();
+        ob_end_clean();
+        $this->load->view('templates/simple/header',
+            array('id' => $id, 'draft' => $draft, 'content' => $originalContent));
+        $this->load->view('templates/simple/footer', array('draft' => $draft));
+    }
+
+    private function emptyFolder($path){
+        $files = glob($path.'*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
+        $files = glob($path.'/js/*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
+        $files = glob($path.'/css/*'); // get all file names
+        foreach($files as $file){ // iterate files
+            if(is_file($file))
+                unlink($file); // delete file
+        }
+
+    }
+
+    /**
+     * Loads the UI for find/replace on the entire book
+     * TODO: this method should be in this controller
+     * @param $bookId
+     */
+    public function replace($bookId)
+    {
+        $this->load->library('Creator');
+        $content = $this->creator->getContent();
+        $this->load->view('templates/header');
+        $this->load->view('templates/navbar', array('book' => $bookname));
+        $this->load->view('book/full',
+            array('content'=>$content
+            ));
+
+        $this->load->view('templates/footer');
     }
 }
 

@@ -6,35 +6,53 @@
  * Time: 12:38 AM
  */
 
-class Chapters_model extends CI_Model
+class Chapters_model extends MY_Model
 {
     public function __construct()
     {
         parent::__construct();
-        $this->load->database();
+        $this->table = 'chapters';
     }
 
     /** find all chapter at the  book
      * @param $book
      * @return mixed
      */
-    public function find($book)
+    public function find($book, $all = false)
     {
-        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content, c.locked');
+        $this->db->select('c.id, c.title, section_id, s.title as section_title, c.order, editor_id, content,
+                            c.locked, c.removed');
         $this->db->from('chapters c');
-        $this->db->join('sections s','s.id = c.section_id AND s.removed=0');
-        $this->db->where(array('c.book_id'=>$book,'c.removed'=>0));
+        $this->db->join('sections s','s.id = c.section_id '.($all ? '' : 'AND s.removed=0'));
+        $filters = array('c.book_id'=>$book);
+        if(!$all){
+            $filters['c.removed'] = 0;
+        }
+        $this->db->where($filters);
         $this->db->order_by('s.order, c.order');
         $query = $this->db->get();
         return $query->result_array();
     }
 
-    public function findGrouped($id)
+    /**
+     *
+     * @param $id
+     * @param $onlyContent
+     * @return array - grouped by section id
+     */
+    public function findGrouped($id, $onlyContent=null)
     {
         $rows = $this->find($id);
         $result = array();
         foreach ($rows as $item) {
-            $result[$item['section_id']][] = $item;
+            if(empty($onlyContent) || $onlyContent->sections==null || in_array($item['section_id'], $onlyContent->sections)){
+                if(empty($onlyContent) || in_array($item['id'], $onlyContent->chapters)){
+                    $result[$item['section_id']][] = $item;
+
+                }
+
+            }
+
         }
         return $result;
     }
@@ -73,26 +91,26 @@ class Chapters_model extends CI_Model
    }
 
     public function update($data, $id){
-        $oldChapter = $this->get($id);
-        $this->db->where('id',$id);
+        $oldChapter = $this->get($id);//necessary for history tracking
+        $this->db->where('id', $id);
         $result = $this->db->update('chapters', $data);
         if($result && $oldChapter['content'] != $data['content']){
             $this->addToHistory($id, $this->session->userdata('DX_user_id'),
                 $data['content'], strip_tags($oldChapter['content']));
         }
 
-        return false;
+        return true;
     }
 
     private function addToHistory($chapter_id, $user_id, $newContent, $oldContent)
     {
         $onlyText = strip_tags($newContent);
-        include APPPATH.'/libraries/finediff.php';
-        $diff = new FineDiff($oldContent, $newContent);
+//        include APPPATH.'/libraries/finediff.php';
+//        $diff = new FineDiff($oldContent, $newContent);
 
         $this->db->insert('normal_chapter_history', array('chapter_id'=>$chapter_id,
             'user_id'=>$user_id, 'content'=>$newContent, 'words'=>str_word_count($onlyText),
-            'inserted'=>$diff->insertions_count, 'deleted'=>$diff->deletions_count));
+            /*'inserted'=>$diff->insertions_count, 'deleted'=>$diff->deletions_count*/));
 
     }
 
@@ -103,13 +121,6 @@ class Chapters_model extends CI_Model
          $query = $this->db->get();
          return $query->result_array();
 
-    }
-
-    public function delete($id,$data){
-
-            $this->db->where('id', $id);
-            $this->db->update(
-                'chapters',$data);
     }
 
     public function getHistory($id)
