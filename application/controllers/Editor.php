@@ -24,27 +24,34 @@ class Editor extends CI_Controller
     public function normal($id)
     {
         $data['id'] = $id;
-        $this->load->model(array('chapters_model', 'books_model', 'user_model'));
+        $this->load->model(array('chapters_model', 'books_model', 'user_model', 'coauthors_model'));
         $data['chaptername'] = $this->chapters_model->get($id);
         if($data['chaptername']['locked']){
             redirect('book/tocmanager/' . $data['chaptername']['book_id'], false);
         }
         $book = $this->books_model->get($data['chaptername']['book_id']);
-        $userConfig = $this->books_model->getUserConfig($book['id'], $this->session->userdata('DX_user_id'));
-        $data['userSettings'] = isset($userConfig['settings']) ? json_decode($userConfig['settings']) : null;
+        $isBookOwner = $book['owner']==$this->session->userdata('DX_user_id');
+        $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
+        if($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'),
+            $data['chaptername']['book_id']) || $isBookOwner || $isFacilitator){
 
-        $lang = $this->session->userdata('language');
-        $lang = empty($lang) ? 'english' : $lang;
-        $this->lang->load($lang, $lang);
+            $userConfig = $this->books_model->getUserConfig($book['id'], $this->session->userdata('DX_user_id'));
+            $data['userSettings'] = isset($userConfig['settings']) ? json_decode($userConfig['settings']) : null;
+            $lang = $this->session->userdata('language');
+            $lang = empty($lang) ? 'english' : $lang;
+            $this->lang->load($lang, $lang);
 
-        $this->output->set_header("Cache-Control: no-store, no-cache, must-revalidate");
-        $this->output->set_header("Cache-Control: post-check=0, pre-check=0");
-        $this->output->set_header("Pragma: no-cache");
+            $this->output->set_header("Cache-Control: no-store, no-cache, must-revalidate");
+            $this->output->set_header("Cache-Control: post-check=0, pre-check=0");
+            $this->output->set_header("Pragma: no-cache");
 
-        $this->load->view('templates/header');
-        $this->load->view('templates/navbar', array('book' => $book));
-        $this->load->view('editor/normal_editor', $data);
-        $this->load->view('templates/footer');
+            $this->load->view('templates/header');
+            $this->load->view('templates/navbar', array('book' => $book));
+            $this->load->view('editor/normal_editor', $data);
+            $this->load->view('templates/footer');
+        }else{
+            redirect('book/tocmanager/'.$data['chaptername']['book_id'], 'refresh');
+        }
 
     }
 
@@ -102,9 +109,11 @@ class Editor extends CI_Controller
 
         if (!$this->upload->do_upload('upload')) {
             $error = array('error' => $this->upload->display_errors());
+            echo $error;
         } else {
             $data = array('upload_data' => $this->upload->data());
             echo 'Success';
         }
+        die();
     }
 }

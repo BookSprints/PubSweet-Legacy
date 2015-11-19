@@ -14,7 +14,7 @@
         init: function () {
             var self = this;
             if (!(window.io === undefined)) {
-                self.socket = io.connect(self.server);
+                self.socket = io.connect(self.server, {secure: true});
                 self.socket.on('connect', function () {
                     var i;
                     self.socket.on('users-editing-book', window.driver.usersConnected);
@@ -2478,6 +2478,8 @@
                             setTimeout(function () {
                                 $('.alert').fadeOut(1500);
                             }, 2000);
+                        }else{
+                            alert('can´t be saved');
                         }
                     }, 'json')
                         .error(function(){
@@ -2551,7 +2553,7 @@
                             coreStyles_bold	: { element : 'strong', attributes : {'class': 'Bold'} },
                             coreStyles_italic : { element : 'em', attributes : {'class': 'Italic'} },
                             coreStyles_blockquote : { element : 'blockquote', attributes : {'class': 'Blockquote'}},
-                            filebrowserImageUploadUrl : 'editor/uploadImage/'+driver.parameters[0],
+                            filebrowserImageUploadUrl : $('base').attr('href')+'editor/uploadImage/'+driver.parameters[0], //this param is not taking ckeditor baseHref
                             format_tags: "p;h1;h2;h3;h4;pre;blockquote",
                             autoSaveOptionUrl: 'book/saveUserConfig/'+driver.parameters[0],
                             autoSaveOptionTime: $('#editor').data('auto-save-time'),

@@ -79,8 +79,21 @@ class Chapter extends CI_Controller
 
     public function saveContent()
     {
-        echo json_encode(array('ok'=>
-            $this->model->update(array('content'=>$this->input->post('content')), $this->input->post('id'))));
+        $this->load->model(array('chapters_model', 'user_model', 'coauthors_model', 'books_model'));
+        $chapterId = $this->input->post('id');
+        $chapterDetail = $this->chapters_model->get($chapterId);
+        $book = $this->books_model->findByChapter($chapterId);
+        $isBookOwner = $book['owner']==$this->session->userdata('DX_user_id');
+        $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
+
+        if($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'),
+            $chapterDetail['book_id']) || $isBookOwner || $isFacilitator){
+            echo json_encode(array('ok'=>
+                $this->model->update(array('content'=>$this->input->post('content')), $chapterId)));
+        }else{
+            echo json_encode(array('ok'=>0));
+        }
+
     }
 
     /**

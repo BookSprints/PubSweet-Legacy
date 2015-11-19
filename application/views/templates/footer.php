@@ -224,7 +224,12 @@ $serverNodeJS = $this->config->item('nodejs');
 if(empty($serverNodeJS)){
     $host= gethostname();
     $ip = gethostbyname($host);
-    $serverNodeJS = 'http://'.$ip.':8080/';
+    if($this->config->item('use-ssl')){
+        $serverNodeJS = 'https://'.$ip.':8443/';
+    }else{
+        $serverNodeJS = 'http://'.$ip.':8080/';
+    }
+
 }
 ?>
 <script>

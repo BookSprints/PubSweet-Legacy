@@ -6,7 +6,7 @@ An experimental framework for accelerated collaborative knowledge production. It
 Requirements
 ============
 
-PHP version 5.3 or newer.
+PHP version 5.5 or newer.
 MySQL 5.0.51a or newer.
 Nodejs server is optional.
 
@@ -61,6 +61,7 @@ Alter config file
 
 Go to `http://YourInstallation/install/` and follow the instructions. After executing the installation remove the /install/ folder
 
+Go to application/config/pubsweet.php to enable/disable the use of ssl.
 
 In your favorite browser, got to your new PubSweet site
 
@@ -72,4 +73,5 @@ Install [nodejs](http://nodejs.org/download/)
 In the "broadcaster" folder, run this:
 
 1. `npm install`
-2. `node task-app.js &`
+2.a `node task-app.js &`
+2.b `node app-ssl.js &` if you are going to use the ssl version

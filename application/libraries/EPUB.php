@@ -13,8 +13,9 @@ class EPUB
     private static $shortedChapters;
     private $extraLayer = '';
 
-    public function __construct($file)
+    public function __construct($params)
     {
+        $file = $params['file'];
         $this->zip = new ZipArchive;
         //Opens a Zip archive
         if($epub = $this->zip->open($file)){

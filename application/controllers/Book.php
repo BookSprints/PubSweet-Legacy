@@ -25,36 +25,41 @@ class Book extends CI_Controller
     public function tocmanager($id)
     {
         $this->load->model(array('sections_model','chapters_model','status_model','editors_model',
-                'books_model','book_settings_model','registers_model','user_model'));
-        $user = $this->registers_model->find($this->session->userdata('DX_user_id'));
-        $sections = $this->sections_model->find($id);
-        $chapters = $this->chapters_model->find($id);
-        $status = $this->status_model->find($id);
-        $editors = $this->editors_model->all();
+                'books_model','book_settings_model','registers_model','user_model', 'coauthors_model'));
         $bookname = $this->books_model->get($id);
-        $temp = $this->user_model->get_all();
-        $temp2 = $this->books_model->coauthors($id);
-        $this->load->helper('form');
-        $users = array();
-        $coauthors = array();
-        foreach ($temp as $item) {
-            $users[$item['id']] = $item;
-        }
-        foreach ($temp2 as $item) {
-            $coauthors[$item['user_id']] = $item;
-        }
-
         $isBookOwner = $bookname['owner']==$this->session->userdata('DX_user_id');
         $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
-//        var_dump($bookOwner);die();
-        $contributor = (isset($coauthors[$this->session->userdata('DX_user_id')])
-                && $coauthors[$this->session->userdata('DX_user_id')]['contributor']);
-        $reviewer = (isset($coauthors[$this->session->userdata('DX_user_id')])
-            && $coauthors[$this->session->userdata('DX_user_id')]['reviewer']);
+        if($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'), $id)
+            || $this->coauthors_model->canReview($this->session->userdata('DX_user_id'), $id)
+            || $isBookOwner || $isFacilitator){
 
-        $this->load->view('templates/header');
-        $this->load->view('templates/navbar', array('book' => $bookname));
-        $this->load->view('book/tocmanager',
+            $user = $this->registers_model->find($this->session->userdata('DX_user_id'));
+            $sections = $this->sections_model->find($id);
+            $chapters = $this->chapters_model->find($id);
+            $status = $this->status_model->find($id);
+            $editors = $this->editors_model->all();
+
+            $temp = $this->user_model->get_all();
+            $temp2 = $this->books_model->coauthors($id);
+            $this->load->helper('form');
+            $users = array();
+            $coauthors = array();
+            foreach ($temp as $item) {
+                $users[$item['id']] = $item;
+            }
+            foreach ($temp2 as $item) {
+                $coauthors[$item['user_id']] = $item;
+            }
+
+//        var_dump($bookOwner);die();
+            $contributor = (isset($coauthors[$this->session->userdata('DX_user_id')])
+                && $coauthors[$this->session->userdata('DX_user_id')]['contributor']);
+            $reviewer = (isset($coauthors[$this->session->userdata('DX_user_id')])
+                && $coauthors[$this->session->userdata('DX_user_id')]['reviewer']);
+
+            $this->load->view('templates/header');
+            $this->load->view('templates/navbar', array('book' => $bookname));
+            $this->load->view('book/tocmanager',
                 array('id'=>$id,
                     'user'=>$user,
                     'sections'=>$sections,
@@ -71,7 +76,11 @@ class Book extends CI_Controller
                     'reviewer' => $reviewer,
                 ));
 
-        $this->load->view('templates/footer');
+            $this->load->view('templates/footer');
+        }else{
+            redirect("dashboard/profile", 'refresh');
+        }
+
 
     }
 

@@ -38,16 +38,16 @@ class Importer extends CI_Controller {
 
         if($this->upload->do_upload("epub")){
             $data = $this->upload->data();
-            $epub = $this->load->library('EPUB', $data['full_path']);
+            $this->load->library('EPUB', array('file'=>$data['full_path']));
 
             $this->load->model('books_model', 'bookModel');
             $this->load->model('sections_model', 'sectionModel');
             $this->load->model('chapters_model', 'chapterModel');
             $bookId = $this->bookModel->set_book($this->session->userdata('DX_user_id'));
 
-            $this->importImages($epub);
+            $this->importImages();
 
-            $content = $epub->getCompactContent();
+            $content = $this->epub->getCompactContent();
             $order = 1;
             foreach($content as $key=>$item){
                 if(empty($item['children'])){
@@ -87,16 +87,13 @@ class Importer extends CI_Controller {
             $content);
     }
 
-    /**
-     * @param $epub
-     */
-    private function importImages($epub)
+    private function importImages()
     {
         $this->load->helper('file');
-        $images = $epub->getImages();
+        $images = $this->epub->getImages();
         $imagePath = $this->bookModel->getImagesPath($this->input->post('title'));
         foreach ($images as $item) {
-            $img = $epub->getFromName($item['href']);
+            $img = $this->epub->getFromName($item['href']);
 
             if (!file_exists($imagePath)) {
                 @mkdir($imagePath);

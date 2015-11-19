@@ -146,7 +146,7 @@ class Books_model extends CI_Model
 
     public function findByChapter($chapterId)
     {
-        $this->db->select('books.id, books.title');
+        $this->db->select('books.id, books.title, books.owner');
         $this->db->from('books');
         $this->db->join('chapters c', 'c.book_id = books.id');
         $this->db->where(array('c.id'=>$chapterId));
