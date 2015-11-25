@@ -41,7 +41,7 @@ $db['default']['database'] = "%DATABASE%";
 
 // The following values can probably stay the same.
 $db['default']['hostname'] = "%HOSTNAME%";
-$db['default']['dbdriver'] = "mysql";
+$db['default']['dbdriver'] = "mysqli";
 $db['default']['dbprefix'] = "";
 $db['default']['pconnect'] = TRUE;
 $db['default']['db_debug'] = TRUE;

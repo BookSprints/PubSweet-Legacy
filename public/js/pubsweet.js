@@ -2509,7 +2509,7 @@
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
-                            extraAllowedContent: '* [id]',
+                            extraAllowedContent: '* [id]; div(*)',
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
                                     items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },

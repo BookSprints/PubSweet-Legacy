@@ -91,6 +91,15 @@ CKEDITOR.stylesSet.add( 'default', [
 	*/
 
 	{ name: 'Marker',			element: 'span', attributes: { 'class': 'marker' } },
+	{
+		name: 'Footnote',
+		element: 'span',
+		attributes: {'class': 'pagination-footnote'},
+		styles: {
+			padding: '5px 10px',
+			background: '#79D1ED'
+		}
+	},
 
 	{ name: 'Big',				element: 'big' },
 	{ name: 'Small',			element: 'small' },

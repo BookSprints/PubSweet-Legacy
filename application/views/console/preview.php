@@ -9,6 +9,12 @@
         <link rel="stylesheet" href="<?php echo base_url();?>public/js/prettifier/prettify.css"/>
     <?php endif;?>
 <!--    <link rel="stylesheet" href="book.css">-->
+    <style>
+        .pagination-footnote{
+            padding: 0 !important;
+            background: none !important;
+        }
+    </style>
     <?php if (!isset($editablecss) || !$editablecss):
             foreach ($css as $item) :?>
                 <style type="text/css"><?php echo $item; ?></style>
@@ -38,6 +44,10 @@
 
     <script type="text/javascript">
         <?php echo $customConfig;?>
+        if(window.paginationConfig==undefined){
+            window.paginationConfig = {};
+        }
+
         <?php if(isset($_GET['h']) && !empty($_GET['h'])):?>
         paginationConfig.pageHeight = <?php echo sprintf('%f',$_GET['h']);?>;
         <?php endif;?>

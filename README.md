@@ -7,6 +7,7 @@ Requirements
 ============
 
 PHP version 5.5 or newer.
+Enabled php mods: ctype, mysqli
 MySQL 5.0.51a or newer.
 Nodejs server is optional.
 

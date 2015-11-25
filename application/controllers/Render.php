@@ -240,11 +240,13 @@ class Render extends CI_Controller{
         if(isset($this->html) && $this->html){
             $content = $this->fixImageLinks($item['content']);
             $content = $this->fixLocalLinks($content);
+
             return empty($content)?'<h1>'.$item['title'].'</h1>':$content;
         }elseif(isset($this->structure) && $this->structure){
             return $this->getStructure($item);
         }else{
             $content = $this->fixImageLinks($item['content']);
+            $content = $this->addExtraFootnoteWrap($content);
             return $this->getXhtml(array('title'=>$item['title'], 'content'=>$content));
         }
     }
@@ -312,6 +314,27 @@ class Render extends CI_Controller{
                 $element->href = $parts[1];
 
             }
+
+        }
+
+        return $dom->innertext;
+    }
+
+    /**
+     * @param $content
+     * @return string
+     */
+    public function addExtraFootnoteWrap($content)
+    {
+
+        $dom = str_get_html($content);
+        if(empty($dom)){
+            return '';
+        }
+
+        foreach($dom->find('.pagination-footnote') as $element){
+
+            $element->innertext = '<span><span>'.$element->innertext.'</span></span>';
 
         }
 
