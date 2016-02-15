@@ -29,9 +29,9 @@ class Book extends CI_Controller
         $bookname = $this->books_model->get($id);
         $isBookOwner = $bookname['owner']==$this->session->userdata('DX_user_id');
         $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
-        if($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'), $id)
+        if(!empty($bookname) && ($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'), $id)
             || $this->coauthors_model->canReview($this->session->userdata('DX_user_id'), $id)
-            || $isBookOwner || $isFacilitator){
+            || $isBookOwner || $isFacilitator)){
 
             $user = $this->registers_model->find($this->session->userdata('DX_user_id'));
             $sections = $this->sections_model->find($id);

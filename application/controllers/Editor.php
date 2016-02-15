@@ -32,8 +32,8 @@ class Editor extends CI_Controller
         $book = $this->books_model->get($data['chaptername']['book_id']);
         $isBookOwner = $book['owner']==$this->session->userdata('DX_user_id');
         $isFacilitator = $this->user_model->isFacilitator($this->session->userdata('DX_user_id'));
-        if($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'),
-            $data['chaptername']['book_id']) || $isBookOwner || $isFacilitator){
+        if(!empty($book) && ($this->coauthors_model->canEdit($this->session->userdata('DX_user_id'),
+            $data['chaptername']['book_id']) || $isBookOwner || $isFacilitator)){
 
             $userConfig = $this->books_model->getUserConfig($book['id'], $this->session->userdata('DX_user_id'));
             $data['userSettings'] = isset($userConfig['settings']) ? json_decode($userConfig['settings']) : null;

@@ -50,11 +50,19 @@ class Books_model extends CI_Model
     /*
      * TODO: change method name, it could collide with generic get method
      */
-    public function get($bookId){
+    /**
+     * @param $bookId
+     * @param $allowHidden, will allow to get status=0 book
+     * @return mixed
+     */
+    public function get($bookId, $allowHidden=false){
         $this->db->reset_query();
         $this->db->select('id, title, owner');
         $this->db->from('books');
         $this->db->where('id', $bookId);
+        if(!$allowHidden){
+            $this->db->where('status', 1);
+        }
         $query = $this->db->get();
         return $query->row_array();
     }
@@ -172,6 +180,9 @@ class Books_model extends CI_Model
             if(file_exists($oldPath)){
                 return rename($oldPath, BASEPATH.'../public/uploads/'.url_title($newTitle));
             }
+            //TODO: update images path
+            // update chapters set content = replace(content, 'VMS-Troubleshooting-and-Operations', 'vMS-Troubleshooting-and-Operations');
+
             return true;
         }else{
             return false;
@@ -200,3 +211,9 @@ class Books_model extends CI_Model
                 WHERE book_id = ?', array($find, $replace, $bookId));
     }
 }
+
+//update books set status = 0 where id in (132, 108, 106, 98, 97)
+
+//delete39,40,92,93,94
+
+//delete nc FROM `normal_chapter_history` nc left join chapters c on c.id = nc.chapter_id left join books b on b.id = c.book_id where c.id is null or b.id is null or c.removed or b.status = 0;
