@@ -289,8 +289,7 @@
 
                     <div class="controls">
                         
-                        <div class="input-append">
-                            <select name="user_id" id="user" class="chosen-select form-control">
+                        <div class="input-append"><select name="user_id" id="user">
                                 <?php
 
                                 foreach ($users as $item) :
@@ -302,9 +301,8 @@
                                     <?php endif;
                                 endforeach;?>
                             </select>
+                            <input class="btn" type="submit" value="<?php echo $this->lang->line('add'); ?>"/>
                         </div>
-                        <input class="btn btn-small" type="submit" value="<?php echo $this->lang->line('add'); ?>"/>
-
                     </div>
                 </div>
 

@@ -18,8 +18,8 @@
       <?php endforeach;
             endif;?>
       <dc:identifier id="primary_id">http://pubsweet-new.booksprints.net/<?php echo $book_name;?></dc:identifier>
-      <?php if(isset($cover) && $cover):?>
-          <meta name="cover" content="cover.jpg"/>
+      <?php if(isset($cover)&&$cover):?>
+          <meta name="cover" content="cover">
       <?php endif;?>
   </metadata>
   <manifest>
@@ -32,7 +32,7 @@
             endif;
       ?>
       <?php if(isset($cover)&&$cover):?>
-          <item href="static/cover.jpg" media-type="image/jpg" id="cover.jpg"/>
+          <item href="static/cover.jpg" media-type="image/jpg" id="cover"/>
       <?php endif;?>
 
       <?php
@@ -64,7 +64,7 @@
       <?php endforeach;
       ?>
 
-      <?php if(isset($cover) && $cover):?>
+      <?php if(isset($cover)&&$cover):?>
           <item href="cover.xhtml" media-type="application/xhtml+xml" id="coverxhtml"/>
       <?php endif;?>
   </manifest>
@@ -76,12 +76,12 @@
         <?php endforeach;?>
       <?php endforeach;?>
 
-      <?php if(isset($cover) && $cover):?>
+      <?php if(isset($cover)&&$cover):?>
           <itemref idref="coverxhtml" linear="no"/>
       <?php endif;?>
   </spine>
   <guide>
-      <?php if(isset($cover) && $cover):?>
+      <?php if(isset($cover)&&$cover):?>
           <reference href="cover.xhtml" type="cover" title="Cover"></reference>
       <?php endif;?>
   </guide>

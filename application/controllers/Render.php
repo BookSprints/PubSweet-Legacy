@@ -401,10 +401,12 @@ class Render extends CI_Controller{
 
     private function createCoverHtml()
     {
-        $xhtml = $this->load->view('epub/cover', null, true);
-        if(!write_file ($this->fullPath.'cover.xhtml', $xhtml, 'w+')){
-            echo 'Error creating cover.xhtml';
-        }
+
+        $content = '<div id="cover-image">'.
+                '<img src="static/cover.jpg" alt="cover"/>'.
+                '</div>';
+        $this->getXhtml(array('title'=>'Cover', 'content'=>$content));
+        return false;
     }
 
     private function getImages(){
@@ -417,15 +419,14 @@ class Render extends CI_Controller{
         $config['maintain_ratio'] = TRUE;
         foreach ($this->images as $key=>$image) {
             $file = $uploadsFolder.url_title($this->book['title']).'/'.$key;
-            $destiny = $this->fullPath.'/graphics/'.$key;
             if(file_exists($file)){
-                copy($file, $destiny);
+                copy($file, $this->fullPath.'/graphics/'.$key);
             }else if(file_exists($uploadsFolder.$key)){
-                copy($uploadsFolder.$key, $destiny);
+                copy($uploadsFolder.$key, $this->fullPath.'/graphics/'.$key);
             }
 
             if(extension_loaded('gd')){
-                $config['source_image'] = str_replace('//', '/', $destiny);
+                $config['source_image'] = $this->fullPath.'/graphics/'.$key;
                 if(!empty($image['width'])){
                   $config['width'] = str_replace('px','',$image['width']);
                 }
@@ -434,9 +435,7 @@ class Render extends CI_Controller{
                 }
                 if(!empty($config['height']) && is_numeric($config['height']) && !empty($config['width'])
                   && is_numeric($config['width'])){
-                  $this->load->library('image_lib');
-                  $this->image_lib->clear();
-                  $this->image_lib->initialize($config);
+                  $this->load->library('image_lib', $config);
 
                   if ( ! $this->image_lib->resize())
                   {
