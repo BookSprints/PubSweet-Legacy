@@ -111,11 +111,19 @@ class Manager extends CI_Controller
         if(isset($book) && isset($_FILES['jsfile'])){
             $this->load->model('Books_model','books');
             $bookData = $this->books->get($book);
-            $this->load->helper(array('file','inflector'));
-            $bookPath = $this->getPath($bookData['title'], 'js');
-            $this->store($_FILES['jsfile'], $bookPath);
+//            $this->load->helper(array('file','inflector'));
+//            $bookPath = $this->getPath($bookData['title'], 'js');
+//            $this->store($_FILES['jsfile'], $bookPath);
 
-            echo json_encode(array('ok'=>1));
+            $config['upload_path'] = $this->getPath($bookData['title'], 'js');
+            $config['allowed_types'] = '*';
+            $config['max_size'] = '10000';
+
+            $this->load->library('upload', $config);
+
+            if($this->upload->do_upload("jsfile")){
+                echo json_encode(array('ok'=>1));
+            }
 
         }else{
             echo json_encode(array('ok'=>false, 'error'=>'Missing data'));
@@ -164,7 +172,7 @@ class Manager extends CI_Controller
         return  false;
     }
 
-    private function store($file, $path)
+    /*private function store($file, $path)
     {
         if (empty($file) || $file["error"][0] == 4) {
             return; //return silently because no file was uploaded
@@ -181,7 +189,7 @@ class Manager extends CI_Controller
 
             return $files;
         }
-    }
+    }*/
 
     private function getPath($bookFolderName, $folder)
     {
@@ -196,10 +204,23 @@ class Manager extends CI_Controller
         if(isset($book) && isset($_FILES['cover'])){
             $this->load->model('Books_model','books');
             $bookData = $this->books->get($book);
-            $this->load->helper(array('file','inflector'));
 
-            $this->store($_FILES['cover'], $this->getPath($bookData['title'], 'static'));
-            echo json_encode(array('ok'=>1));
+            $config = array(
+                'upload_path'=> $this->getPath($bookData['title'], 'static'),
+                'file_name' => 'cover.jpg',
+                'allowed_types' => '*',
+                'max_size' => '10000',
+                'overwrite'=>true
+            );
+
+            $this->load->library('upload', $config);
+
+            if($this->upload->do_upload("cover")){
+                echo json_encode(array('ok'=>1));
+            }
+
+//            $this->store($_FILES['cover'], $this->getPath($bookData['title'], 'static'));
+
 
         }else{
             echo json_encode(array('ok'=>false, 'error'=>'Missing data'));

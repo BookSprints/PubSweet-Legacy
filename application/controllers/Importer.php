@@ -65,7 +65,8 @@ class Importer extends CI_Controller {
                         if(empty($item2['children'])){
                             $chapterId = $this->chapterModel->set_chapter(
                                 array('title'=>$key2, 'section_id'=>$sectionId, 'book_id'=>$bookId,
-                                      'content'=>$this->fixImagesSrc($item2), 'order'=>++$order, 'editor_id'=>2));
+                                      'content'=>$this->fixImagesSrc(empty($item2['content']) ? $item2 : $item2['content']),
+                                    'order'=>++$order, 'editor_id'=>2));
                         }else{
                             $sectionId = $this->sectionModel->set_section(array('title'=>$key, 'book_id'=>$bookId));
                         }
