@@ -173,7 +173,11 @@
             var $result = $('#result');
             driver.createPreviewURL($result.find('#bookjs'), $result.find('#bookjs-polyfill'));
             driver.createLiveCSSURL($result.find('#livecss'));
-            $result.find('#epub').attr('href', driver.url).removeClass('hide');
+            $result.find('#epub').removeClass('hide');
+            $result.find('#epub').on('click', function(){
+                document.location = 'render/epub/'+$('#book_id').val()+'/'+$('#settings-token').val();
+                return false;
+            });
             $result.show();
             if($('#download').is(':checked')){
                 //because the xhtml files is always rendered, the generation is not useful

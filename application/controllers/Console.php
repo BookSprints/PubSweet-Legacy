@@ -13,6 +13,7 @@ class Console extends CI_Controller
         parent::__construct();
         $this->load->library('DX_Auth');
         $this->load->helper('url');
+        $this->load->helper('file');
         if (!$_SESSION['DX_user_id']){
             redirect('register/login', 'refresh');
         }
@@ -58,6 +59,16 @@ class Console extends CI_Controller
             }
             file_put_contents(APPPATH.'/epub/profiles/'.$token, $bookJSConfig);
         }
+    }
+
+    public function getImage($book, $uri)
+    {
+        $base_64 = $uri . str_repeat('=', strlen($uri) % 4);
+        $data = base64_decode($base_64);
+//        $uri = base64_decode($uri);
+        $dir = dirname(__FILE__).'/../epub/' . $book.'/';
+        echo header("content-type: ".get_mime_by_extension($data));
+        echo file_get_contents($dir.$data);
     }
 
     public function preview($book, $identifier, $editablecss, $hyphen, $prettify=false, $polyfill = false)
@@ -111,7 +122,6 @@ class Console extends CI_Controller
                             $globalDom = str_get_html($xhtml);
                             $dom = $globalDom->find('body', 0);
 
-
                             if (isset($_GET['prettify']) && $_GET['prettify']) {
                                 foreach ($dom->find('pre, code') as $element) {
                                     $element->class = 'prettyprint linenums';
@@ -119,23 +129,30 @@ class Console extends CI_Controller
                                 }
                             }
 
+//                            foreach ($dom->find('img') as $element) {
+//                                    $uri = $element->src;
+//                                if(file_exists($dir.$uri)){
+//
+//                                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
+//                                        $parts = pathinfo($uri);
+//                                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
+//                                            base64_encode(file_get_contents($dir.$uri));
+//                                    }
+//                                    $parent = $element->parent();
+//                                    if($parent->tag=='p'){
+//                                        $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
+//                                    }
+//                                }
+//
+//                            }
                             foreach ($dom->find('img') as $element) {
-                                    $uri = $element->src;
-                                if(file_exists($dir.$uri)){
-
-                                    if (!empty($uri) && $uri != '#' && !preg_match('/[http|ftp|https|mailto|data]:/', $uri)) {
-                                        $parts = pathinfo($uri);
-                                        $element->src = 'data:image/' . (empty($parts['extension']) ? 'jpeg' : $parts['extension']) . ';base64,' .
-                                            base64_encode(file_get_contents($dir.$uri));
-                                    }
-                                    $parent = $element->parent();
-                                    if($parent->tag=='p'){
-                                        $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
-                                    }
+                                $element->src = base_url().'console/getImage/'.$book.'/'.rtrim(base64_encode($element->src), '=');
+                                $parent = $element->parent();
+                                if($parent->tag=='p'){
+                                    $parent->setAttribute('class', $parent->getAttribute('class').' has-image');
                                 }
-
-
                             }
+
                             foreach ($dom->find('h1') as $element) {
                                 $element->class = 'chaptertitle';
                             }

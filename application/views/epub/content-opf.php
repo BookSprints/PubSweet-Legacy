@@ -19,7 +19,7 @@
             endif;?>
       <dc:identifier id="primary_id">http://pubsweet-new.booksprints.net/<?php echo $book_name;?></dc:identifier>
       <?php if(isset($cover)&&$cover):?>
-          <meta name="cover" content="cover">
+          <meta name="cover" content="cover.jpg"/>
       <?php endif;?>
   </metadata>
   <manifest>
@@ -32,7 +32,7 @@
             endif;
       ?>
       <?php if(isset($cover)&&$cover):?>
-          <item href="static/cover.jpg" media-type="image/jpg" id="cover"/>
+          <item href="static/cover.jpg" media-type="image/jpg" id="cover.jpg"/>
       <?php endif;?>
 
       <?php
