@@ -1,7 +1,7 @@
 PubSweet
 ========
 
-An experimental framework for accelerated collaborative knowledge production. Its rough but ready. Contributions welcome but you might wish to put your energy into PubSweet2 (currently being uploaded to gh) which is a more modular approach.
+An experimental framework for accelerated collaborative knowledge production. Its rough but ready. Contributions welcome but you might wish to watch at the new [PubSweet](https://gitlab.coko.foundation/pubsweet/core) which is a more modular approach.
 
 Requirements
 ============

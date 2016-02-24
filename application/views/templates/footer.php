@@ -47,12 +47,9 @@
 </script>
 
 <script type="text/x-handlebars-template" id="connected-template">
-<!--    <div class="newUserConnected" id="{{id}}" data-original-title="{{userName}}">-->
-<!--        <img src="{{imgProfile}}" alt="{{userName}}" width="20" height="20"/>-->
-<!--    </div>-->
     <li class="userConnected" role="presentation" data-id={{id}}>
         <div class="status-user" role="menuitem" tabindex="-1" >
-            <img src="{{imgProfile}}" alt="{{userName}}" width="20" height="20"/>
+            <img src="user/image/{{id}}" alt="{{userName}}" width="20" height="20"/>
             <span>{{userName}}</span>
         </div>
     </li>

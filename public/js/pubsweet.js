@@ -96,14 +96,15 @@
             this.UrlPosition = url;
             broadcast.customOnConnect(function () {
                 $.getJSON('user/getUsersInfo', null, function (response) {
-//                        var book_id = driver.parameters[0];//getting first parameter
-                    var data = {
-                        id: response.id,
-                        userName: response.username,
-                        imgProfile: response.picture !== null ? response.picture:'http://placehold.it/140x140',
-                        url: url
-                    };
-                    broadcast.emit('editing-books', data);
+                    if(response!=undefined && !!response.id){
+                        var data = {
+                            id: response.id,
+                            userName: response.username,
+                            url: url
+                        };
+                        broadcast.emit('editing-books', data);
+                    }
+
                 });
             });
         },
@@ -972,7 +973,7 @@
                         $('.section').attr('style','');
                     });
                 /*End condition, outline around*/
-                $('.chapter-status').on('mouseover','.status',function(){
+                $('.chapter-status').on('mouseover', '.status', function(){
                     var status = $(this);
                     var id = status.data('id');
                     var user = status.data('user_id');
@@ -1178,7 +1179,7 @@
                     return false;
                 });
 
-
+                $('#user').chosen({width: '250px'});
                 /* INVITE */
 
                 $('#invited-email').on('submit', function(){
@@ -1268,39 +1269,6 @@
             handleToCPersistence: function($sections){
                 var user_id;
                 $(function(){
-//                    $.getJSON('user/getUsersInfo',function (response) {
-//                        user_id = response.id;
-//                        sessionStorage.user_id = user_id;
-//
-//                        if(user_id !== undefined)
-//                        {
-//                            if(localStorage.sections !== undefined){
-//                                driver.storedSections = JSON.parse(localStorage.sections);
-//                                driver.book.hiddenSections = driver.storedSections[user_id]==undefined?undefined:driver.storedSections[user_id][driver.book.id];
-//                                if(driver.book.hiddenSections==undefined){
-//                                    driver.book.hiddenSections = [];
-//                                }
-//
-//                                for(var i = 0; i < driver.book.hiddenSections.length; i++){
-////                                    if(sections.hide[i].user_id === user_id){
-//                                    var section_id = driver.book.hiddenSections[i];
-//                                    var item = $('#section-chapters-'+section_id);
-//                                    $('.accordion-toggle[data-target="#section-chapters-'+section_id+'"]').addClass('collapsed');
-//                                    item.attr("style","height:0px");
-//                                    item.removeClass('in');
-////                                    }
-//                                }
-//
-//                            }else{
-//                                var object = {};
-//                                object[driver.book.id] = [];
-//                                driver.storedSections = {};
-//                                driver.storedSections[user_id] = object;
-//                                driver.book.hiddenSections = [];
-//                            }
-//                        }
-//
-//                    });
                     $sections.show();
                     $('.collapse').on('show',function(){
                         var section_id =$(this).find('.chapters').data('section-id');
@@ -1310,16 +1278,6 @@
                             driver.book.saveTocPersistence(user_id, driver.book.id, driver.book.hiddenSections);
                         }
 
-
-//                        var user_id = sessionStorage.user_id;
-//                        var sections = JSON.parse(localStorage.sections);
-//                        var item = {id:section_id,user_id:user_id};
-//                        for(var i in sections.hide){
-//                            if(JSON.stringify(sections.hide[i])==JSON.stringify(item)){
-//                                sections.hide.splice(i,1);
-//                                localStorage.sections = JSON.stringify(sections);
-//                            }
-//                        }
                     })
                         .on('hide',function(){
                             var section_id =$(this).find('.chapters').data('section-id');
@@ -1328,18 +1286,6 @@
                                 driver.book.saveTocPersistence(user_id, driver.book.id, driver.book.hiddenSections);
                             }
 
-//                            var user_id = sessionStorage.user_id;
-//                            if(localStorage.sections !== undefined)
-//                            {
-//                                var sections = JSON.parse(localStorage.sections);
-//                                sections.hide.push({id:section_id,user_id:user_id});
-//                                localStorage.sections = JSON.stringify(sections);
-//                            }
-//                            else
-//                            {
-//                                var sections = {hide:[{id:section_id,user_id:user_id}]};
-//                                localStorage.sections = JSON.stringify(sections);
-//                            }
                         });
 
                 });
@@ -1415,7 +1361,7 @@
                 $('.section[data-id="'+data.id+'"]').find('.name').text(data.title);
             },
             updateTitleChapter:function(data){
-                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title).attr('title', title);
+                $('.chapter[data-id="'+data.id+'"]').find('.title').text(data.title).attr('title', data.title);
             },
             drawSection: function (data) {
                 if(driver.book.id==data.book_id){
@@ -1480,12 +1426,6 @@
                 $('.status-item[data-id="'+data.id+'"]').remove();
             },
             updateStatus:function(data){
-//                var info ={
-//                    id:data[0].toString(),
-//                    title:data[1].toString(),
-//                    user_id:data[2].toString(),
-//                    status:data[3].toString()
-//                };
                 var id =  data.id.split(',');
                 var status = data.status.split(',');
                 var title = data.title.split(',');
@@ -2454,6 +2394,7 @@
                 broadcast.customOnConnect(function (io) {
                     $.getJSON('user/getUsersInfo',function(response){
                         sessionStorage.user_id = response.id;
+                        delete response.picture;
                         io.socket.emit('lock-wysi', {chapter_id: driver.parameters[0],
                             'user': response});
                     });
@@ -2509,14 +2450,14 @@
                         var config = {
                             startupFocus : true,
                             toolbarCanCollapse: true,
-                            extraAllowedContent: '* [id]; div(*)',
+                            extraAllowedContent: '* [id]; div(*); sub',
                             toolbar: [
                                 { name: 'document', groups: [ 'mode', 'document', 'doctools' ],
                                     items: [ 'Source', '-', 'Save','CustomautosaveOptions'/*, 'NewPage', 'Preview'*/, 'Print'/*, '-', 'Templates'*/ ] },
                                 { name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ],
                                     items: [ 'Find', 'Replace', '-', /*'SelectAll', '-',*/ 'Scayt' ] },
                                 { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ],
-                                    items: [ 'Bold', 'Italic', /*'Underline', 'Strike', 'Subscript', 'Superscript',*/
+                                    items: [ 'Bold', 'Italic', 'Subscript', /*'Underline', 'Strike', 'Superscript',*/
                                         '-', 'RemoveFormat' ] },
                                 { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', /*'align', 'bidi'*/ ],
                                     items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Indent List',
@@ -2919,7 +2860,7 @@
                             $('.users-approves').empty();
                             for(var user in data){
                                 if (data[user].picture === null)
-                                    data[user].picture= 'http://placehold.it/140x140';
+                                    data[user].picture= '//placehold.it/140x140';
                                 $('.users-approves').append(add(data[user]));
 
                             }

@@ -12,7 +12,7 @@
                     ?></div>
                 <div>
                     <img id="profile-img" alt="profile-img"
-                         src="<?php echo empty($user['picture'])?'http://placehold.it/200x200':$user['picture'];?>"
+                         src="<?php echo empty($user['picture'])?'//placehold.it/200x200':$user['picture'];?>"
                          width="200" height="200" class="img-polaroid"/>
                     <input type="file" name="img" id="upload" class="hide"/>
                 </div>
